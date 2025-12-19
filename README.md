@@ -1,28 +1,67 @@
-# Railspress
-Short description and motivation.
+# RailsPress
 
-## Usage
-How to use my plugin.
+A simple blog engine for Rails 8 applications.
+
+## Features
+
+- Blog posts with rich text editing (ActionText)
+- Categories and tags
+- SEO metadata (meta title, meta description)
+- Draft/published workflow with automatic publish timestamps
+- Admin interface for content management
+
+## Requirements
+
+- Rails 8.0+
+- Ruby 3.3+
+- ActionText (for rich text)
+- Active Storage (for image uploads)
 
 ## Installation
-Add this line to your application's Gemfile:
+
+Add to your Gemfile:
 
 ```ruby
 gem "railspress"
 ```
 
-And then execute:
+Install the gem and copy migrations:
+
 ```bash
-$ bundle
+bundle install
+rails railspress:install:migrations
+rails db:migrate
 ```
 
-Or install it yourself as:
-```bash
-$ gem install railspress
+Mount the engine in your routes:
+
+```ruby
+# config/routes.rb
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/blog", as: :railspress
+end
 ```
 
-## Contributing
-Contribution directions go here.
+## Usage
+
+Access the admin interface at `/blog/admin`.
+
+From there you can:
+- Create and manage blog posts with rich text content
+- Organize posts with categories
+- Tag posts (enter tags as comma-separated values)
+- Save posts as drafts or publish them
+
+## Development
+
+After checking out the repo:
+
+```bash
+bundle install
+cd spec/dummy && bundle exec rails db:migrate && cd ../..
+bundle exec rspec
+```
 
 ## License
+
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

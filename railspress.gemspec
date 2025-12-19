@@ -21,6 +21,5 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 8.0"
-  # Lexxy for rich text editing - will be added when available
-  # spec.add_dependency "lexxy", "~> 0.1.23.beta"
+  spec.add_dependency "lexxy", "~> 0.1.23.beta"
 end

@@ -34,3 +34,25 @@ jobs:
       - name: Lint code for consistent style
         run: bin/rubocop -f github
 
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RUBY_VERSION: ruby-3.4.7
+      RAILS_ENV: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Set up database
+        run: |
+          cd spec/dummy
+          bundle exec rails db:migrate
+
+      - name: Run tests
+        run: bundle exec rspec

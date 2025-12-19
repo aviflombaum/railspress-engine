@@ -6,6 +6,7 @@
   <title><%= content_for?(:title) ? "#{yield(:title)} - " : "" %>RailsPress Admin</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "lexxy", media: "all" %>
   <%= stylesheet_link_tag "railspress/admin", media: "all" %>
 </head>
 <body>
@@ -34,6 +35,7 @@
     </main>
   </div>
 
+  <%= javascript_importmap_tags %>
   <%= javascript_include_tag "railspress/admin" %>
 </body>
 </html>

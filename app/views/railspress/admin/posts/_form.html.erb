@@ -1,0 +1,95 @@
+<%= form_with model: [:admin, @post], class: "rp-form" do |form| %>
+  <% if @post.errors.any? %>
+    <div class="rp-form-errors">
+      <ul>
+        <% @post.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="rp-form-layout">
+    <!-- Main content column -->
+    <div class="rp-form-main">
+      <div class="rp-form-group">
+        <%= form.label :title, class: "rp-label" %>
+        <%= form.text_field :title,
+            class: "rp-input rp-input--title",
+            placeholder: "Enter post title...",
+            data: { slug_source: true },
+            required: true %>
+      </div>
+
+      <div class="rp-form-group">
+        <%= form.label :slug, class: "rp-label" %>
+        <%= form.text_field :slug,
+            class: "rp-input rp-input--mono",
+            placeholder: "auto-generated-from-title",
+            data: { slug_target: true } %>
+        <p class="rp-hint">Leave blank to auto-generate from title</p>
+      </div>
+
+      <div class="rp-form-group">
+        <%= form.label :content, class: "rp-label" %>
+        <%= form.rich_text_area :content, class: "rp-rich-text" %>
+        <p class="rp-hint">Rich text editor powered by Lexxy</p>
+      </div>
+    </div>
+
+    <!-- Sidebar column -->
+    <div class="rp-form-sidebar">
+      <div class="rp-sidebar-section">
+        <h3 class="rp-sidebar-title">Publishing</h3>
+
+        <div class="rp-form-group">
+          <%= form.label :status, class: "rp-label" %>
+          <%= form.select :status,
+              Railspress::Post.statuses.keys.map { |s| [s.titleize, s] },
+              {},
+              class: "rp-select" %>
+        </div>
+
+        <div class="rp-form-group">
+          <%= form.label :category_id, "Category", class: "rp-label" %>
+          <%= form.collection_select :category_id, @categories, :id, :name,
+              { prompt: "No category" },
+              { class: "rp-select" } %>
+        </div>
+
+        <div class="rp-form-group">
+          <%= form.label :tag_list, "Tags", class: "rp-label" %>
+          <%= form.text_field :tag_list,
+              class: "rp-input",
+              placeholder: "ruby, rails, tutorial",
+              value: @post.tag_list %>
+          <p class="rp-hint">Comma-separated. New tags created automatically.</p>
+        </div>
+      </div>
+
+      <div class="rp-sidebar-section">
+        <h3 class="rp-sidebar-title">SEO</h3>
+
+        <div class="rp-form-group">
+          <%= form.label :meta_title, class: "rp-label" %>
+          <%= form.text_field :meta_title,
+              class: "rp-input",
+              placeholder: "Defaults to post title" %>
+        </div>
+
+        <div class="rp-form-group">
+          <%= form.label :meta_description, class: "rp-label" %>
+          <%= form.text_area :meta_description,
+              class: "rp-input",
+              rows: 3,
+              placeholder: "Brief description for search engines" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rp-form-actions">
+    <%= form.submit class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Cancel", admin_posts_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+<% end %>

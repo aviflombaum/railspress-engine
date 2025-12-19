@@ -1,0 +1,51 @@
+<div class="rp-page-header">
+  <h1 class="rp-page-title">Posts</h1>
+  <div class="rp-page-actions">
+    <%= link_to "New Post", new_admin_post_path, class: "rp-btn rp-btn--primary" %>
+  </div>
+</div>
+
+<div class="rp-card">
+  <div class="rp-table--responsive">
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th class="rp-table-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @posts.each do |post| %>
+          <tr>
+            <td>
+              <%= link_to post.title, admin_post_path(post), class: "rp-link rp-table-primary" %>
+              <% if post.tags.any? %>
+                <div class="rp-tag-list">
+                  <% post.tags.each do |tag| %>
+                    <span class="rp-tag"><%= tag.name %></span>
+                  <% end %>
+                </div>
+              <% end %>
+            </td>
+            <td><%= post.category&.name || "—" %></td>
+            <td>
+              <span class="rp-badge rp-badge--<%= post.status %>">
+                <%= post.status.titleize %>
+              </span>
+            </td>
+            <td class="rp-table-secondary"><%= post.created_at.strftime("%b %d, %Y") %></td>
+            <td class="rp-table-actions">
+              <%= link_to "Edit", edit_admin_post_path(post), class: "rp-link" %>
+              <%= button_to "Delete", admin_post_path(post), method: :delete,
+                  data: { turbo_confirm: "Delete this post?" },
+                  class: "rp-link rp-link--danger" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

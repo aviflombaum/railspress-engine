@@ -1,0 +1,38 @@
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title"><%= @post.title %></h1>
+    <div class="rp-post-meta">
+      <span class="rp-badge rp-badge--<%= @post.status %>"><%= @post.status.titleize %></span>
+      <% if @post.category %>
+        <span><%= @post.category.name %></span>
+      <% end %>
+      <span><%= @post.created_at.strftime("%b %d, %Y") %></span>
+    </div>
+  </div>
+  <div class="rp-page-actions">
+    <%= link_to "Edit", edit_admin_post_path(@post), class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Back", admin_posts_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<% if @post.tags.any? %>
+  <div class="rp-tag-list rp-post-tags">
+    <% @post.tags.each do |tag| %>
+      <span class="rp-tag"><%= tag.name %></span>
+    <% end %>
+  </div>
+<% end %>
+
+<article class="rp-prose">
+  <%= @post.content %>
+</article>
+
+<% if @post.meta_title.present? || @post.meta_description.present? %>
+  <div class="rp-seo-preview">
+    <h3 class="rp-seo-preview-title">SEO Preview</h3>
+    <div class="rp-seo-title"><%= @post.meta_title.presence || @post.title %></div>
+    <% if @post.meta_description.present? %>
+      <div class="rp-seo-description"><%= @post.meta_description %></div>
+    <% end %>
+  </div>
+<% end %>

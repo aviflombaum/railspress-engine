@@ -1,0 +1,27 @@
+<%= form_with model: [:admin, @tag], class: "rp-form rp-form--narrow" do |form| %>
+  <% if @tag.errors.any? %>
+    <div class="rp-form-errors">
+      <ul>
+        <% @tag.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="rp-form-group">
+    <%= form.label :name, class: "rp-label rp-label--lg rp-label--required" %>
+    <%= form.text_field :name, class: "rp-input rp-input--lg", placeholder: "Tag name", data: { slug_source: true }, required: true %>
+  </div>
+
+  <div class="rp-form-group">
+    <%= form.label :slug, class: "rp-label" %>
+    <%= form.text_field :slug, class: "rp-input rp-input--mono", placeholder: "auto-generated-if-blank", data: { slug_target: true } %>
+    <p class="rp-hint">Leave blank to auto-generate from name</p>
+  </div>
+
+  <div class="rp-form-actions">
+    <%= form.submit class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Cancel", admin_tags_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+<% end %>

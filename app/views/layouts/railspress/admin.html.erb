@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= content_for?(:title) ? "#{yield(:title)} - " : "" %>RailsPress Admin</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "railspress/admin", media: "all" %>
+</head>
+<body>
+  <div class="rp-admin-layout">
+    <!-- Mobile Header -->
+    <header class="rp-mobile-header">
+      <button class="rp-hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <span class="rp-mobile-logo">RailsPress</span>
+    </header>
+
+    <div class="rp-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="rp-sidebar">
+      <%= render "railspress/admin/shared/sidebar" %>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="rp-main">
+      <%= render "railspress/admin/shared/flash" %>
+      <%= yield %>
+    </main>
+  </div>
+
+  <%= javascript_include_tag "railspress/admin" %>
+</body>
+</html>

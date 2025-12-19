@@ -1,0 +1,42 @@
+<% content_for :title, "Categories" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-title">Categories</h1>
+  <div class="rp-page-actions">
+    <%= link_to "New Category", new_admin_category_path, class: "rp-btn rp-btn--primary" %>
+  </div>
+</div>
+
+<div class="rp-card">
+  <% if @categories.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Posts</th>
+            <th class="rp-table-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @categories.each do |category| %>
+            <tr>
+              <td class="rp-table-primary"><%= category.name %></td>
+              <td class="rp-table-secondary"><%= category.slug %></td>
+              <td><%= category.posts.count %></td>
+              <td class="rp-table-actions">
+                <%= link_to "Edit", edit_admin_category_path(category), class: "rp-link" %>
+                <%= button_to "Delete", admin_category_path(category), method: :delete,
+                    data: { turbo_confirm: "Delete this category?" },
+                    class: "rp-link rp-link--danger" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="rp-empty-state">No categories yet. <%= link_to "Create your first category", new_admin_category_path, class: "rp-link" %>.</p>
+  <% end %>
+</div>

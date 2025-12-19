@@ -1,0 +1,45 @@
+<% content_for :title, "Dashboard" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-title">Dashboard</h1>
+  <div class="rp-page-actions">
+    <%= link_to "New Post", new_admin_post_path, class: "rp-btn rp-btn--primary" %>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-value"><%= @posts_count %></div>
+    <div class="rp-stat-label">Posts</div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-value"><%= @categories_count %></div>
+    <div class="rp-stat-label">Categories</div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-value"><%= @tags_count %></div>
+    <div class="rp-stat-label">Tags</div>
+  </div>
+</div>
+
+<!-- Recent Posts -->
+<div class="rp-section">
+  <div class="rp-section-header">
+    <h2 class="rp-section-title">Recent Posts</h2>
+  </div>
+  <div class="rp-card">
+    <% if @recent_posts.any? %>
+      <ul class="rp-list">
+        <% @recent_posts.each do |post| %>
+          <li class="rp-list-item">
+            <%= link_to post.title, admin_post_path(post), class: "rp-link" %>
+            <span class="rp-badge rp-badge--<%= post.status %>"><%= post.status.titleize %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="rp-empty-state">No posts yet. <%= link_to "Create your first post", new_admin_post_path, class: "rp-link" %>.</p>
+    <% end %>
+  </div>
+</div>

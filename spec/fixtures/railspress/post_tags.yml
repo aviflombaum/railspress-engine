@@ -1,0 +1,7 @@
+hello_world_ruby:
+  post: hello_world
+  tag: ruby
+
+hello_world_rails:
+  post: hello_world
+  tag: rails

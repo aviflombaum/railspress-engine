@@ -1,0 +1,9 @@
+technology:
+  name: Technology
+  slug: technology
+  description: Tech articles
+
+business:
+  name: Business
+  slug: business
+  description: Business insights

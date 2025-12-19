@@ -1,0 +1,12 @@
+hello_world:
+  title: Hello World
+  slug: hello-world
+  category: technology
+  status: 1
+  published_at: <%= Time.current %>
+
+draft_post:
+  title: Draft Post
+  slug: draft-post
+  category: business
+  status: 0

@@ -18,3 +18,4 @@
 coverage
 /spec/dummy/log/*
 /test/dummy/log/*
+.playwright-mcp

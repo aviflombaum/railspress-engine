@@ -1,0 +1,7 @@
+<%= form_with url: blog_search_path, method: :get, class: "search-form", data: { turbo_frame: "_top" } do |form| %>
+  <%= form.search_field :q,
+      value: @query,
+      placeholder: "Search posts...",
+      class: "search-input" %>
+  <%= form.submit "Search", class: "search-button" %>
+<% end %>

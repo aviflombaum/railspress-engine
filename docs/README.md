@@ -45,8 +45,10 @@ Access the admin at `/railspress/admin`:
 - `has_rich_text :content`
 
 **Scopes:**
+- `published` - Posts with status "published" and a `published_at` date set
+- `drafts` - Posts with status "draft"
 - `ordered` - By created_at descending
-- `recent` - Last 10 posts
+- `recent` - Last 10 posts (ordered)
 
 **Methods:**
 - `tag_list` / `tag_list=` - Get/set tags as CSV string

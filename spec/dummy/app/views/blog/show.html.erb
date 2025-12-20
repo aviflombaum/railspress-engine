@@ -1,0 +1,50 @@
+<article class="post" data-post-id="<%= @post.id %>">
+  <header class="post-header">
+    <h1><%= @post.title %></h1>
+
+    <div class="post-meta">
+      <time datetime="<%= @post.published_at.iso8601 %>">
+        <%= @post.published_at.strftime("%B %d, %Y") %>
+      </time>
+
+      <% if @post.category %>
+        <span class="category">
+          in <%= link_to @post.category.name, blog_category_path(slug: @post.category.slug) %>
+        </span>
+      <% end %>
+    </div>
+  </header>
+
+  <div class="post-content">
+    <%= @post.content %>
+  </div>
+
+  <footer class="post-footer">
+    <% if @post.tags.any? %>
+      <div class="post-tags">
+        <strong>Tags:</strong>
+        <% @post.tags.each do |tag| %>
+          <%= link_to tag.name, blog_tag_path(slug: tag.slug), class: "tag" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <nav class="post-navigation">
+      <%= link_to "Back to Blog", blog_path %>
+    </nav>
+  </footer>
+</article>
+
+<% if @related_posts.any? %>
+  <aside class="related-posts">
+    <h3>Related Posts</h3>
+    <ul>
+      <% @related_posts.each do |post| %>
+        <li>
+          <%= link_to post.title, blog_post_path(slug: post.slug) %>
+          <time><%= post.published_at.strftime("%b %d") %></time>
+        </li>
+      <% end %>
+    </ul>
+  </aside>
+<% end %>

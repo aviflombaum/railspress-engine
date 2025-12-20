@@ -46,10 +46,6 @@ RailsPress provides models and data, but leaves frontend presentation to your ap
 
 ### Step 1: Create a Blog Controller
 
-_Are the opportunities to create like a RailsPress::BlogController to inherit from like activerecord with some common functionality their controllers can inherit from or that can be used out of the box to at least do the basic sort of controller to allow them to just create views?_
-
-_In the future we should have a generator for some basic blog/post/etc controllers and views_
-
 ```ruby
 # app/controllers/blog_controller.rb
 class BlogController < ApplicationController
@@ -123,26 +119,18 @@ Rails.application.routes.draw do
 end
 ```
 
-### Step 3: Add Published Scope to Post Model
+### Available Scopes
 
-_This probably isn't the Ruby way, just monkeypatch and reopen the class in your models to add your custom methods, right?_
+RailsPress provides these scopes out of the box:
 
-Create an initializer to extend the Post model:
-
-```ruby
-# config/initializers/railspress.rb
-Rails.application.config.to_prepare do
-  Railspress::Post.class_eval do
-    scope :published, -> { where(status: :published).where.not(published_at: nil) }
-  end
-end
-```
+- `Railspress::Post.published` - Posts with status "published" and a `published_at` date
+- `Railspress::Post.drafts` - Posts with status "draft"
+- `Railspress::Post.ordered` - Posts ordered by `created_at` descending
+- `Railspress::Post.recent` - Last 10 posts (combines `ordered` with `limit(10)`)
 
 ---
 
 ## Recent Posts Feed
-
-_Same here, are there generic / common helpers (like post tag list or links) that we can just provide_
 
 ### View: `app/views/blog/index.html.erb`
 

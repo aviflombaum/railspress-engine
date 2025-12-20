@@ -1,0 +1,39 @@
+<div class="blog">
+  <h1>Blog</h1>
+
+  <%= render "search_form" %>
+
+  <div class="posts">
+    <% @posts.each do |post| %>
+      <article class="post-card" data-post-id="<%= post.id %>">
+        <h2>
+          <%= link_to post.title, blog_post_path(slug: post.slug) %>
+        </h2>
+
+        <div class="post-meta">
+          <time datetime="<%= post.published_at.iso8601 %>">
+            <%= post.published_at.strftime("%B %d, %Y") %>
+          </time>
+
+          <% if post.category %>
+            <span class="category">
+              <%= link_to post.category.name, blog_category_path(slug: post.category.slug) %>
+            </span>
+          <% end %>
+        </div>
+
+        <div class="post-excerpt">
+          <%= truncate(strip_tags(post.content.to_plain_text), length: 200) %>
+        </div>
+
+        <div class="post-tags">
+          <% post.tags.each do |tag| %>
+            <%= link_to tag.name, blog_tag_path(slug: tag.slug), class: "tag" %>
+          <% end %>
+        </div>
+
+        <%= link_to "Read more", blog_post_path(slug: post.slug), class: "read-more" %>
+      </article>
+    <% end %>
+  </div>
+</div>

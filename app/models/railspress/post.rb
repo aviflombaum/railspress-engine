@@ -16,6 +16,8 @@ module Railspress
 
     scope :ordered, -> { order(created_at: :desc) }
     scope :recent, -> { ordered.limit(10) }
+    scope :published, -> { where(status: :published).where.not(published_at: nil) }
+    scope :drafts, -> { where(status: :draft) }
 
     # Accepts CSV string and syncs tags
     def tag_list=(csv_string)

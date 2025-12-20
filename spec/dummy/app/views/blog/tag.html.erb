@@ -1,0 +1,36 @@
+<div class="blog blog--tag">
+  <header class="tag-header">
+    <h1>Tagged: <%= @tag.name %></h1>
+    <p><%= pluralize(@posts.count, "post") %></p>
+  </header>
+
+  <%= render "search_form" %>
+
+  <div class="posts">
+    <% @posts.each do |post| %>
+      <article class="post-card" data-post-id="<%= post.id %>">
+        <h2>
+          <%= link_to post.title, blog_post_path(slug: post.slug) %>
+        </h2>
+
+        <div class="post-meta">
+          <time datetime="<%= post.published_at.iso8601 %>">
+            <%= post.published_at.strftime("%B %d, %Y") %>
+          </time>
+
+          <% if post.category %>
+            <span class="category">
+              <%= link_to post.category.name, blog_category_path(slug: post.category.slug) %>
+            </span>
+          <% end %>
+        </div>
+
+        <div class="post-excerpt">
+          <%= truncate(strip_tags(post.content.to_plain_text), length: 200) %>
+        </div>
+      </article>
+    <% end %>
+  </div>
+
+  <%= link_to "View all posts", blog_path, class: "back-link" %>
+</div>

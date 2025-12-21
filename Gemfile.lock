@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    railspress (0.1.0)
+    railspress-engine (0.1.0)
       lexxy (~> 0.1.23.beta)
       rails (>= 8.0)
 
@@ -307,7 +307,7 @@ DEPENDENCIES
   importmap-rails
   propshaft
   puma
-  railspress!
+  railspress-engine!
   rspec-rails
   rubocop-rails-omakase
   sqlite3

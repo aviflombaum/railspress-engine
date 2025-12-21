@@ -1,5 +1,6 @@
 Railspress::Engine.routes.draw do
-  # mount Railspress::Engine => "/blog", as: :railspress
+  root to: redirect("admin")
+
   namespace :admin do
     root "dashboard#index"
     resources :categories, except: [ :show ]

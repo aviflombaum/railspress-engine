@@ -13,6 +13,7 @@ module Railspress
 
       def new
         @post = Post.new
+        @post.author = current_author if authors_enabled?
       end
 
       def create
@@ -51,7 +52,7 @@ module Railspress
       end
 
       def post_params
-        params.require(:post).permit(
+        permitted = [
           :title,
           :slug,
           :category_id,
@@ -60,7 +61,10 @@ module Railspress
           :meta_title,
           :meta_description,
           :tag_list
-        )
+        ]
+        permitted << :author_id if authors_enabled?
+        permitted.push(:header_image, :remove_header_image) if header_images_enabled?
+        params.require(:post).permit(permitted)
       end
     end
   end

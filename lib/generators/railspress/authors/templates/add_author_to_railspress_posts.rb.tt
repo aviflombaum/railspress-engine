@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+class AddAuthorToRailspressPosts < ActiveRecord::Migration<%= migration_version %>
+  def change
+    add_column :railspress_posts, :author_id, :bigint
+    add_index :railspress_posts, :author_id
+  end
+end

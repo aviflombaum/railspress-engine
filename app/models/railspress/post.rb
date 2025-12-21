@@ -1,10 +1,25 @@
 module Railspress
   class Post < ApplicationRecord
     belongs_to :category, optional: true
+    # Author association - only functional when Railspress.authors_enabled?
+    # The author class is configured via Railspress.configure { |c| c.author_class_name = "User" }
+    def author
+      return nil unless author_id.present? && Railspress.authors_enabled?
+      Railspress.author_class.find_by(id: author_id)
+    end
+
+    def author=(user)
+      self.author_id = user&.id
+    end
     has_many :post_tags, dependent: :destroy
     has_many :tags, through: :post_tags
 
     has_rich_text :content
+    has_one_attached :header_image
+
+    # Virtual attribute for removing header image via checkbox
+    attr_accessor :remove_header_image
+    before_save :purge_header_image, if: -> { remove_header_image == "1" }
 
     enum :status, { draft: 0, published: 1 }, default: :draft
 
@@ -18,6 +33,7 @@ module Railspress
     scope :recent, -> { ordered.limit(10) }
     scope :published, -> { where(status: :published).where.not(published_at: nil) }
     scope :drafts, -> { where(status: :draft) }
+    scope :by_author, ->(author) { where(author_id: author.id) }
 
     # Accepts CSV string and syncs tags
     def tag_list=(csv_string)
@@ -49,6 +65,10 @@ module Railspress
       elsif draft?
         self.published_at = nil
       end
+    end
+
+    def purge_header_image
+      header_image.purge_later
     end
   end
 end

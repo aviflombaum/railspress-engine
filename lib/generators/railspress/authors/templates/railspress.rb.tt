@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+Railspress.configure do |config|
+  # ==========================================================================
+  # Authors
+  # ==========================================================================
+
+  # Enable author tracking on posts
+  # When enabled, posts can have an author and the admin form shows an author select
+  config.enable_authors
+
+  # The class name of your author model (default: "User")
+  config.author_class_name = "User"
+
+  # Controller method that returns the current user (default: :current_user)
+  # Used to pre-select the author on new posts
+  # config.current_author_method = :current_user
+
+  # Scope for which users appear in the author dropdown (default: nil = all)
+  # Pass a symbol to call a scope on the author class, or a lambda for custom logic
+  #
+  # Examples:
+  #   config.author_scope = :admins                    # calls User.admins
+  #   config.author_scope = :authors                   # calls User.authors
+  #   config.author_scope = ->(klass) { klass.active } # custom filtering
+  #
+  # config.author_scope = nil
+
+  # Method called on author to display in the dropdown (default: :name)
+  # config.author_display_method = :name
+end

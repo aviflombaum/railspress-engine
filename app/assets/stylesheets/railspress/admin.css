@@ -1139,3 +1139,61 @@ textarea.rp-input {
     border: 1px solid #ddd;
   }
 }
+
+/* ============================================
+   Header Images
+   ============================================ */
+
+.rp-header-image {
+  margin-bottom: var(--rp-space-lg);
+}
+
+.rp-header-image-full {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: var(--rp-radius);
+  border: 1px solid var(--rp-border);
+}
+
+.rp-header-image-preview {
+  margin-bottom: var(--rp-space-md);
+}
+
+.rp-header-image-thumb {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--rp-radius);
+  border: 1px solid var(--rp-border);
+}
+
+.rp-file-input {
+  width: 100%;
+  padding: var(--rp-space-sm);
+  border: 1px dashed var(--rp-border);
+  border-radius: var(--rp-radius);
+  background: var(--rp-bg);
+  cursor: pointer;
+}
+
+.rp-file-input:hover {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-light);
+}
+
+.rp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-sm);
+  font-size: var(--rp-text-sm);
+  color: var(--rp-text-muted);
+  cursor: pointer;
+  margin-top: var(--rp-space-sm);
+}
+
+.rp-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}

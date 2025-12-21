@@ -57,6 +57,15 @@
               { class: "rp-select" } %>
         </div>
 
+        <% if authors_enabled? %>
+          <div class="rp-form-group">
+            <%= form.label :author_id, "Author", class: "rp-label" %>
+            <%= form.collection_select :author_id, available_authors, :id, Railspress.author_display_method,
+                { prompt: "No author", selected: @post.author_id },
+                { class: "rp-select" } %>
+          </div>
+        <% end %>
+
         <div class="rp-form-group">
           <%= form.label :tag_list, "Tags", class: "rp-label" %>
           <%= form.text_field :tag_list,
@@ -66,6 +75,31 @@
           <p class="rp-hint">Comma-separated. New tags created automatically.</p>
         </div>
       </div>
+
+      <% if header_images_enabled? %>
+        <div class="rp-sidebar-section">
+          <h3 class="rp-sidebar-title">Header Image</h3>
+
+          <div class="rp-form-group">
+            <% if @post.header_image.attached? %>
+              <div class="rp-header-image-preview">
+                <%= image_tag @post.header_image.variant(resize_to_limit: [400, 300]), class: "rp-header-image-thumb" %>
+              </div>
+            <% end %>
+
+            <%= form.label :header_image, class: "rp-label" %>
+            <%= form.file_field :header_image, accept: "image/*", class: "rp-file-input" %>
+            <p class="rp-hint">Recommended: 1200x630px for social sharing</p>
+
+            <% if @post.header_image.attached? %>
+              <label class="rp-checkbox-label">
+                <%= form.check_box :remove_header_image, {}, "1", "0" %>
+                Remove current image
+              </label>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
 
       <div class="rp-sidebar-section">
         <h3 class="rp-sidebar-title">SEO</h3>

@@ -12,6 +12,7 @@
         <tr>
           <th>Title</th>
           <th>Category</th>
+          <% if authors_enabled? %><th>Author</th><% end %>
           <th>Status</th>
           <th>Date</th>
           <th class="rp-table-actions">Actions</th>
@@ -31,6 +32,9 @@
               <% end %>
             </td>
             <td><%= post.category&.name || "—" %></td>
+            <% if authors_enabled? %>
+              <td><%= post.author&.public_send(Railspress.author_display_method) || "—" %></td>
+            <% end %>
             <td>
               <span class="rp-badge rp-badge--<%= post.status %>">
                 <%= post.status.titleize %>

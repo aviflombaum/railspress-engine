@@ -1,20 +1,21 @@
 require_relative "lib/railspress/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "railspress"
+  spec.name        = "railspress-engine"
   spec.version     = Railspress::VERSION
   spec.authors     = ["Avi Flombaum"]
-  spec.email       = ["avi@example.com"]
-  spec.homepage    = "https://github.com/aviflombaum/railspress"
-  spec.summary     = "A simple blog engine for Rails"
-  spec.description = "RailsPress provides blog functionality with categories, tags, and rich text editing."
+  spec.email       = ["avi@flatironschool.com"]
+  spec.homepage    = "https://github.com/aviflombaum/railspress-engine"
+  spec.summary     = "A mountable blog engine for Rails 8+"
+  spec.description = "RailsPress provides drop-in blog functionality with categories, tags, rich text editing, and an admin interface."
   spec.license     = "MIT"
 
   spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/aviflombaum/railspress"
-  spec.metadata["changelog_uri"] = "https://github.com/aviflombaum/railspress/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/aviflombaum/railspress-engine"
+  spec.metadata["changelog_uri"] = "https://github.com/aviflombaum/railspress-engine/blob/main/CHANGELOG.md"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]

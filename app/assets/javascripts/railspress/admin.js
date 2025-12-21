@@ -170,22 +170,6 @@
   }
 
   // ============================================
-  // Active Nav Link
-  // ============================================
-
-  function initActiveNavLink() {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.rp-nav-link');
-
-    navLinks.forEach(function(link) {
-      const href = link.getAttribute('href');
-      if (href && currentPath.includes(href.replace('.html', ''))) {
-        link.classList.add('rp-nav-link--active');
-      }
-    });
-  }
-
-  // ============================================
   // Form Validation Styles
   // ============================================
 
@@ -214,7 +198,6 @@
     initSlugGenerator();
     initDeleteConfirmation();
     initFlashMessages();
-    initActiveNavLink();
     initFormValidation();
   }
 

@@ -8,7 +8,7 @@ module Railspress
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      desc "Install RailsPress: copy migrations and mount engine"
+      desc "Install RailsPress: copy migrations, mount engine, and configure JavaScript"
 
       def copy_railspress_migrations
         rake "railspress:install:migrations"
@@ -43,6 +43,55 @@ module Railspress
         end
       end
 
+      def configure_importmap
+        return unless importmap_available?
+
+        importmap_file = Rails.root.join("config", "importmap.rb")
+        importmap_content = File.read(importmap_file)
+
+        # Pin ActiveStorage (required for ActionText attachments)
+        unless importmap_content.include?("@rails/activestorage")
+          append_to_file importmap_file, <<~RUBY
+
+            # ActiveStorage for file uploads
+            pin "@rails/activestorage", to: "activestorage.esm.js"
+          RUBY
+          say_status :pinned, "@rails/activestorage in importmap", :green
+        end
+
+        # Pin Lexxy editor
+        if importmap_content.include?('"lexxy"')
+          say_status :skip, "Lexxy already pinned in importmap", :yellow
+        else
+          append_to_file importmap_file, <<~RUBY
+
+            # RailsPress rich text editor
+            pin "lexxy", to: "lexxy.js"
+          RUBY
+          say_status :pinned, "Lexxy in importmap", :green
+        end
+      end
+
+      def configure_javascript
+        return unless importmap_available?
+
+        application_js = Rails.root.join("app", "javascript", "application.js")
+        return unless File.exist?(application_js)
+
+        js_content = File.read(application_js)
+
+        if js_content.include?('import "lexxy"')
+          say_status :skip, "Lexxy already imported in application.js", :yellow
+        else
+          append_to_file application_js, <<~JS
+
+            // RailsPress rich text editor
+            import "lexxy"
+          JS
+          say_status :added, "Lexxy import to application.js", :green
+        end
+      end
+
       def show_post_install_message
         say ""
         say "=" * 60, :green
@@ -59,6 +108,12 @@ module Railspress
         say ""
         say "  3. (Optional) Change the mount path in config/routes.rb:"
         say "     mount Railspress::Engine => \"/blog\"", :cyan
+        say ""
+        say "JavaScript setup:", :yellow
+        say "  The installer added Lexxy (rich text editor) to your importmap"
+        say "  and application.js. If you use a custom JS entry point, add:"
+        say ""
+        say "     import \"lexxy\"", :cyan
         say ""
         say "=" * 60, :green
       end
@@ -79,6 +134,10 @@ module Railspress
 
       def active_storage_migration_exists?
         Dir.glob(migrations_dir.join("*_create_active_storage_tables*.rb")).any?
+      end
+
+      def importmap_available?
+        defined?(Importmap) && Rails.root.join("config", "importmap.rb").exist?
       end
     end
   end

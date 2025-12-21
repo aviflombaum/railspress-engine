@@ -146,4 +146,103 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       expect(generator).not_to have_received(:rake).with(/action_text:install/)
     end
   end
+
+  describe "#configure_importmap" do
+    let(:importmap_file) { Rails.root.join("config", "importmap.rb") }
+
+    context "when importmap is not available" do
+      it "does nothing" do
+        allow(generator).to receive(:importmap_available?).and_return(false)
+        allow(generator).to receive(:append_to_file)
+
+        generator.configure_importmap
+
+        expect(generator).not_to have_received(:append_to_file)
+      end
+    end
+
+    context "when lexxy is not pinned" do
+      it "adds lexxy pin to importmap" do
+        allow(generator).to receive(:importmap_available?).and_return(true)
+        allow(File).to receive(:read).with(importmap_file).and_return('pin "application"')
+        allow(generator).to receive(:append_to_file)
+        allow(generator).to receive(:say_status)
+
+        generator.configure_importmap
+
+        expect(generator).to have_received(:append_to_file).with(importmap_file, /pin "lexxy"/)
+        expect(generator).to have_received(:say_status).with(:pinned, "Lexxy in importmap", :green)
+      end
+    end
+
+    context "when lexxy is already pinned" do
+      it "skips pinning" do
+        allow(generator).to receive(:importmap_available?).and_return(true)
+        allow(File).to receive(:read).with(importmap_file).and_return('pin "lexxy", to: "lexxy.js"')
+        allow(generator).to receive(:append_to_file)
+        allow(generator).to receive(:say_status)
+
+        generator.configure_importmap
+
+        expect(generator).to have_received(:say_status).with(:skip, "Lexxy already pinned in importmap", :yellow)
+      end
+    end
+  end
+
+  describe "#configure_javascript" do
+    let(:application_js) { Rails.root.join("app", "javascript", "application.js") }
+
+    context "when importmap is not available" do
+      it "does nothing" do
+        allow(generator).to receive(:importmap_available?).and_return(false)
+        allow(generator).to receive(:append_to_file)
+
+        generator.configure_javascript
+
+        expect(generator).not_to have_received(:append_to_file)
+      end
+    end
+
+    context "when application.js does not exist" do
+      it "does nothing" do
+        allow(generator).to receive(:importmap_available?).and_return(true)
+        allow(File).to receive(:exist?).with(application_js).and_return(false)
+        allow(generator).to receive(:append_to_file)
+
+        generator.configure_javascript
+
+        expect(generator).not_to have_received(:append_to_file)
+      end
+    end
+
+    context "when lexxy is not imported" do
+      it "adds lexxy import to application.js" do
+        allow(generator).to receive(:importmap_available?).and_return(true)
+        allow(File).to receive(:exist?).with(application_js).and_return(true)
+        allow(File).to receive(:read).with(application_js).and_return('import "@hotwired/turbo-rails"')
+        allow(generator).to receive(:append_to_file)
+        allow(generator).to receive(:say_status)
+
+        generator.configure_javascript
+
+        expect(generator).to have_received(:append_to_file).with(application_js, /import "lexxy"/)
+        expect(generator).to have_received(:say_status).with(:added, "Lexxy import to application.js", :green)
+      end
+    end
+
+    context "when lexxy is already imported" do
+      it "skips importing" do
+        allow(generator).to receive(:importmap_available?).and_return(true)
+        allow(File).to receive(:exist?).with(application_js).and_return(true)
+        allow(File).to receive(:read).with(application_js).and_return('import "lexxy"')
+        allow(generator).to receive(:append_to_file)
+        allow(generator).to receive(:say_status)
+
+        generator.configure_javascript
+
+        expect(generator).to have_received(:say_status).with(:skip, "Lexxy already imported in application.js", :yellow)
+        expect(generator).not_to have_received(:append_to_file)
+      end
+    end
+  end
 end

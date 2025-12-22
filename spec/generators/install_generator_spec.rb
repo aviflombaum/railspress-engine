@@ -7,12 +7,12 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
   let(:generator) { described_class.new }
 
   describe "#copy_railspress_migrations" do
-    it "runs railspress:install:migrations rake task" do
-      allow(generator).to receive(:rake)
+    it "runs railspress:install:migrations via bundle exec rake" do
+      allow(generator).to receive(:run)
 
       generator.copy_railspress_migrations
 
-      expect(generator).to have_received(:rake).with("railspress:install:migrations")
+      expect(generator).to have_received(:run).with("bundle exec rake railspress:install:migrations")
     end
   end
 
@@ -21,25 +21,24 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       it "skips and does not run rake" do
         allow(generator).to receive(:action_text_migration_exists?).and_return(true)
         allow(generator).to receive(:say_status)
-        allow(generator).to receive(:rake)
+        allow(generator).to receive(:run)
 
         generator.copy_action_text_migrations
 
         expect(generator).to have_received(:say_status).with(:skip, "ActionText migrations already exist", :yellow)
-        expect(generator).not_to have_received(:rake)
+        expect(generator).not_to have_received(:run)
       end
     end
 
     context "when ActionText migrations do not exist" do
-      it "runs rake with correct single-string command" do
+      it "runs rake with correct command" do
         allow(generator).to receive(:action_text_migration_exists?).and_return(false)
         allow(generator).to receive(:say_status)
-        allow(generator).to receive(:rake)
+        allow(generator).to receive(:run)
 
         generator.copy_action_text_migrations
 
-        # Critical: must be single string, not two arguments
-        expect(generator).to have_received(:rake).with("railties:install:migrations FROM=action_text")
+        expect(generator).to have_received(:run).with("bundle exec rake railties:install:migrations FROM=action_text")
       end
     end
   end
@@ -49,25 +48,24 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       it "skips and does not run rake" do
         allow(generator).to receive(:active_storage_migration_exists?).and_return(true)
         allow(generator).to receive(:say_status)
-        allow(generator).to receive(:rake)
+        allow(generator).to receive(:run)
 
         generator.copy_active_storage_migrations
 
         expect(generator).to have_received(:say_status).with(:skip, "ActiveStorage migrations already exist", :yellow)
-        expect(generator).not_to have_received(:rake)
+        expect(generator).not_to have_received(:run)
       end
     end
 
     context "when ActiveStorage migrations do not exist" do
-      it "runs rake with correct single-string command" do
+      it "runs rake with correct command" do
         allow(generator).to receive(:active_storage_migration_exists?).and_return(false)
         allow(generator).to receive(:say_status)
-        allow(generator).to receive(:rake)
+        allow(generator).to receive(:run)
 
         generator.copy_active_storage_migrations
 
-        # Critical: must be single string, not two arguments
-        expect(generator).to have_received(:rake).with("railties:install:migrations FROM=active_storage")
+        expect(generator).to have_received(:run).with("bundle exec rake railties:install:migrations FROM=active_storage")
       end
     end
   end
@@ -137,13 +135,13 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
   describe "integration: does not invoke action_text:install generator" do
     it "never calls generate with action_text:install" do
       # Stub external calls but verify we never try to run the problematic generator
-      allow(generator).to receive(:rake)
+      allow(generator).to receive(:run)
       allow(generator).to receive(:say_status)
       allow(generator).to receive(:action_text_migration_exists?).and_return(false)
 
       generator.copy_action_text_migrations
 
-      expect(generator).not_to have_received(:rake).with(/action_text:install/)
+      expect(generator).not_to have_received(:run).with(/action_text:install/)
     end
   end
 

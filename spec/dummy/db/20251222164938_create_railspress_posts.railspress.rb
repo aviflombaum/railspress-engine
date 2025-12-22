@@ -1,3 +1,4 @@
+# This migration comes from railspress (originally 20241218000003)
 class CreateRailspressPosts < ActiveRecord::Migration[8.0]
   def change
     create_table :railspress_posts do |t|

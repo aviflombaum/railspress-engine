@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_19_023032) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_22_163000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_023032) do
   end
 
   create_table "railspress_posts", force: :cascade do |t|
+    t.bigint "author_id"
     t.integer "category_id"
     t.datetime "created_at", null: false
     t.text "meta_description"
@@ -79,6 +80,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_023032) do
     t.integer "status", default: 0, null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_railspress_posts_on_author_id"
     t.index ["category_id"], name: "index_railspress_posts_on_category_id"
     t.index ["published_at"], name: "index_railspress_posts_on_published_at"
     t.index ["slug"], name: "index_railspress_posts_on_slug", unique: true
@@ -92,6 +94,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_023032) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_railspress_tags_on_name", unique: true
     t.index ["slug"], name: "index_railspress_tags_on_slug", unique: true
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email_address"
+    t.string "first_name"
+    t.string "last_name"
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

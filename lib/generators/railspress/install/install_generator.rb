@@ -11,7 +11,7 @@ module Railspress
       desc "Install RailsPress: copy migrations, mount engine, and configure JavaScript"
 
       def copy_railspress_migrations
-        rake "railspress:install:migrations"
+        run "bundle exec rake railspress:install:migrations"
       end
 
       def copy_action_text_migrations
@@ -19,7 +19,7 @@ module Railspress
           say_status :skip, "ActionText migrations already exist", :yellow
         else
           say_status :create, "ActionText migrations", :green
-          rake "railties:install:migrations FROM=action_text"
+          run "bundle exec rake railties:install:migrations FROM=action_text"
         end
       end
 
@@ -28,7 +28,7 @@ module Railspress
           say_status :skip, "ActiveStorage migrations already exist", :yellow
         else
           say_status :create, "ActiveStorage migrations", :green
-          rake "railties:install:migrations FROM=active_storage"
+          run "bundle exec rake railties:install:migrations FROM=active_storage"
         end
       end
 

@@ -662,7 +662,7 @@ textarea.rp-input {
 
 /* Rich text placeholder */
 .rp-rich-text {
-  min-height: 300px;
+  min-height: 670px;
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius);
   background: var(--rp-bg-elevated);
@@ -1196,4 +1196,12 @@ textarea.rp-input {
   width: 16px;
   height: 16px;
   cursor: pointer;
+}
+
+/* ============================================
+    Lexxy
+   ============================================ */
+
+:where(lexxy-toolbar){
+  margin-bottom: 20px;
 }

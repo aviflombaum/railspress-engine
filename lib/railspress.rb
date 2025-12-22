@@ -6,6 +6,7 @@ module Railspress
   class Configuration
     attr_accessor :author_class_name,
                   :current_author_method,
+                  :current_author_proc,
                   :author_scope,
                   :author_display_method
 
@@ -16,6 +17,7 @@ module Railspress
       @header_images_enabled = false
       @author_class_name = "User"
       @current_author_method = :current_user
+      @current_author_proc = nil
       @author_scope = nil
       @author_display_method = :name
     end
@@ -74,6 +76,10 @@ module Railspress
 
     def current_author_method
       configuration.current_author_method
+    end
+
+    def current_author_proc
+      configuration.current_author_proc
     end
   end
 end

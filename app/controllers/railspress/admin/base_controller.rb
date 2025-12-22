@@ -24,9 +24,14 @@ module Railspress
 
       def current_author
         return nil unless authors_enabled?
-        method_name = Railspress.current_author_method
-        return nil unless respond_to?(method_name, true)
-        send(method_name)
+
+        # Use proc if configured (most flexible)
+        if Railspress.current_author_proc
+          instance_exec(&Railspress.current_author_proc)
+        # Otherwise try to call the configured method on self
+        elsif respond_to?(Railspress.current_author_method, true)
+          send(Railspress.current_author_method)
+        end
       end
 
       def available_authors

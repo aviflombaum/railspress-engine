@@ -87,4 +87,31 @@ RSpec.describe Railspress::Post, type: :model do
       expect(posts.limit_value).to eq(10)
     end
   end
+
+  describe "header_image" do
+    let(:post) { Railspress::Post.create!(title: "Image Test") }
+    let(:image_path) { Rails.root.join("../../spec/fixtures/files/test_image.png") }
+
+    it "can attach a header image" do
+      post.header_image.attach(
+        io: File.open(image_path),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+      expect(post.header_image).to be_attached
+    end
+
+    it "can remove header image via remove_header_image attribute" do
+      post.header_image.attach(
+        io: File.open(image_path),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+      expect(post.header_image).to be_attached
+
+      post.remove_header_image = "1"
+      post.save!
+      expect(post.reload.header_image).not_to be_attached
+    end
+  end
 end

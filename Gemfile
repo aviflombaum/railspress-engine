@@ -8,6 +8,9 @@ gem "sqlite3"
 gem "propshaft"
 gem "importmap-rails"
 
+# Image processing for ActiveStorage variants
+gem "image_processing", "~> 1.2"
+
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
 

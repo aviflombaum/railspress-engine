@@ -117,4 +117,66 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       }.to change(Railspress::Post, :count).by(-1)
     end
   end
+
+  describe "header image uploads", type: :request do
+    let(:image_path) { Rails.root.join("../../spec/fixtures/files/test_image.png") }
+    let(:image_file) { Rack::Test::UploadedFile.new(image_path, "image/png") }
+
+    before do
+      Railspress.configure { |c| c.enable_header_images }
+    end
+
+    after do
+      Railspress.reset_configuration!
+    end
+
+    it "uploads header image on create" do
+      post railspress.admin_posts_path, params: {
+        post: {
+          title: "Post with Image",
+          header_image: image_file
+        }
+      }
+
+      created_post = Railspress::Post.last
+      expect(created_post.header_image).to be_attached
+    end
+
+    it "uploads header image on update" do
+      post_record = railspress_posts(:draft_post)
+      patch railspress.admin_post_path(post_record), params: {
+        post: { header_image: image_file }
+      }
+
+      expect(post_record.reload.header_image).to be_attached
+    end
+
+    it "removes header image when checkbox is checked" do
+      post_record = railspress_posts(:draft_post)
+      post_record.header_image.attach(
+        io: File.open(image_path),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+      expect(post_record.header_image).to be_attached
+
+      patch railspress.admin_post_path(post_record), params: {
+        post: { remove_header_image: "1" }
+      }
+
+      expect(post_record.reload.header_image).not_to be_attached
+    end
+
+    it "displays header image on show page" do
+      post_record = railspress_posts(:hello_world)
+      post_record.header_image.attach(
+        io: File.open(image_path),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+
+      get railspress.admin_post_path(post_record)
+      expect(response.body).to include("rp-header-image")
+    end
+  end
 end

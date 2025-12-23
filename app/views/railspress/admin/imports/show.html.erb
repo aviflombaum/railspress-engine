@@ -9,7 +9,7 @@
   <div class="rp-import-main">
     <div class="rp-card rp-card--padded">
       <%= form_with url: admin_imports_path, method: :post, multipart: true, class: "rp-form" do |form| %>
-        <%= form.hidden_field :import_type, value: @import_type %>
+        <%= hidden_field_tag "import[import_type]", @import_type %>
 
         <label for="import_file" class="rp-dropzone" id="dropzone">
           <div class="rp-dropzone-icon">

@@ -58,6 +58,7 @@ module Railspress
           :category_id,
           :content,
           :status,
+          :published_at,
           :meta_title,
           :meta_description,
           :tag_list

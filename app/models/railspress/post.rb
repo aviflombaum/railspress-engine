@@ -60,11 +60,11 @@ module Railspress
     end
 
     def set_published_at
+      # Only auto-set if publishing and no date was manually provided
       if published? && published_at.nil?
         self.published_at = Time.current
-      elsif draft?
-        self.published_at = nil
       end
+      # Note: We no longer clear published_at for drafts - allow scheduling
     end
 
     def purge_header_image

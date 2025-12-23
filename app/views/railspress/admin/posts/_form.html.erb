@@ -51,6 +51,13 @@
         </div>
 
         <div class="rp-form-group">
+          <%= form.label :published_at, "Publish Date", class: "rp-label" %>
+          <%= form.date_field :published_at,
+              class: "rp-input",
+              value: @post.published_at&.to_date || Date.current %>
+        </div>
+
+        <div class="rp-form-group">
           <%= form.label :category_id, "Category", class: "rp-label" %>
           <%= form.collection_select :category_id, @categories, :id, :name,
               { prompt: "No category" },

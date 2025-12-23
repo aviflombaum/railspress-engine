@@ -1,0 +1,5 @@
+This is a plain text post.
+
+The title will be derived from the filename.
+
+No special formatting here, just plain text content.

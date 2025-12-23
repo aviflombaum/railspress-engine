@@ -1,0 +1,56 @@
+<div class="rp-sidebar-section">
+  <h3 class="rp-sidebar-title">Supported Files</h3>
+  <ul class="rp-import-list">
+    <li><strong>.md / .markdown</strong> - Markdown with optional frontmatter</li>
+    <li><strong>.txt</strong> - Plain text (title from filename)</li>
+    <li><strong>.zip</strong> - Archive containing multiple files</li>
+  </ul>
+</div>
+
+<div class="rp-sidebar-section">
+  <h3 class="rp-sidebar-title">Frontmatter Fields</h3>
+  <ul class="rp-import-list">
+    <li><strong>title</strong> - Post title (required)</li>
+    <li><strong>slug</strong> - URL slug (auto-generated if blank)</li>
+    <li><strong>status</strong> - draft or published (default: draft)</li>
+    <li><strong>published_at</strong> - Publish date (default: today)</li>
+    <li><strong>author</strong> - Author name (case-insensitive match)</li>
+    <li><strong>category</strong> - Category name (case-insensitive match)</li>
+    <li><strong>tags</strong> - Comma-separated tag names</li>
+    <li><strong>header_image</strong> - Relative path in zip or URL</li>
+    <li><strong>meta_title</strong> - SEO title</li>
+    <li><strong>meta_description</strong> - SEO description</li>
+  </ul>
+</div>
+
+<div class="rp-sidebar-section">
+  <h3 class="rp-sidebar-title">Example Markdown</h3>
+  <pre class="rp-code-block"><code>---
+title: My Blog Post
+status: published
+published_at: 2024-01-15
+author: John Doe
+category: Technology
+tags: ruby, rails, tutorial
+header_image: images/hero.jpg
+---
+
+Your post content starts here.
+
+Use **markdown** formatting for
+rich text content.</code></pre>
+</div>
+
+<div class="rp-sidebar-section">
+  <h3 class="rp-sidebar-title">Zip Structure</h3>
+  <pre class="rp-code-block"><code>my-posts.zip
+├── post-one.md
+├── post-two.md
+├── images/
+│   └── hero.jpg
+└── drafts/
+    └── work-in-progress.md</code></pre>
+  <p class="rp-hint" style="margin-top: var(--rp-space-sm);">
+    Images referenced in frontmatter are attached from the zip.
+  </p>
+</div>

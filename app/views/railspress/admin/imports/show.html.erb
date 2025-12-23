@@ -1,0 +1,76 @@
+<div class="rp-page-header">
+  <h1 class="rp-page-title">Import <%= @import_type.titleize %></h1>
+  <div class="rp-page-actions">
+    <%= link_to "Back to #{@import_type.titleize}", send("admin_#{@import_type}_path"), class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<div class="rp-import-layout">
+  <div class="rp-import-main">
+    <div class="rp-card rp-card--padded">
+      <%= form_with url: admin_imports_path, method: :post, multipart: true, class: "rp-form" do |form| %>
+        <%= form.hidden_field :import_type, value: @import_type %>
+
+        <label for="import_file" class="rp-dropzone">
+          <div class="rp-dropzone-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="rp-dropzone-text">
+            <strong>Choose files or drag them here</strong>
+            <span>Supports .md, .markdown, .txt, or .zip</span>
+          </div>
+          <%= file_field_tag "import[file][]", id: "import_file", class: "rp-dropzone-input", multiple: true, accept: ".md,.markdown,.txt,.zip" %>
+        </label>
+
+        <div class="rp-form-actions">
+          <%= form.submit "Start Import", class: "rp-btn rp-btn--primary" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @recent_imports.any? %>
+      <div class="rp-card" style="margin-top: var(--rp-space-lg);">
+        <div class="rp-sidebar-section" style="background: transparent; border: none;">
+          <h3 class="rp-sidebar-title">Recent Imports</h3>
+        </div>
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Status</th>
+              <th>Results</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_imports.each do |import| %>
+              <tr>
+                <td class="rp-table-primary"><%= import.filename || "Multiple files" %></td>
+                <td>
+                  <span class="rp-badge rp-badge--<%= import.status %>">
+                    <%= import.status.titleize %>
+                  </span>
+                </td>
+                <td class="rp-table-secondary">
+                  <%= import.success_count %>/<%= import.total_count %> succeeded
+                  <% if import.error_count > 0 %>
+                    <span class="rp-text-danger">(<%= import.error_count %> errors)</span>
+                  <% end %>
+                </td>
+                <td class="rp-table-secondary"><%= import.created_at.strftime("%b %d, %Y %H:%M") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rp-import-sidebar">
+    <%= render "instructions" %>
+  </div>
+</div>

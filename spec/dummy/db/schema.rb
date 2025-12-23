@@ -59,6 +59,23 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_22_163000) do
     t.index ["slug"], name: "index_railspress_categories_on_slug", unique: true
   end
 
+  create_table "railspress_imports", force: :cascade do |t|
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.integer "error_count", default: 0
+    t.text "error_messages"
+    t.string "filename"
+    t.string "import_type", null: false
+    t.string "status", default: "pending", null: false
+    t.integer "success_count", default: 0
+    t.integer "total_count", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["import_type"], name: "index_railspress_imports_on_import_type"
+    t.index ["status"], name: "index_railspress_imports_on_status"
+    t.index ["user_id"], name: "index_railspress_imports_on_user_id"
+  end
+
   create_table "railspress_post_tags", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "post_id", null: false

@@ -43,10 +43,11 @@ RSpec.describe Railspress::Post, type: :model do
       expect(post.published_at).not_to be_nil
     end
 
-    it "clears published_at when unpublishing" do
+    it "preserves published_at when unpublishing (allows scheduling)" do
       post = railspress_posts(:hello_world)
+      original_published_at = post.published_at
       post.update!(status: :draft)
-      expect(post.published_at).to be_nil
+      expect(post.published_at).to eq(original_published_at)
     end
   end
 

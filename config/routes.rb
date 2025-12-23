@@ -5,5 +5,10 @@ Railspress::Engine.routes.draw do
     resources :categories, except: [ :show ]
     resources :tags, except: [ :show ]
     resources :posts
+    resources :imports, only: [:create] do
+      collection do
+        get ":type", action: :show, as: :typed
+      end
+    end
   end
 end

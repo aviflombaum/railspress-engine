@@ -1,0 +1,25 @@
+pending_import:
+  import_type: posts
+  filename: test_import.zip
+  status: pending
+  total_count: 0
+  success_count: 0
+  error_count: 0
+
+completed_import:
+  import_type: posts
+  filename: completed.zip
+  status: completed
+  total_count: 5
+  success_count: 4
+  error_count: 1
+  error_messages: '["post-3.md: Invalid title"]'
+
+failed_import:
+  import_type: posts
+  filename: failed.zip
+  status: failed
+  total_count: 2
+  success_count: 0
+  error_count: 2
+  error_messages: '["post-1.md: Parse error", "post-2.md: No content"]'

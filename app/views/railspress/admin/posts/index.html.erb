@@ -1,6 +1,7 @@
 <div class="rp-page-header">
   <h1 class="rp-page-title">Posts</h1>
   <div class="rp-page-actions">
+    <%= link_to "Import", typed_admin_imports_path(type: "posts"), class: "rp-btn rp-btn--secondary" %>
     <%= link_to "New Post", new_admin_post_path, class: "rp-btn rp-btn--primary" %>
   </div>
 </div>

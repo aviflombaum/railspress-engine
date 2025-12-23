@@ -1307,6 +1307,46 @@ textarea.rp-input {
   border: 0;
 }
 
+.rp-dropzone--active {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-light);
+  border-style: solid;
+}
+
+.rp-dropzone--active .rp-dropzone-icon {
+  color: var(--rp-primary);
+}
+
+.rp-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+  margin-top: var(--rp-space-md);
+  padding: var(--rp-space-sm);
+  background: var(--rp-gray-50);
+  border-radius: var(--rp-radius);
+}
+
+.rp-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--rp-space-xs) var(--rp-space-sm);
+  background: white;
+  border-radius: var(--rp-radius-sm);
+  font-size: 0.875rem;
+}
+
+.rp-file-name {
+  color: var(--rp-text);
+  font-weight: 500;
+}
+
+.rp-file-size {
+  color: var(--rp-text-muted);
+  font-size: 0.75rem;
+}
+
 .rp-import-list {
   list-style: none;
   display: flex;

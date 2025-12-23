@@ -11,7 +11,7 @@
       <%= form_with url: admin_imports_path, method: :post, multipart: true, class: "rp-form" do |form| %>
         <%= form.hidden_field :import_type, value: @import_type %>
 
-        <label for="import_file" class="rp-dropzone">
+        <label for="import_file" class="rp-dropzone" id="dropzone">
           <div class="rp-dropzone-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -26,8 +26,10 @@
           <%= file_field_tag "import[file][]", id: "import_file", class: "rp-dropzone-input", multiple: true, accept: ".md,.markdown,.txt,.zip" %>
         </label>
 
+        <div id="file-list" class="rp-file-list" hidden></div>
+
         <div class="rp-form-actions">
-          <%= form.submit "Start Import", class: "rp-btn rp-btn--primary" %>
+          <%= form.submit "Start Import", class: "rp-btn rp-btn--primary", id: "submit-btn", disabled: true %>
         </div>
       <% end %>
     </div>
@@ -74,3 +76,62 @@
     <%= render "instructions" %>
   </div>
 </div>
+
+<script>
+(function() {
+  var dropzone = document.getElementById('dropzone');
+  var input = document.getElementById('import_file');
+  var fileList = document.getElementById('file-list');
+  var submitBtn = document.getElementById('submit-btn');
+
+  // Drag and drop
+  ['dragenter', 'dragover'].forEach(function(event) {
+    dropzone.addEventListener(event, function(e) {
+      e.preventDefault();
+      dropzone.classList.add('rp-dropzone--active');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(function(event) {
+    dropzone.addEventListener(event, function(e) {
+      e.preventDefault();
+      dropzone.classList.remove('rp-dropzone--active');
+    });
+  });
+
+  dropzone.addEventListener('drop', function(e) {
+    input.files = e.dataTransfer.files;
+    updateFileList();
+  });
+
+  // File input change
+  input.addEventListener('change', updateFileList);
+
+  function updateFileList() {
+    var files = input.files;
+    if (files.length === 0) {
+      fileList.hidden = true;
+      submitBtn.disabled = true;
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < files.length; i++) {
+      html += '<div class="rp-file-item">' +
+        '<span class="rp-file-name">' + files[i].name + '</span>' +
+        '<span class="rp-file-size">' + formatSize(files[i].size) + '</span>' +
+        '</div>';
+    }
+
+    fileList.innerHTML = html;
+    fileList.hidden = false;
+    submitBtn.disabled = false;
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+})();
+</script>

@@ -108,7 +108,7 @@ body {
 }
 
 .rp-sidebar-content {
-  padding: var(--rp-space-lg);
+  padding: var(--rp-space-lg) var(--rp-space-md);
 }
 
 .rp-logo {
@@ -392,6 +392,95 @@ body {
 
 .rp-table--responsive {
   overflow-x: auto;
+}
+
+/* ============================================
+   Filter Bar
+   ============================================ */
+
+.rp-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-md);
+  padding: var(--rp-space-md);
+  border-bottom: 1px solid var(--rp-border-light);
+}
+
+.rp-filter-bar__search {
+  flex: 1;
+  max-width: 300px;
+}
+
+.rp-filter-bar__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-sm);
+}
+
+.rp-filter-bar .rp-select {
+  width: auto;
+  min-width: 140px;
+}
+
+.rp-btn--text {
+  background: none;
+  border: none;
+  color: var(--rp-text-muted);
+  padding: 8px 12px;
+}
+
+.rp-btn--text:hover {
+  color: var(--rp-text);
+  text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  .rp-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rp-filter-bar__search {
+    max-width: none;
+  }
+
+  .rp-filter-bar__filters {
+    flex-wrap: wrap;
+  }
+
+  .rp-filter-bar .rp-select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+
+.rp-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rp-space-md);
+  border-top: 1px solid var(--rp-border-light);
+}
+
+.rp-pagination__info {
+  font-size: 0.875rem;
+  color: var(--rp-text-muted);
+}
+
+.rp-pagination__links {
+  display: flex;
+  gap: var(--rp-space-sm);
+}
+
+@media (max-width: 767px) {
+  .rp-pagination {
+    flex-direction: column;
+    gap: var(--rp-space-sm);
+  }
 }
 
 /* ============================================
@@ -1230,6 +1319,10 @@ textarea.rp-input {
   font-style: italic;
 }
 
+.rp-rich-text ul {
+  margin-left: 12px;
+}
+
 /* ============================================
     Imports
    ============================================ */
@@ -1410,5 +1503,57 @@ textarea.rp-input {
 
   .rp-import-sidebar {
     order: 1;
+  }
+}
+
+/* Export Page */
+.rp-export-format-card {
+  margin-bottom: var(--rp-space-lg);
+}
+
+.rp-export-format-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rp-space-lg);
+}
+
+.rp-export-format-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+}
+
+.rp-export-format-info strong {
+  font-size: 1rem;
+  color: var(--rp-text);
+}
+
+.rp-export-format-info span {
+  color: var(--rp-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.rp-export-format-info code {
+  background: var(--rp-bg);
+  padding: 0.1em 0.4em;
+  border-radius: var(--rp-radius-sm);
+  font-size: 0.85em;
+}
+
+.rp-export-format-action {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .rp-export-format-content {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .rp-export-format-action {
+    margin-top: var(--rp-space-md);
   }
 }

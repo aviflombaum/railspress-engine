@@ -10,5 +10,13 @@ Railspress::Engine.routes.draw do
         get ":type", action: :show, as: :typed
       end
     end
+    resources :exports, only: [:create] do
+      collection do
+        get ":type", action: :show, as: :typed
+      end
+      member do
+        get :download
+      end
+    end
   end
 end

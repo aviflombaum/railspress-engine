@@ -1,0 +1,62 @@
+<div class="rp-page-header">
+  <h1 class="rp-page-title">Export <%= @export_type.titleize %></h1>
+  <div class="rp-page-actions">
+    <%= link_to "Back to #{@export_type.titleize}", send("admin_#{@export_type}_path"), class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<div class="rp-card rp-card--padded rp-export-format-card">
+  <div class="rp-export-format-content">
+    <div class="rp-export-format-info">
+      <strong>Export Format</strong>
+      <span>Each post exports as markdown with YAML frontmatter (title, slug, status, dates, category, tags, SEO fields, author). Header images included in <code>images/</code> folder.</span>
+    </div>
+    <%= form_with url: admin_exports_path, method: :post, class: "rp-export-format-action" do |form| %>
+      <%= hidden_field_tag "export[export_type]", @export_type %>
+      <%= form.submit "Export #{pluralize(@post_count, 'post')}", class: "rp-btn rp-btn--primary", disabled: @post_count == 0 %>
+    <% end %>
+  </div>
+</div>
+
+<% if @recent_exports.any? %>
+  <div class="rp-card" style="margin-top: var(--rp-space-lg);">
+    <div class="rp-sidebar-section" style="background: transparent; border: none;">
+      <h3 class="rp-sidebar-title">Recent Exports</h3>
+    </div>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Status</th>
+          <th>Results</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recent_exports.each do |export| %>
+          <tr>
+            <td class="rp-table-primary"><%= export.filename || "Processing..." %></td>
+            <td>
+              <span class="rp-badge rp-badge--<%= export.status %>">
+                <%= export.status.titleize %>
+              </span>
+            </td>
+            <td class="rp-table-secondary">
+              <%= export.success_count %>/<%= export.total_count %> exported
+              <% if export.error_count > 0 %>
+                <span class="rp-text-danger">(<%= export.error_count %> errors)</span>
+              <% end %>
+            </td>
+            <td class="rp-table-secondary"><%= export.created_at.strftime("%b %d, %Y %H:%M") %></td>
+            <td>
+              <% if export.completed? && export.file.attached? %>
+                <%= link_to "Download", download_admin_export_path(export), class: "rp-btn rp-btn--sm rp-btn--secondary" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

@@ -5,7 +5,18 @@ module Railspress
       before_action :load_categories, only: [:new, :create, :edit, :update]
 
       def index
-        @posts = Post.includes(:category, :tags).ordered
+        @posts = Post.includes(:category, :tags)
+                     .search(params[:q])
+                     .by_category(params[:category_id])
+                     .by_status(params[:status])
+                     .ordered
+
+        @total_count = @posts.count
+        @page = [params[:page].to_i, 1].max
+        @total_pages = (@total_count.to_f / Post::PER_PAGE).ceil
+        @posts = @posts.page(@page)
+
+        @categories = Category.ordered
       end
 
       def show

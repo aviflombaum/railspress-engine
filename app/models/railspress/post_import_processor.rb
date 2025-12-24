@@ -2,6 +2,7 @@ require "yaml"
 require "zip"
 require "open-uri"
 require "fileutils"
+require "redcarpet"
 
 module Railspress
   class PostImportProcessor
@@ -169,8 +170,8 @@ module Railspress
         meta_description: frontmatter[:meta_description].presence
       )
 
-      # Set rich text content
-      post.content = body if body.present?
+      # Set rich text content (convert markdown to HTML)
+      post.content = render_markdown(body) if body.present?
 
       # Handle associations
       assign_author(post, frontmatter[:author])
@@ -316,6 +317,66 @@ module Railspress
       # Tags can be string (csv) or array
       csv = tags_value.is_a?(Array) ? tags_value.join(", ") : tags_value.to_s
       post.tag_list = csv
+    end
+
+    def render_markdown(text)
+      return "" if text.blank?
+
+      # Strip Obsidian-style metadata before rendering
+      text = strip_obsidian_metadata(text)
+
+      renderer = Redcarpet::Render::HTML.new(
+        hard_wrap: true,
+        filter_html: false,
+        safe_links_only: true
+      )
+
+      markdown = Redcarpet::Markdown.new(renderer,
+        autolink: true,
+        tables: true,
+        fenced_code_blocks: true,
+        strikethrough: true,
+        highlight: true,
+        superscript: true,
+        no_intra_emphasis: true
+      )
+
+      markdown.render(text)
+    end
+
+    def strip_obsidian_metadata(text)
+      lines = text.lines
+      content_start = 0
+
+      lines.each_with_index do |line, index|
+        stripped = line.strip
+
+        # Skip empty lines at the start
+        next if stripped.empty?
+
+        # Skip lines that are only hashtags (Obsidian tags)
+        # e.g., "#current #writing #daily"
+        next if stripped.match?(/\A(#\S+\s*)+\z/)
+
+        # Skip lines that are project/category names followed by tags
+        # e.g., "projects #current #writing"
+        next if stripped.match?(/\A\w+(\s+#\S+)+\z/)
+
+        # Skip Obsidian task/checkbox lines
+        # e.g., "• [x] ⏫ ⏳ (@2023-06-08) #in-progress"
+        # e.g., "- [ ] Task item"
+        next if stripped.match?(/\A[•\-\*]\s*\[[x\s]\]/i)
+
+        # Skip lines that are just metadata markers (dates, priorities, etc.)
+        # e.g., "⏫ ⏳ (@2023-06-08)"
+        next if stripped.match?(/\A[⏫⏳📅🔺🔻📌]+|\A\(@?\d{4}-\d{2}-\d{2}\)/)
+
+        # Found actual content - this is where we start
+        content_start = index
+        break
+      end
+
+      lines[content_start..].join
     end
   end
 end

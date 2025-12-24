@@ -34,6 +34,16 @@ module Railspress
     scope :published, -> { where(status: :published).where.not(published_at: nil) }
     scope :drafts, -> { where(status: :draft) }
     scope :by_author, ->(author) { where(author_id: author.id) }
+    scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
+    scope :by_category, ->(category_id) { where(category_id: category_id) if category_id.present? }
+    scope :by_status, ->(status) { where(status: status) if status.present? }
+
+    PER_PAGE = 20
+
+    def self.page(page_number)
+      page_number = [page_number.to_i, 1].max
+      offset((page_number - 1) * PER_PAGE).limit(PER_PAGE)
+    end
 
     # Accepts CSV string and syncs tags
     def tag_list=(csv_string)

@@ -1,9 +1,31 @@
 <div class="rp-page-header">
   <h1 class="rp-page-title">Posts</h1>
   <div class="rp-page-actions">
+    <%= link_to "Export", typed_admin_exports_path(type: "posts"), class: "rp-btn rp-btn--secondary" %>
     <%= link_to "Import", typed_admin_imports_path(type: "posts"), class: "rp-btn rp-btn--secondary" %>
     <%= link_to "New Post", new_admin_post_path, class: "rp-btn rp-btn--primary" %>
   </div>
+</div>
+
+<div class="rp-card">
+  <%= form_with url: admin_posts_path, method: :get, class: "rp-filter-bar", data: { turbo_frame: "_top" } do %>
+    <div class="rp-filter-bar__search">
+      <%= text_field_tag :q, params[:q], placeholder: "Search posts...", class: "rp-input" %>
+    </div>
+    <div class="rp-filter-bar__filters">
+      <%= select_tag :category_id,
+          options_from_collection_for_select(@categories, :id, :name, params[:category_id]),
+          include_blank: "All Categories",
+          class: "rp-select" %>
+      <%= select_tag :status,
+          options_for_select([["All Statuses", ""], ["Draft", "draft"], ["Published", "published"]], params[:status]),
+          class: "rp-select" %>
+      <%= submit_tag "Filter", class: "rp-btn rp-btn--secondary" %>
+      <% if params[:q].present? || params[:category_id].present? || params[:status].present? %>
+        <%= link_to "Clear", admin_posts_path, class: "rp-btn rp-btn--text" %>
+      <% end %>
+    </div>
+  <% end %>
 </div>
 
 <div class="rp-card">
@@ -53,4 +75,20 @@
       </tbody>
     </table>
   </div>
+
+  <% if @total_pages > 1 %>
+    <div class="rp-pagination">
+      <span class="rp-pagination__info">
+        Page <%= @page %> of <%= @total_pages %> (<%= @total_count %> posts)
+      </span>
+      <div class="rp-pagination__links">
+        <% if @page > 1 %>
+          <%= link_to "← Prev", url_for(request.query_parameters.merge(page: @page - 1)), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+        <% if @page < @total_pages %>
+          <%= link_to "Next →", url_for(request.query_parameters.merge(page: @page + 1)), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>

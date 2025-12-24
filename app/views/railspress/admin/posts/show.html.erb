@@ -9,6 +9,7 @@
       <% if authors_enabled? && @post.author %>
         <span>by <%= @post.author.public_send(Railspress.author_display_method) %></span>
       <% end %>
+      <span><%= @post.reading_time_display %> min read</span>
       <span><%= @post.created_at.strftime("%b %d, %Y") %></span>
     </div>
   </div>
@@ -27,8 +28,8 @@
 <% end %>
 
 <% if header_images_enabled? && @post.header_image.attached? %>
-  <div class="rp-header-image">
-    <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [1200, 630])), class: "rp-header-image-full" %>
+  <div class="rp-featured-image">
+    <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [1200, 630])), class: "rp-featured-image-full" %>
   </div>
 <% end %>
 

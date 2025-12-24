@@ -28,6 +28,7 @@ module Railspress
 
     before_validation :generate_slug, if: -> { slug.blank? && title.present? }
     before_save :set_published_at
+    before_save :set_reading_time, if: -> { reading_time.blank? && content.present? }
 
     scope :ordered, -> { order(created_at: :desc) }
     scope :recent, -> { ordered.limit(10) }
@@ -54,6 +55,21 @@ module Railspress
       tags.pluck(:name).join(", ")
     end
 
+    # Calculate reading time from content word count
+    def calculate_reading_time
+      return 1 unless content.present?
+
+      words_per_minute = Railspress.words_per_minute
+      word_count = content.to_plain_text.split(/\s+/).count
+      minutes = (word_count.to_f / words_per_minute).ceil
+      [ minutes, 1 ].max
+    end
+
+    # Display reading time with fallback to calculated value
+    def reading_time_display
+      reading_time.presence || calculate_reading_time
+    end
+
     private
 
     def generate_slug
@@ -75,6 +91,10 @@ module Railspress
         self.published_at = Time.current
       end
       # Note: We no longer clear published_at for drafts - allow scheduling
+    end
+
+    def set_reading_time
+      self.reading_time = calculate_reading_time
     end
 
     def purge_header_image

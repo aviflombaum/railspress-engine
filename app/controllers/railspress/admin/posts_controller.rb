@@ -70,6 +70,7 @@ module Railspress
           :content,
           :status,
           :published_at,
+          :reading_time,
           :meta_title,
           :meta_description,
           :tag_list

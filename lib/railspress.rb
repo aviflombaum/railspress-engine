@@ -8,7 +8,8 @@ module Railspress
                   :current_author_method,
                   :current_author_proc,
                   :author_scope,
-                  :author_display_method
+                  :author_display_method,
+                  :words_per_minute
 
     attr_reader :authors_enabled, :header_images_enabled
 
@@ -20,6 +21,7 @@ module Railspress
       @current_author_proc = nil
       @author_scope = nil
       @author_display_method = :name
+      @words_per_minute = 200
     end
 
     # Declarative setter: config.enable_authors
@@ -80,6 +82,10 @@ module Railspress
 
     def current_author_proc
       configuration.current_author_proc
+    end
+
+    def words_per_minute
+      configuration.words_per_minute
     end
   end
 end

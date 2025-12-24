@@ -167,7 +167,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       expect(post_record.reload.header_image).not_to be_attached
     end
 
-    it "displays header image on show page" do
+    it "displays featured image on show page" do
       post_record = railspress_posts(:hello_world)
       post_record.header_image.attach(
         io: File.open(image_path),
@@ -176,7 +176,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       )
 
       get railspress.admin_post_path(post_record)
-      expect(response.body).to include("rp-header-image")
+      expect(response.body).to include("rp-featured-image")
     end
   end
 end

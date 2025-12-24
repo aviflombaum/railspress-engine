@@ -37,6 +37,7 @@
           <th>Category</th>
           <% if authors_enabled? %><th>Author</th><% end %>
           <th>Status</th>
+          <th>Read</th>
           <th>Date</th>
           <th class="rp-table-actions">Actions</th>
         </tr>
@@ -63,6 +64,7 @@
                 <%= post.status.titleize %>
               </span>
             </td>
+            <td class="rp-table-secondary"><%= post.reading_time_display %> min</td>
             <td class="rp-table-secondary"><%= post.created_at.strftime("%b %d, %Y") %></td>
             <td class="rp-table-actions">
               <%= link_to "Edit", edit_admin_post_path(post), class: "rp-link" %>

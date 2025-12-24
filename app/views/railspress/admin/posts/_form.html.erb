@@ -58,6 +58,24 @@
         </div>
 
         <div class="rp-form-group">
+          <%= form.label :reading_time, "Reading Time (min)", class: "rp-label" %>
+          <div class="rp-input-with-button">
+            <%= form.number_field :reading_time,
+                class: "rp-input",
+                min: 1,
+                placeholder: @post.persisted? ? @post.calculate_reading_time : "Auto" %>
+            <% if @post.persisted? %>
+              <button type="button"
+                      class="rp-btn rp-btn--secondary rp-btn--sm"
+                      onclick="this.previousElementSibling.value = '<%= @post.calculate_reading_time %>'">
+                Calculate
+              </button>
+            <% end %>
+          </div>
+          <p class="rp-hint">Leave blank to auto-calculate from content</p>
+        </div>
+
+        <div class="rp-form-group">
           <%= form.label :category_id, "Category", class: "rp-label" %>
           <%= form.collection_select :category_id, @categories, :id, :name,
               { prompt: "No category" },
@@ -85,23 +103,23 @@
 
       <% if header_images_enabled? %>
         <div class="rp-sidebar-section">
-          <h3 class="rp-sidebar-title">Header Image</h3>
+          <h3 class="rp-sidebar-title">Featured Image</h3>
 
           <div class="rp-form-group">
             <% if @post.header_image.attached? %>
-              <div class="rp-header-image-preview">
-                <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [400, 300])), class: "rp-header-image-thumb" %>
+              <div class="rp-featured-image-preview">
+                <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [400, 300])), class: "rp-featured-image-thumb" %>
               </div>
             <% end %>
 
-            <%= form.label :header_image, class: "rp-label" %>
+            <%= form.label :header_image, "Featured Image", class: "rp-label" %>
             <%= form.file_field :header_image, accept: "image/*", class: "rp-file-input" %>
             <p class="rp-hint">Recommended: 1200x630px for social sharing</p>
 
             <% if @post.header_image.attached? %>
               <label class="rp-checkbox-label">
                 <%= form.check_box :remove_header_image, {}, "1", "0" %>
-                Remove current image
+                Remove featured image
               </label>
             <% end %>
           </div>

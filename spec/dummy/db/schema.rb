@@ -109,6 +109,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_22_163000) do
     t.text "meta_description"
     t.string "meta_title"
     t.datetime "published_at"
+    t.integer "reading_time"
     t.string "slug", null: false
     t.integer "status", default: 0, null: false
     t.string "title", null: false

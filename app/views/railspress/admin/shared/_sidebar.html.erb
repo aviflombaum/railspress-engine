@@ -1,5 +1,17 @@
 <div class="rp-sidebar-content">
-  <h1 class="rp-logo">RailsPress</h1>
+  <div class="rp-sidebar-header">
+    <h1 class="rp-logo">RailsPress</h1>
+    <button class="rp-sidebar-toggle" aria-label="Toggle sidebar">
+      <svg class="rp-sidebar-toggle-icon rp-sidebar-toggle-icon--collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="11 17 6 12 11 7"/>
+        <polyline points="18 17 13 12 18 7"/>
+      </svg>
+      <svg class="rp-sidebar-toggle-icon rp-sidebar-toggle-icon--expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="13 17 18 12 13 7"/>
+        <polyline points="6 17 11 12 6 7"/>
+      </svg>
+    </button>
+  </div>
 
   <nav class="rp-nav">
     <%= link_to railspress.admin_root_path, class: "rp-nav-link #{current_page?(railspress.admin_root_path) ? 'rp-nav-link--active' : ''}" do %>
@@ -7,7 +19,7 @@
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
-      Dashboard
+      <span class="rp-nav-text">Dashboard</span>
     <% end %>
 
     <%= link_to railspress.admin_posts_path, class: "rp-nav-link #{controller_name == 'posts' ? 'rp-nav-link--active' : ''}" do %>
@@ -17,14 +29,14 @@
         <line x1="16" y1="13" x2="8" y2="13"/>
         <line x1="16" y1="17" x2="8" y2="17"/>
       </svg>
-      Posts
+      <span class="rp-nav-text">Posts</span>
     <% end %>
 
     <%= link_to railspress.admin_categories_path, class: "rp-nav-link #{controller_name == 'categories' ? 'rp-nav-link--active' : ''}" do %>
       <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
       </svg>
-      Categories
+      <span class="rp-nav-text">Categories</span>
     <% end %>
 
     <%= link_to railspress.admin_tags_path, class: "rp-nav-link #{controller_name == 'tags' ? 'rp-nav-link--active' : ''}" do %>
@@ -32,7 +44,7 @@
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
         <line x1="7" y1="7" x2="7.01" y2="7"/>
       </svg>
-      Tags
+      <span class="rp-nav-text">Tags</span>
     <% end %>
   </nav>
 </div>

@@ -7,6 +7,44 @@
   'use strict';
 
   // ============================================
+  // Sidebar Collapse Toggle
+  // ============================================
+
+  function initSidebarCollapse() {
+    var sidebar = document.querySelector('.rp-sidebar');
+    var layout = document.querySelector('.rp-admin-layout');
+    var toggle = document.querySelector('.rp-sidebar-toggle');
+
+    if (!sidebar || !toggle || !layout) return;
+
+    var STORAGE_KEY = 'rp-sidebar-collapsed';
+
+    function isCollapsed() {
+      return localStorage.getItem(STORAGE_KEY) === 'true';
+    }
+
+    function setCollapsed(collapsed) {
+      if (collapsed) {
+        sidebar.classList.add('rp-sidebar--collapsed');
+        layout.classList.add('rp-admin-layout--sidebar-collapsed');
+      } else {
+        sidebar.classList.remove('rp-sidebar--collapsed');
+        layout.classList.remove('rp-admin-layout--sidebar-collapsed');
+      }
+      localStorage.setItem(STORAGE_KEY, collapsed ? 'true' : 'false');
+    }
+
+    // Restore state on load
+    if (isCollapsed()) {
+      setCollapsed(true);
+    }
+
+    toggle.addEventListener('click', function() {
+      setCollapsed(!sidebar.classList.contains('rp-sidebar--collapsed'));
+    });
+  }
+
+  // ============================================
   // Mobile Menu Toggle
   // ============================================
 
@@ -194,6 +232,7 @@
   // ============================================
 
   function init() {
+    initSidebarCollapse();
     initMobileMenu();
     initSlugGenerator();
     initDeleteConfirmation();

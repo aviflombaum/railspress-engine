@@ -1,0 +1,61 @@
+/*
+ * RailsPress Admin - Tables
+ * Data tables styling
+ */
+
+.rp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rp-table th {
+  text-align: left;
+  padding: var(--rp-space-sm) var(--rp-space-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rp-text-muted);
+  border-bottom: 1px solid var(--rp-border);
+  background: var(--rp-bg);
+}
+
+.rp-table td {
+  padding: var(--rp-space-md);
+  border-bottom: 1px solid var(--rp-border-light);
+  vertical-align: middle;
+}
+
+.rp-table tbody tr:hover {
+  background: var(--rp-bg);
+}
+
+.rp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rp-table-primary {
+  font-weight: 500;
+}
+
+.rp-table-secondary {
+  color: var(--rp-text-muted);
+  font-size: 0.875rem;
+}
+
+.rp-table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rp-table-actions .rp-link {
+  margin-left: var(--rp-space-md);
+}
+
+.rp-table-actions .rp-link:first-child {
+  margin-left: 0;
+}
+
+.rp-table--responsive {
+  overflow-x: auto;
+}

@@ -1,0 +1,174 @@
+/*
+ * RailsPress Admin - Responsive
+ * Media queries and breakpoint adjustments
+ */
+
+@media (max-width: 1023px) {
+  .rp-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rp-form-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-form-sidebar {
+    order: -1;
+  }
+
+  .rp-main {
+    padding: var(--rp-space-lg);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --rp-sidebar-width: 280px;
+  }
+
+  .rp-sidebar {
+    transform: translateX(-100%);
+    width: var(--rp-sidebar-width);
+  }
+
+  .rp-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .rp-sidebar-toggle {
+    display: none;
+  }
+
+  .rp-sidebar--collapsed {
+    width: var(--rp-sidebar-width);
+  }
+
+  .rp-sidebar--collapsed .rp-logo {
+    display: block;
+  }
+
+  .rp-sidebar--collapsed .rp-nav-text {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+  }
+
+  .rp-mobile-header {
+    display: flex;
+  }
+
+  .rp-main {
+    margin-left: 0;
+    padding: var(--rp-space-md);
+    padding-top: calc(var(--rp-header-height) + var(--rp-space-lg));
+  }
+
+  .rp-admin-layout--sidebar-collapsed .rp-main {
+    margin-left: 0;
+  }
+
+  .rp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: var(--rp-space-md);
+  }
+
+  .rp-stat-value {
+    font-size: 1.5rem;
+    order: 1;
+  }
+
+  .rp-stat-label {
+    order: 0;
+  }
+
+  .rp-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rp-page-title {
+    font-size: 1.375rem;
+  }
+
+  .rp-page-actions {
+    flex-direction: column;
+  }
+
+  .rp-page-actions .rp-btn {
+    width: 100%;
+  }
+
+  .rp-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-form-row--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-form-actions {
+    flex-direction: column;
+  }
+
+  .rp-form-actions .rp-btn {
+    width: 100%;
+  }
+
+  .rp-table th,
+  .rp-table td {
+    padding: var(--rp-space-sm);
+  }
+
+  .rp-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--rp-space-sm);
+  }
+}
+
+/* Touch devices */
+@media (pointer: coarse) {
+  .rp-btn {
+    min-height: 44px;
+  }
+
+  .rp-nav-link {
+    min-height: 44px;
+  }
+
+  .rp-checkbox input,
+  .rp-radio input {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .rp-sidebar,
+  .rp-mobile-header,
+  .rp-page-actions,
+  .rp-form-actions,
+  .rp-table-actions {
+    display: none !important;
+  }
+
+  .rp-main {
+    margin-left: 0;
+  }
+
+  .rp-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}

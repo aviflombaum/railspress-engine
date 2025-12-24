@@ -1,0 +1,52 @@
+/*
+ * RailsPress Admin - Page Structure
+ * Page headers, titles, sections
+ */
+
+.rp-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rp-space-lg);
+  margin-bottom: var(--rp-space-xl);
+}
+
+.rp-page-title {
+  font-family: var(--rp-font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--rp-text);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.rp-page-title--standalone {
+  margin-bottom: var(--rp-space-xl);
+}
+
+.rp-page-actions {
+  display: flex;
+  gap: var(--rp-space-sm);
+  flex-shrink: 0;
+}
+
+.rp-section {
+  margin-bottom: var(--rp-space-xl);
+}
+
+.rp-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-md);
+  margin-bottom: var(--rp-space-md);
+  padding-left: var(--rp-space-md);
+  border-left: 3px solid var(--rp-primary);
+}
+
+.rp-section-title {
+  font-family: var(--rp-font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--rp-text);
+  letter-spacing: 0;
+}

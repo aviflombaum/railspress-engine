@@ -1,0 +1,58 @@
+/*
+ * RailsPress Admin - CSS Variables
+ * Design tokens for the admin interface
+ */
+
+:root {
+  /* Typography */
+  --rp-font-display: 'Source Serif 4', Georgia, serif;
+  --rp-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --rp-font-mono: 'SF Mono', Consolas, monospace;
+
+  /* Colors - Warm Neutrals */
+  --rp-sidebar-bg: #1a1d21;
+  --rp-sidebar-hover: #2a2e33;
+  --rp-sidebar-text: #a8adb3;
+  --rp-sidebar-text-active: #ffffff;
+
+  --rp-bg: #f8f7f5;
+  --rp-bg-elevated: #ffffff;
+  --rp-border: #e5e2dc;
+  --rp-border-light: #f0ede8;
+
+  --rp-text: #2c2a27;
+  --rp-text-muted: #6b6860;
+  --rp-text-light: #9a958c;
+
+  /* Accents */
+  --rp-primary: #3d5a80;
+  --rp-primary-hover: #2c4a6e;
+  --rp-primary-light: #e8eef4;
+
+  --rp-success: #4a7c59;
+  --rp-success-light: #e8f2eb;
+
+  --rp-danger: #a63d40;
+  --rp-danger-light: #f9ebeb;
+
+  --rp-info-light: #f0f7fb;
+
+  /* Spacing */
+  --rp-space-xs: 0.25rem;
+  --rp-space-sm: 0.5rem;
+  --rp-space-md: 1rem;
+  --rp-space-lg: 1.5rem;
+  --rp-space-xl: 2rem;
+  --rp-space-2xl: 3rem;
+
+  /* Sizing */
+  --rp-sidebar-width: 240px;
+  --rp-sidebar-width-collapsed: 64px;
+  --rp-header-height: 56px;
+  --rp-radius: 6px;
+
+  /* Shadows - Enhanced for depth */
+  --rp-shadow-sm: 0 1px 3px rgba(44, 42, 39, 0.06), 0 1px 2px rgba(44, 42, 39, 0.04);
+  --rp-shadow-md: 0 4px 16px rgba(44, 42, 39, 0.1), 0 2px 4px rgba(44, 42, 39, 0.06);
+  --rp-shadow-lg: 0 8px 24px rgba(44, 42, 39, 0.12), 0 4px 8px rgba(44, 42, 39, 0.08);
+}

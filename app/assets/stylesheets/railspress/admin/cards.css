@@ -1,0 +1,15 @@
+/*
+ * RailsPress Admin - Cards
+ * Card components
+ */
+
+.rp-card {
+  background: var(--rp-bg-elevated);
+  border-radius: var(--rp-radius);
+  box-shadow: var(--rp-shadow-md);
+  border: none;
+}
+
+.rp-card--padded {
+  padding: var(--rp-space-xl);
+}

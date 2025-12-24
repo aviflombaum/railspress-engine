@@ -1,0 +1,102 @@
+/*
+ * RailsPress Admin - Buttons & Links
+ * Button components and link styles
+ */
+
+/* Buttons */
+.rp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rp-space-sm);
+  padding: 10px 20px;
+  font-family: var(--rp-font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--rp-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.rp-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--rp-primary-light);
+}
+
+.rp-btn--primary {
+  background: var(--rp-primary);
+  color: white;
+  box-shadow: 0 2px 6px rgba(61, 90, 128, 0.25);
+  transition: all 0.15s ease;
+}
+
+.rp-btn--primary:hover {
+  background: var(--rp-primary-hover);
+  box-shadow: 0 4px 10px rgba(61, 90, 128, 0.35);
+  transform: translateY(-1px);
+}
+
+.rp-btn--secondary {
+  background: var(--rp-bg-elevated);
+  color: var(--rp-text);
+  border-color: var(--rp-border);
+}
+
+.rp-btn--secondary:hover {
+  background: var(--rp-bg);
+  border-color: var(--rp-text-muted);
+}
+
+.rp-btn--danger {
+  background: var(--rp-danger);
+  color: white;
+}
+
+.rp-btn--danger:hover {
+  background: #8f3436;
+}
+
+.rp-btn--text {
+  background: none;
+  border: none;
+  color: var(--rp-text-muted);
+  padding: 8px 12px;
+}
+
+.rp-btn--text:hover {
+  color: var(--rp-text);
+  text-decoration: underline;
+}
+
+.rp-btn--sm {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
+
+.rp-btn--lg {
+  padding: 14px 28px;
+  font-size: 1rem;
+}
+
+/* Links */
+.rp-link {
+  color: var(--rp-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rp-link:hover {
+  text-decoration: underline;
+}
+
+.rp-link--danger {
+  color: var(--rp-danger);
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}

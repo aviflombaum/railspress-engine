@@ -1,0 +1,61 @@
+/*
+ * RailsPress Admin - Lexxy Editor
+ * Rich text editor overrides and styling
+ */
+
+:where(lexxy-toolbar){
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+/* Fix toolbar dropdown alignment (color/link buttons) */
+.lexxy-editor__toolbar-dropdown {
+  width: 34px !important;
+  height: 34px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.lexxy-editor__toolbar-dropdown > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  list-style: none;
+  cursor: pointer;
+}
+
+.lexxy-editor__toolbar-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Rich text content spacing */
+.rp-rich-text p,
+.rp-rich-text blockquote,
+.rp-rich-text ul,
+.rp-rich-text ol,
+.rp-rich-text h1,
+.rp-rich-text h2,
+.rp-rich-text h3,
+.rp-rich-text h4,
+.rp-rich-text pre,
+.rp-rich-text figure {
+  margin-bottom: var(--rp-space-md);
+}
+
+.rp-rich-text > *:last-child {
+  margin-bottom: 0;
+}
+
+.rp-rich-text blockquote {
+  border-left: 3px solid var(--rp-border);
+  padding-left: var(--rp-space-md);
+  color: var(--rp-text-muted);
+  font-style: italic;
+}
+
+.rp-rich-text ul {
+  margin-left: 12px;
+}

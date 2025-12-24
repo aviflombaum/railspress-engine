@@ -1,0 +1,25 @@
+/*
+ * RailsPress Admin - Base Styles
+ * Reset and typography foundation
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--rp-font-body);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--rp-text);
+  background: var(--rp-bg);
+}

@@ -1,0 +1,65 @@
+/*
+ * RailsPress Admin - Badges & Tags
+ * Status badges and tag components
+ */
+
+/* Badges */
+.rp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 999px;
+}
+
+.rp-badge--draft {
+  background: var(--rp-bg);
+  color: var(--rp-text-muted);
+  border: 1px solid var(--rp-border);
+}
+
+.rp-badge--published {
+  background: var(--rp-success-light);
+  color: var(--rp-success);
+}
+
+.rp-badge--pending {
+  background: var(--rp-info-light);
+  color: var(--rp-primary);
+}
+
+.rp-badge--processing {
+  background: #fff8e6;
+  color: #b8860b;
+}
+
+.rp-badge--completed {
+  background: var(--rp-success-light);
+  color: var(--rp-success);
+}
+
+.rp-badge--failed {
+  background: var(--rp-danger-light);
+  color: var(--rp-danger);
+}
+
+/* Tags */
+.rp-tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--rp-primary-light);
+  color: var(--rp-primary);
+  border-radius: 4px;
+}
+
+.rp-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rp-space-xs);
+  margin-top: var(--rp-space-xs);
+}

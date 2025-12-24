@@ -1,0 +1,250 @@
+/*
+ * RailsPress Admin - Layout
+ * Main layout, sidebar, and navigation
+ */
+
+.rp-admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.rp-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--rp-sidebar-width);
+  height: 100vh;
+  background: var(--rp-sidebar-bg);
+  z-index: 100;
+  transition: width 0.25s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-sidebar-content {
+  padding: var(--rp-space-lg) var(--rp-space-md);
+}
+
+.rp-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--rp-space-2xl);
+}
+
+.rp-logo {
+  font-family: var(--rp-font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--rp-sidebar-text-active);
+  letter-spacing: -0.01em;
+  margin-bottom: 0;
+}
+
+/* Sidebar Toggle Button */
+.rp-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--rp-radius);
+  color: var(--rp-sidebar-text-active);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.rp-sidebar-toggle:hover {
+  background: var(--rp-sidebar-hover);
+  opacity: 1;
+}
+
+.rp-sidebar-toggle-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.rp-sidebar-toggle-icon--expand {
+  display: none;
+}
+
+/* Navigation */
+.rp-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-md);
+  padding: 10px 12px;
+  color: var(--rp-sidebar-text);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: var(--rp-radius);
+  transition: all 0.15s ease;
+}
+
+.rp-nav-link:hover {
+  background: var(--rp-sidebar-hover);
+  color: var(--rp-sidebar-text-active);
+}
+
+.rp-nav-link--active {
+  background: var(--rp-sidebar-hover);
+  color: var(--rp-sidebar-text-active);
+}
+
+.rp-nav-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.rp-nav-link:hover .rp-nav-icon,
+.rp-nav-link--active .rp-nav-icon {
+  opacity: 1;
+}
+
+.rp-nav-text {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+/* Main Content Area */
+.rp-main {
+  flex: 1;
+  margin-left: var(--rp-sidebar-width);
+  padding: var(--rp-space-xl) var(--rp-space-2xl);
+  min-width: 0;
+  transition: margin-left 0.25s ease;
+}
+
+/* Collapsed Sidebar State */
+.rp-sidebar--collapsed {
+  width: var(--rp-sidebar-width-collapsed);
+}
+
+.rp-sidebar--collapsed .rp-sidebar-content {
+  padding: var(--rp-space-lg) var(--rp-space-sm);
+}
+
+.rp-sidebar--collapsed .rp-sidebar-header {
+  justify-content: center;
+}
+
+.rp-sidebar--collapsed .rp-logo {
+  display: none;
+}
+
+.rp-sidebar--collapsed .rp-sidebar-toggle {
+  width: 36px;
+  height: 36px;
+}
+
+.rp-sidebar--collapsed .rp-sidebar-toggle-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.rp-sidebar--collapsed .rp-nav-link {
+  justify-content: center;
+  padding: 10px;
+}
+
+.rp-sidebar--collapsed .rp-nav-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.rp-sidebar--collapsed .rp-nav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.rp-sidebar--collapsed .rp-sidebar-toggle-icon--collapse {
+  display: none;
+}
+
+.rp-sidebar--collapsed .rp-sidebar-toggle-icon--expand {
+  display: block;
+}
+
+/* Main content adjustment when sidebar collapsed */
+.rp-admin-layout--sidebar-collapsed .rp-main {
+  margin-left: var(--rp-sidebar-width-collapsed);
+}
+
+/* Mobile Header */
+.rp-mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--rp-header-height);
+  background: var(--rp-sidebar-bg);
+  z-index: 90;
+  padding: 0 var(--rp-space-md);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rp-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.rp-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--rp-sidebar-text-active);
+  border-radius: 1px;
+}
+
+.rp-mobile-logo {
+  font-family: var(--rp-font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--rp-sidebar-text-active);
+}
+
+.rp-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 29, 33, 0.5);
+  z-index: 95;
+}
+
+.rp-overlay--visible {
+  display: block;
+}

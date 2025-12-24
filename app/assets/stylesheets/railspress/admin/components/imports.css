@@ -1,0 +1,144 @@
+/*
+ * RailsPress Admin - Imports
+ * Import page layout and dropzone styles
+ */
+
+.rp-import-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--rp-space-xl);
+  align-items: start;
+}
+
+.rp-import-main {
+  min-width: 0;
+}
+
+.rp-import-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-md);
+}
+
+/* Dropzone */
+.rp-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rp-space-md);
+  padding: var(--rp-space-2xl);
+  border: 2px dashed var(--rp-border);
+  border-radius: var(--rp-radius);
+  background: var(--rp-bg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.rp-dropzone:hover {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-light);
+}
+
+.rp-dropzone-icon {
+  color: var(--rp-text-muted);
+  transition: color 0.15s ease;
+}
+
+.rp-dropzone:hover .rp-dropzone-icon {
+  color: var(--rp-primary);
+}
+
+.rp-dropzone-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+}
+
+.rp-dropzone-text strong {
+  font-size: 1rem;
+  color: var(--rp-text);
+}
+
+.rp-dropzone-text span {
+  font-size: 0.875rem;
+  color: var(--rp-text-muted);
+}
+
+.rp-dropzone-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.rp-dropzone--active {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-light);
+  border-style: solid;
+}
+
+.rp-dropzone--active .rp-dropzone-icon {
+  color: var(--rp-primary);
+}
+
+/* File list */
+.rp-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+  margin-top: var(--rp-space-md);
+  padding: var(--rp-space-sm);
+  background: var(--rp-gray-50);
+  border-radius: var(--rp-radius);
+}
+
+.rp-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--rp-space-xs) var(--rp-space-sm);
+  background: white;
+  border-radius: var(--rp-radius-sm);
+  font-size: 0.875rem;
+}
+
+.rp-file-name {
+  color: var(--rp-text);
+  font-weight: 500;
+}
+
+.rp-file-size {
+  color: var(--rp-text-muted);
+  font-size: 0.75rem;
+}
+
+/* Import list */
+.rp-import-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+  font-size: 0.875rem;
+  color: var(--rp-text-muted);
+}
+
+.rp-import-list strong {
+  color: var(--rp-text);
+  font-weight: 600;
+}
+
+@media (max-width: 1023px) {
+  .rp-import-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-import-sidebar {
+    order: 1;
+  }
+}

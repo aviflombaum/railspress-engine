@@ -1,0 +1,43 @@
+/*
+ * RailsPress Admin - Stats
+ * Dashboard stat cards
+ */
+
+.rp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rp-space-md);
+  margin-bottom: var(--rp-space-xl);
+}
+
+.rp-stat-card {
+  background: var(--rp-bg-elevated);
+  border-radius: var(--rp-radius);
+  box-shadow: var(--rp-shadow-md);
+  border: none;
+  padding: var(--rp-space-lg);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rp-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rp-shadow-lg);
+}
+
+.rp-stat-value {
+  font-family: var(--rp-font-body);
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--rp-text);
+  line-height: 1;
+  margin-bottom: var(--rp-space-xs);
+}
+
+.rp-stat-label {
+  font-size: 0.8125rem;
+  color: var(--rp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}

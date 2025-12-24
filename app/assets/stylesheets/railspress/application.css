@@ -1,15 +1,45 @@
 /*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- *= require_tree .
- *= require_self
+* RailsPress Admin Styles
+* Manifest file - loads all admin stylesheets in order
+*
+*= require ./admin/variables
+*= require ./admin/base
+*= require ./admin/layout
+*= require ./admin/page
+*= require ./admin/cards
+*= require ./admin/stats
+*= require ./admin/tables
+*= require ./admin/filters
+*= require ./admin/forms
+*= require ./admin/buttons
+*= require ./admin/badges
+*= require ./admin/lists
+*= require ./admin/flash
+*= require ./admin/utilities
+*= require ./admin/responsive
+*= require ./admin/components/lexxy
+*= require ./admin/components/imports
+*= require ./admin/components/exports
+*/
+/*
+ * RailsPress Admin Styles
  */
+
+@import url("admin/variables.css");
+@import url("admin/base.css");
+@import url("admin/layout.css");
+@import url("admin/page.css");
+@import url("admin/cards.css");
+@import url("admin/stats.css");
+@import url("admin/tables.css");
+@import url("admin/filters.css");
+@import url("admin/forms.css");
+@import url("admin/buttons.css");
+@import url("admin/badges.css");
+@import url("admin/lists.css");
+@import url("admin/flash.css");
+@import url("admin/utilities.css");
+@import url("admin/responsive.css");
+@import url("admin/components/lexxy.css");
+@import url("admin/components/imports.css");
+@import url("admin/components/exports.css");

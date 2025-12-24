@@ -1,0 +1,333 @@
+/*
+ * RailsPress Admin - Forms
+ * Form layouts, inputs, selects, checkboxes
+ */
+
+/* Form Layout */
+.rp-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-form--narrow {
+  max-width: 560px;
+}
+
+.rp-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: var(--rp-space-2xl);
+  align-items: start;
+}
+
+.rp-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-lg);
+}
+
+.rp-form-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-md);
+}
+
+.rp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rp-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--rp-space-md);
+}
+
+.rp-form-row--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.rp-form-actions {
+  display: flex;
+  gap: var(--rp-space-sm);
+  padding-top: var(--rp-space-xl);
+  margin-top: var(--rp-space-xl);
+  border-top: 1px solid var(--rp-border-light);
+}
+
+.rp-form-errors {
+  background: var(--rp-danger-light);
+  border: 1px solid var(--rp-danger);
+  border-radius: var(--rp-radius);
+  padding: var(--rp-space-md);
+  color: var(--rp-danger);
+  font-size: 0.875rem;
+}
+
+.rp-form-errors ul {
+  margin: 0;
+  padding-left: var(--rp-space-lg);
+}
+
+/* Labels */
+.rp-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rp-text);
+}
+
+.rp-label--lg {
+  font-size: 1rem;
+}
+
+.rp-label--required::after {
+  content: ' *';
+  color: var(--rp-danger);
+}
+
+/* Inputs */
+.rp-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--rp-font-body);
+  font-size: 0.9375rem;
+  color: var(--rp-text);
+  background: var(--rp-bg-elevated);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.rp-input:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-light);
+}
+
+.rp-input::placeholder {
+  color: var(--rp-text-light);
+}
+
+.rp-input--sm {
+  padding: 6px 10px;
+  font-size: 0.875rem;
+}
+
+.rp-input--lg {
+  padding: 14px 16px;
+  font-size: 1.125rem;
+}
+
+.rp-input--title {
+  font-family: var(--rp-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 12px 14px;
+  letter-spacing: -0.01em;
+}
+
+.rp-input--mono {
+  font-family: var(--rp-font-mono);
+  font-size: 0.875rem;
+}
+
+textarea.rp-input {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Select */
+.rp-select {
+  width: 100%;
+  padding: 10px 12px;
+  padding-right: 36px;
+  font-family: var(--rp-font-body);
+  font-size: 0.9375rem;
+  color: var(--rp-text);
+  background: var(--rp-bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6860' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.rp-select:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-light);
+}
+
+.rp-select--sm {
+  padding: 6px 10px;
+  padding-right: 32px;
+  font-size: 0.875rem;
+}
+
+/* Checkbox & Radio */
+.rp-checkbox,
+.rp-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rp-space-sm);
+  cursor: pointer;
+}
+
+.rp-checkbox input,
+.rp-radio input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--rp-primary);
+}
+
+.rp-checkbox-label,
+.rp-radio-label {
+  font-size: 0.9375rem;
+  color: var(--rp-text);
+  line-height: 1.4;
+}
+
+.rp-checkbox-description,
+.rp-radio-description {
+  font-size: 0.8125rem;
+  color: var(--rp-text-muted);
+  margin-top: 2px;
+}
+
+.rp-checkbox-group,
+.rp-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-sm);
+}
+
+.rp-checkbox-group--inline,
+.rp-radio-group--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--rp-space-lg);
+}
+
+/* Fieldset */
+.rp-fieldset {
+  border: 1px solid var(--rp-border-light);
+  border-radius: var(--rp-radius);
+  padding: var(--rp-space-lg);
+  background: var(--rp-bg);
+}
+
+.rp-fieldset-legend {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rp-text);
+  padding: 0 var(--rp-space-sm);
+  margin-left: -var(--rp-space-sm);
+}
+
+/* Hint & Help */
+.rp-hint {
+  font-size: 0.8125rem;
+  color: var(--rp-text-muted);
+  margin-top: 4px;
+}
+
+.rp-input-wrapper {
+  position: relative;
+}
+
+.rp-input-prefix,
+.rp-input-suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rp-text-muted);
+  font-size: 0.9375rem;
+  pointer-events: none;
+}
+
+.rp-input-prefix {
+  left: 12px;
+}
+
+.rp-input-suffix {
+  right: 12px;
+}
+
+.rp-input--has-prefix {
+  padding-left: 36px;
+}
+
+.rp-input--has-suffix {
+  padding-right: 36px;
+}
+
+/* Rich text placeholder */
+.rp-rich-text {
+  min-height: 670px;
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  background: var(--rp-bg-elevated);
+  padding: var(--rp-space-md);
+}
+
+/* Sidebar sections */
+.rp-sidebar-section {
+  background: var(--rp-info-light);
+  border-radius: var(--rp-radius);
+  padding: var(--rp-space-md);
+  border: 1px solid #d8e8f0;
+}
+
+.rp-sidebar-section .rp-form-group {
+  margin-bottom: var(--rp-space-md);
+}
+
+.rp-sidebar-section .rp-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.rp-sidebar-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rp-text-muted);
+  margin-bottom: var(--rp-space-md);
+}
+
+/* File input */
+.rp-file-input {
+  width: 100%;
+  padding: var(--rp-space-sm);
+  border: 1px dashed var(--rp-border);
+  border-radius: var(--rp-radius);
+  background: var(--rp-bg);
+  cursor: pointer;
+}
+
+.rp-file-input:hover {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-light);
+}
+
+/* Checkbox label variant */
+.rp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-sm);
+  font-size: var(--rp-text-sm);
+  color: var(--rp-text-muted);
+  cursor: pointer;
+  margin-top: var(--rp-space-sm);
+}
+
+.rp-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}

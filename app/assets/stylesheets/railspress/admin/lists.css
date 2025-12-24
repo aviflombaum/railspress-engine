@@ -1,0 +1,24 @@
+/*
+ * RailsPress Admin - Lists
+ * List components
+ */
+
+.rp-list {
+  list-style: none;
+}
+
+.rp-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rp-space-md);
+  border-bottom: 1px solid var(--rp-border-light);
+}
+
+.rp-list-item:hover {
+  background: var(--rp-bg);
+}
+
+.rp-list-item:last-child {
+  border-bottom: none;
+}

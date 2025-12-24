@@ -1,0 +1,26 @@
+/*
+ * RailsPress Admin - Flash Messages
+ * Notification and alert styles
+ */
+
+.rp-flash {
+  padding: var(--rp-space-md) var(--rp-space-lg);
+  border-radius: var(--rp-radius);
+  margin-bottom: var(--rp-space-lg);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-sm);
+}
+
+.rp-flash--notice {
+  background: var(--rp-success-light);
+  color: var(--rp-success);
+  border: 1px solid var(--rp-success);
+}
+
+.rp-flash--alert {
+  background: var(--rp-danger-light);
+  color: var(--rp-danger);
+  border: 1px solid var(--rp-danger);
+}

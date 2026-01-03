@@ -1,13 +1,8 @@
 <% content_for :title, entity_config.label %>
 
-<div class="rp-page-header">
-  <h1 class="rp-page-title"><%= entity_config.label %></h1>
-  <div class="rp-page-actions">
-    <%= link_to "New #{entity_config.singular_label}", entity_new_path, class: "rp-btn rp-btn--primary" %>
-  </div>
-</div>
+<%= rp_page_header(entity_config.label, "New #{entity_config.singular_label}" => entity_new_path) %>
 
-<div class="rp-card">
+<%= rp_card do %>
   <% if @records.any? %>
     <div class="rp-table--responsive">
       <table class="rp-table">
@@ -28,29 +23,22 @@
                   <% value = record.public_send(name) %>
                   <% if index == 0 %>
                     <%= link_to entity_show_path(record), class: "rp-link rp-table-primary" do %>
-                      <%= truncate(value.to_s, length: 60) %>
+                      <%= rp_truncated_text(value, length: 60) %>
                     <% end %>
                   <% else %>
                     <% case field[:type] %>
                     <% when :rich_text %>
-                      <%= truncate(strip_tags(value.to_s), length: 60) %>
+                      <%= rp_truncated_text(strip_tags(value.to_s), length: 60) %>
                     <% when :boolean %>
-                      <span class="rp-badge rp-badge--<%= value ? 'published' : 'draft' %>">
-                        <%= value ? "Yes" : "No" %>
-                      </span>
+                      <%= rp_boolean_badge(value) %>
                     <% when :datetime, :date %>
                       <%= value&.strftime("%b %d, %Y") || "—" %>
                     <% when :attachments %>
-                      <% count = value.attached? ? value.count : 0 %>
-                      <span class="rp-badge"><%= pluralize(count, "image") %></span>
+                      <%= rp_attachment_badge(value) %>
                     <% when :attachment %>
-                      <% if value.attached? %>
-                        <span class="rp-badge rp-badge--published">Attached</span>
-                      <% else %>
-                        <span class="rp-badge rp-badge--draft">None</span>
-                      <% end %>
+                      <%= rp_attachment_badge(value) %>
                     <% else %>
-                      <%= truncate(value.to_s, length: 60) %>
+                      <%= rp_truncated_text(value, length: 60) %>
                     <% end %>
                   <% end %>
                 </td>
@@ -68,9 +56,8 @@
       </table>
     </div>
   <% else %>
-    <p class="rp-empty-state">
-      No <%= entity_config.label.downcase %> yet.
-      <%= link_to "Create your first #{entity_config.singular_label.downcase}", entity_new_path, class: "rp-link" %>.
-    </p>
+    <%= rp_empty_state("No #{entity_config.label.downcase} yet.",
+          link_text: "Create your first #{entity_config.singular_label.downcase}",
+          link_path: entity_new_path) %>
   <% end %>
-</div>
+<% end %>

@@ -101,16 +101,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_000000) do
     t.index ["user_id"], name: "index_railspress_imports_on_user_id"
   end
 
-  create_table "railspress_post_tags", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "post_id", null: false
-    t.integer "tag_id", null: false
-    t.datetime "updated_at", null: false
-    t.index ["post_id", "tag_id"], name: "index_railspress_post_tags_on_post_id_and_tag_id", unique: true
-    t.index ["post_id"], name: "index_railspress_post_tags_on_post_id"
-    t.index ["tag_id"], name: "index_railspress_post_tags_on_tag_id"
-  end
-
   create_table "railspress_posts", force: :cascade do |t|
     t.bigint "author_id"
     t.integer "category_id"
@@ -128,6 +118,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_000000) do
     t.index ["published_at"], name: "index_railspress_posts_on_published_at"
     t.index ["slug"], name: "index_railspress_posts_on_slug", unique: true
     t.index ["status"], name: "index_railspress_posts_on_status"
+  end
+
+  create_table "railspress_taggings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "tag_id", null: false
+    t.integer "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id", "taggable_type", "taggable_id"], name: "index_taggings_unique", unique: true
+    t.index ["tag_id"], name: "index_railspress_taggings_on_tag_id"
+    t.index ["taggable_type", "taggable_id"], name: "index_railspress_taggings_on_taggable"
+    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable"
   end
 
   create_table "railspress_tags", force: :cascade do |t|
@@ -149,7 +151,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_000000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "railspress_post_tags", "railspress_posts", column: "post_id"
-  add_foreign_key "railspress_post_tags", "railspress_tags", column: "tag_id"
   add_foreign_key "railspress_posts", "railspress_categories", column: "category_id"
+  add_foreign_key "railspress_taggings", "railspress_tags", column: "tag_id"
 end

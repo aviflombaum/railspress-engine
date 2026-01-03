@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Blog Frontend", type: :request do
   # Use fixtures from the engine
-  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/post_tags"
+  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
 
   let(:category) { railspress_categories(:technology) }
   let(:tag) { railspress_tags(:ruby) }

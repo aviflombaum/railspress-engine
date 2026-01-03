@@ -15,7 +15,7 @@
           <tr>
             <th>Name</th>
             <th>Slug</th>
-            <th>Posts</th>
+            <th>Usage</th>
             <th class="rp-table-actions">Actions</th>
           </tr>
         </thead>
@@ -24,7 +24,7 @@
             <tr>
               <td class="rp-table-primary"><%= tag.name %></td>
               <td class="rp-table-secondary"><%= tag.slug %></td>
-              <td><%= tag.posts.count %></td>
+              <td><%= tag.taggings.count %></td>
               <td class="rp-table-actions">
                 <%= link_to "Edit", edit_admin_tag_path(tag), class: "rp-link" %>
                 <%= button_to "Delete", admin_tag_path(tag), method: :delete,

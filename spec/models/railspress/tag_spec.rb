@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Railspress::Tag, type: :model do
-  fixtures "railspress/tags"
+  fixtures "railspress/tags", "railspress/posts", "railspress/taggings"
 
   describe "validations" do
     it "requires a name" do
@@ -50,6 +50,24 @@ RSpec.describe Railspress::Tag, type: :model do
     it "returns empty array for blank input" do
       expect(Railspress::Tag.from_csv("")).to eq([])
       expect(Railspress::Tag.from_csv(nil)).to eq([])
+    end
+  end
+
+  describe "associations" do
+    it "has many taggings" do
+      tag = railspress_tags(:ruby)
+      expect(tag.taggings.count).to eq(1)
+    end
+
+    it "has many posts through taggings" do
+      tag = railspress_tags(:ruby)
+      expect(tag.posts).to include(railspress_posts(:hello_world))
+    end
+
+    it "destroys taggings when destroyed" do
+      tag = railspress_tags(:tutorial)
+      tag.destroy
+      expect(Railspress::Tagging.where(tag_id: tag.id)).to be_empty
     end
   end
 end

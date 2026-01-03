@@ -1,7 +1,12 @@
 module Railspress
   class Tag < ApplicationRecord
-    has_many :post_tags, dependent: :destroy
-    has_many :posts, through: :post_tags
+    has_many :taggings, dependent: :destroy
+
+    # Explicit reverse associations for each taggable type
+    has_many :posts,
+             through: :taggings,
+             source: :taggable,
+             source_type: "Railspress::Post"
 
     validates :name, presence: true, uniqueness: { case_sensitive: false }
     validates :slug, presence: true, uniqueness: true

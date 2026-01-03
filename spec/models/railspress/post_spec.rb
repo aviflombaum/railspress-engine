@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Railspress::Post, type: :model do
-  fixtures "railspress/posts", "railspress/categories", "railspress/tags", "railspress/post_tags"
+  fixtures "railspress/posts", "railspress/categories", "railspress/tags", "railspress/taggings"
 
   describe "validations" do
     it "requires a title" do
@@ -54,7 +54,7 @@ RSpec.describe Railspress::Post, type: :model do
   describe "tag_list" do
     it "returns comma-separated tag names" do
       post = railspress_posts(:hello_world)
-      expect(post.tag_list).to eq("rails, ruby")
+      expect(post.tag_list.split(", ")).to match_array(["ruby", "rails"])
     end
 
     it "accepts CSV and assigns tags" do
@@ -71,9 +71,16 @@ RSpec.describe Railspress::Post, type: :model do
       expect(post.category).to eq(railspress_categories(:technology))
     end
 
-    it "has many tags through post_tags" do
+    it "has many tags through taggings" do
       post = railspress_posts(:hello_world)
       expect(post.tags.count).to eq(2)
+    end
+
+    it "destroys taggings when destroyed" do
+      post = railspress_posts(:hello_world)
+      tagging_ids = post.taggings.pluck(:id)
+      post.destroy
+      expect(Railspress::Tagging.where(id: tagging_ids)).to be_empty
     end
   end
 

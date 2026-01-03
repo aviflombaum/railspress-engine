@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Railspress::Admin::Posts", type: :request do
-  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/post_tags"
+  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
 
   let(:category) { railspress_categories(:technology) }
 

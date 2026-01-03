@@ -2,6 +2,366 @@ module Railspress
   # Helper methods for building consistent admin views.
   # Use these helpers to ensure styling consistency across all entity views.
   module AdminHelper
+    # ============================================================
+    # FIELD RENDERING HELPERS
+    # ============================================================
+
+    # Master dispatcher that renders the appropriate input based on type.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param type [Symbol] the field type (:string, :text, :rich_text, :boolean, :datetime, :date, :integer, :decimal, :attachment, :attachments, :select)
+    # @param options [Hash] additional options passed to the specific renderer
+    # @return [String] rendered HTML
+    #
+    # @example Basic usage
+    #   rp_render_field(f, :title, type: :string)
+    #   rp_render_field(f, :content, type: :rich_text)
+    #   rp_render_field(f, :featured, type: :boolean, label: "Featured post?")
+    def rp_render_field(form, name, type:, **options)
+      case type
+      when :string
+        rp_string_field(form, name, **options)
+      when :text
+        rp_text_field(form, name, **options)
+      when :rich_text
+        rp_rich_text_field(form, name, **options)
+      when :boolean
+        rp_boolean_field(form, name, **options)
+      when :datetime
+        rp_datetime_field(form, name, **options)
+      when :date
+        rp_date_field(form, name, **options)
+      when :integer
+        rp_integer_field(form, name, **options)
+      when :decimal
+        rp_decimal_field(form, name, **options)
+      when :attachment
+        rp_attachment_field(form, name, multiple: false, **options)
+      when :attachments
+        rp_attachment_field(form, name, multiple: true, **options)
+      when :select
+        rp_select_field(form, name, **options)
+      else
+        rp_string_field(form, name, **options)
+      end
+    end
+
+    # Renders a string input field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param primary [Boolean] whether this is the primary/title input
+    # @param mono [Boolean] whether to use monospace font
+    # @param placeholder [String] placeholder text
+    # @param required [Boolean] whether field is required
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_string_field(form, name, primary: false, mono: false, placeholder: nil, required: false, label: nil, hint: nil, **options)
+      placeholder ||= "Enter #{name.to_s.humanize.downcase}..."
+      input_class = rp_input_class(primary: primary, mono: mono)
+
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: rp_label_class(required: required))
+        output += form.text_field(name, class: input_class, placeholder: placeholder, required: required, **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a text area field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param rows [Integer] number of rows
+    # @param placeholder [String] placeholder text
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_text_field(form, name, rows: 4, placeholder: nil, label: nil, hint: nil, **options)
+      placeholder ||= "Enter #{name.to_s.humanize.downcase}..."
+
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.text_area(name, rows: rows, class: "rp-input", placeholder: placeholder, **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a rich text (Trix) editor field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param placeholder [String] placeholder text
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_rich_text_field(form, name, placeholder: nil, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.rich_text_area(name, class: "rp-rich-text", **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a boolean checkbox field.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param label [String] custom label text
+    # @return [String] rendered HTML
+    def rp_boolean_field(form, name, label: nil, **options)
+      label_text = label || name.to_s.humanize
+
+      content_tag(:div, class: "rp-form-group") do
+        content_tag(:label, class: "rp-checkbox-label") do
+          form.check_box(name, options) + " ".html_safe + label_text
+        end
+      end
+    end
+
+    # Renders a datetime-local input field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_datetime_field(form, name, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.datetime_local_field(name, class: "rp-input", **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a date input field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_date_field(form, name, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.date_field(name, class: "rp-input", **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders an integer number input field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_integer_field(form, name, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.number_field(name, class: "rp-input", step: 1, **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a decimal number input field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_decimal_field(form, name, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.number_field(name, class: "rp-input", step: "any", **options)
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a select dropdown field with label.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param choices [Array] options for select (array of [text, value] or just values)
+    # @param include_blank [Boolean, String] whether to include blank option
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    #
+    # @example Basic usage
+    #   rp_select_field(f, :status, choices: Post.statuses.keys)
+    #   rp_select_field(f, :category_id, choices: Category.pluck(:name, :id), include_blank: "No category")
+    def rp_select_field(form, name, choices:, include_blank: false, label: nil, hint: nil, **options)
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(name, label, class: "rp-label")
+        output += form.select(name, choices, { include_blank: include_blank }, { class: "rp-select" }.merge(options))
+        output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a file attachment field with preview and removal option.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name
+    # @param multiple [Boolean] whether to allow multiple files
+    # @param accept [String] accepted file types (e.g., "image/*")
+    # @param record [ActiveRecord::Base] the record (defaults to form.object)
+    # @param param_key [String] the param key for removal checkbox
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    def rp_attachment_field(form, name, multiple: false, accept: "image/*", record: nil, param_key: nil, label: nil, hint: nil, **options)
+      record ||= form.object
+      param_key ||= record.model_name.param_key
+      attachment = record.public_send(name)
+
+      content_tag(:div, class: "rp-form-group") do
+        output = "".html_safe
+
+        if multiple && attachment.attached?
+          # Multiple attachments preview
+          output += content_tag(:div, class: "rp-gallery-preview") do
+            attachment.map do |att|
+              content_tag(:div, class: "rp-gallery-item") do
+                item = if att.image?
+                  image_tag(main_app.url_for(att), class: "rp-gallery-thumb")
+                else
+                  content_tag(:div, class: "rp-gallery-file") do
+                    content_tag(:span, "📄", class: "rp-gallery-file-icon") +
+                    content_tag(:span, att.filename, class: "rp-gallery-file-name")
+                  end
+                end
+                item += content_tag(:label, class: "rp-gallery-remove") do
+                  check_box_tag("#{param_key}[remove_#{name}][]", att.id, false) + " Remove"
+                end
+                item
+              end
+            end.join.html_safe
+          end
+          output += form.label(name, label || "Add images", class: "rp-label")
+          output += form.file_field(name, multiple: true, accept: accept, class: "rp-file-input", direct_upload: true, **options)
+          output += rp_hint(hint || "Select multiple images to upload") if hint != false
+        elsif !multiple && attachment.attached?
+          # Single attachment preview
+          output += content_tag(:div, class: "rp-attachment-preview") do
+            preview = if attachment.image?
+              image_tag(main_app.url_for(attachment), class: "rp-attachment-thumb")
+            else
+              content_tag(:div, class: "rp-attachment-file") do
+                content_tag(:span, attachment.filename, class: "rp-attachment-file-name")
+              end
+            end
+            preview += content_tag(:label, class: "rp-attachment-remove") do
+              check_box_tag("#{param_key}[remove_#{name}]", "1", false) + " Remove"
+            end
+            preview
+          end
+          output += form.label(name, label, class: "rp-label")
+          output += form.file_field(name, accept: accept, class: "rp-file-input", direct_upload: true, **options)
+          output += rp_hint(hint) if hint
+        else
+          # No attachment yet
+          output += form.label(name, label, class: "rp-label")
+          if multiple
+            output += form.file_field(name, multiple: true, accept: accept, class: "rp-file-input", direct_upload: true, **options)
+          else
+            output += form.file_field(name, accept: accept, class: "rp-file-input", direct_upload: true, **options)
+          end
+          output += rp_hint(hint) if hint
+        end
+
+        output
+      end
+    end
+
+    # ============================================================
+    # TABLE DISPLAY HELPERS
+    # ============================================================
+
+    # Truncates text with ellipsis, HTML-safe.
+    # @param text [String] the text to truncate
+    # @param length [Integer] maximum length
+    # @return [String] truncated text
+    def rp_truncated_text(text, length: 50)
+      truncate(text.to_s, length: length)
+    end
+
+    # Shows a colored badge for status values.
+    # @param value [String, Symbol] the status value
+    # @param type [Symbol] badge type (:success, :warning, :danger, :default, or status name like :published, :draft)
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_status_badge(post.status)
+    #   rp_status_badge("Active", type: :success)
+    def rp_status_badge(value, type: nil)
+      type ||= value.to_s.downcase.to_sym
+      rp_badge(value.to_s.titleize, status: type)
+    end
+
+    # Shows "Yes" / "No" badge with appropriate styling.
+    # @param value [Boolean] the boolean value
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_boolean_badge(post.featured)  # => green "Yes" or gray "No"
+    def rp_boolean_badge(value)
+      if value
+        rp_badge("Yes", status: :published)
+      else
+        rp_badge("No", status: :draft)
+      end
+    end
+
+    # Shows attachment status badge.
+    # @param attachment [ActiveStorage::Attached] the attachment or attachments
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_attachment_badge(post.header_image)  # => "Attached" or "None"
+    #   rp_attachment_badge(project.gallery)    # => "5 images" or "None"
+    def rp_attachment_badge(attachment)
+      if attachment.respond_to?(:attached?) && attachment.attached?
+        if attachment.respond_to?(:count)
+          count = attachment.count
+          rp_badge(pluralize(count, "file"), status: :published)
+        else
+          rp_badge("Attached", status: :published)
+        end
+      else
+        rp_badge("None", status: :draft)
+      end
+    end
+
+    # ============================================================
+    # FLASH/FEEDBACK HELPERS
+    # ============================================================
+
+    # Renders all flash message types with appropriate styling.
+    # @return [String] rendered HTML
+    #
+    # @example Usage (in layout)
+    #   <%= rp_flash_messages %>
+    def rp_flash_messages
+      return unless flash.any?
+
+      flash_type_classes = {
+        notice: "rp-flash--success",
+        alert: "rp-flash--danger",
+        warning: "rp-flash--warning",
+        info: "rp-flash--info"
+      }
+
+      content_tag(:div, class: "rp-flash-container") do
+        flash.map do |type, message|
+          css_class = flash_type_classes[type.to_sym] || "rp-flash--info"
+          content_tag(:div, message, class: "rp-flash #{css_class}")
+        end.join.html_safe
+      end
+    end
+
+    # ============================================================
+    # LAYOUT HELPERS (existing methods below)
+    # ============================================================
     # Renders a page header with title and optional action buttons.
     # @param title [String] the page title
     # @param actions [Hash] action links to render (label => path or label => [path, options])

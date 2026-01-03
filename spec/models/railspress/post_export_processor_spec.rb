@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Railspress::PostExportProcessor, type: :model do
-  fixtures "railspress/posts", "railspress/categories", "railspress/tags", "railspress/post_tags"
+  fixtures "railspress/posts", "railspress/categories", "railspress/tags", "railspress/taggings"
 
   let(:export) { Railspress::Export.create!(export_type: "posts") }
   let(:processor) { described_class.new(export: export) }

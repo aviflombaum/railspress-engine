@@ -1,6 +1,7 @@
 module Railspress
   class Post < ApplicationRecord
     include Railspress::Entity
+    include Railspress::Taggable
 
     # === Entity Field Declarations ===
     # These fields use the Entity system for type detection and config introspection.
@@ -32,9 +33,6 @@ module Railspress
     def author=(user)
       self.author_id = user&.id
     end
-    has_many :post_tags, dependent: :destroy
-    has_many :tags, through: :post_tags
-
     has_rich_text :content
     has_one_attached :header_image
 
@@ -76,15 +74,6 @@ module Railspress
         order(created_at: :desc)
       end
     }
-
-    # Accepts CSV string and syncs tags
-    def tag_list=(csv_string)
-      self.tags = Tag.from_csv(csv_string)
-    end
-
-    def tag_list
-      tags.pluck(:name).join(", ")
-    end
 
     # Calculate reading time from content word count
     def calculate_reading_time

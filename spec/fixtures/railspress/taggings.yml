@@ -1,0 +1,7 @@
+hello_world_ruby:
+  tag: ruby
+  taggable: hello_world (Railspress::Post)
+
+hello_world_rails:
+  tag: rails
+  taggable: hello_world (Railspress::Post)

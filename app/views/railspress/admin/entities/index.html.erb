@@ -1,0 +1,76 @@
+<% content_for :title, entity_config.label %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-title"><%= entity_config.label %></h1>
+  <div class="rp-page-actions">
+    <%= link_to "New #{entity_config.singular_label}", entity_new_path, class: "rp-btn rp-btn--primary" %>
+  </div>
+</div>
+
+<div class="rp-card">
+  <% if @records.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <% entity_config.fields.each do |name, field| %>
+              <th><%= name.to_s.humanize %></th>
+            <% end %>
+            <th>Created</th>
+            <th class="rp-table-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @records.each do |record| %>
+            <tr>
+              <% entity_config.fields.each_with_index do |(name, field), index| %>
+                <td>
+                  <% value = record.public_send(name) %>
+                  <% if index == 0 %>
+                    <%= link_to entity_show_path(record), class: "rp-link rp-table-primary" do %>
+                      <%= truncate(value.to_s, length: 60) %>
+                    <% end %>
+                  <% else %>
+                    <% case field[:type] %>
+                    <% when :rich_text %>
+                      <%= truncate(strip_tags(value.to_s), length: 60) %>
+                    <% when :boolean %>
+                      <span class="rp-badge rp-badge--<%= value ? 'published' : 'draft' %>">
+                        <%= value ? "Yes" : "No" %>
+                      </span>
+                    <% when :datetime, :date %>
+                      <%= value&.strftime("%b %d, %Y") || "—" %>
+                    <% when :attachments %>
+                      <% count = value.attached? ? value.count : 0 %>
+                      <span class="rp-badge"><%= pluralize(count, "image") %></span>
+                    <% when :attachment %>
+                      <% if value.attached? %>
+                        <span class="rp-badge rp-badge--published">Attached</span>
+                      <% else %>
+                        <span class="rp-badge rp-badge--draft">None</span>
+                      <% end %>
+                    <% else %>
+                      <%= truncate(value.to_s, length: 60) %>
+                    <% end %>
+                  <% end %>
+                </td>
+              <% end %>
+              <td class="rp-table-secondary"><%= record.created_at.strftime("%b %d, %Y") %></td>
+              <td class="rp-table-actions">
+                <%= link_to "Edit", entity_edit_path(record), class: "rp-link" %>
+                <%= button_to "Delete", entity_show_path(record), method: :delete,
+                    data: { turbo_confirm: "Delete this #{entity_config.singular_label.downcase}?" },
+                    class: "rp-link rp-link--danger" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="rp-empty-state">
+      No <%= entity_config.label.downcase %> yet.
+      <%= link_to "Create your first #{entity_config.singular_label.downcase}", entity_new_path, class: "rp-link" %>.
+    </p>
+  <% end %>
+</div>

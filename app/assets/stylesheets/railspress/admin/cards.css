@@ -13,3 +13,40 @@
 .rp-card--padded {
   padding: var(--rp-space-xl);
 }
+
+/* Detail list for show views */
+.rp-detail-list {
+  padding: var(--rp-space-lg);
+}
+
+.rp-detail-item {
+  padding: var(--rp-space-md) 0;
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.rp-detail-item:last-child {
+  border-bottom: none;
+}
+
+.rp-detail-label {
+  font-size: var(--rp-font-sm);
+  color: var(--rp-text-secondary);
+  font-weight: 500;
+  margin-bottom: var(--rp-space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rp-detail-value {
+  color: var(--rp-text-primary);
+  line-height: 1.5;
+}
+
+.rp-rich-text-content {
+  max-width: 65ch;
+}
+
+.rp-text-content {
+  max-width: 65ch;
+  white-space: pre-wrap;
+}

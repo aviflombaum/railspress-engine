@@ -1,0 +1,23 @@
+portfolio_site:
+  title: Portfolio Website
+  client: Creative Agency
+  description: A modern portfolio website with animations
+  featured: true
+  created_at: <%= 3.days.ago %>
+  updated_at: <%= 3.days.ago %>
+
+ecommerce_platform:
+  title: E-commerce Platform
+  client: Retail Corp
+  description: Full-featured online store with payments
+  featured: true
+  created_at: <%= 2.days.ago %>
+  updated_at: <%= 2.days.ago %>
+
+mobile_app:
+  title: Mobile App
+  client: Startup Inc
+  description: Cross-platform mobile application
+  featured: false
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

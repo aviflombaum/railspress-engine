@@ -1,0 +1,156 @@
+<%= form_with model: @record,
+    url: @record.persisted? ? entity_show_path(@record) : entity_index_path,
+    class: "rp-form" do |form| %>
+
+  <% if @record.errors.any? %>
+    <div class="rp-form-errors">
+      <ul>
+        <% @record.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%
+    # Separate fields into main content vs sidebar metadata vs attachments
+    main_types = [:string, :text, :rich_text]
+    sidebar_types = [:boolean, :integer, :decimal, :datetime, :date]
+    attachment_types = [:attachment, :attachments]
+
+    main_fields = entity_config.fields.select { |_, f| main_types.include?(f[:type]) }
+    sidebar_fields = entity_config.fields.select { |_, f| sidebar_types.include?(f[:type]) }
+    attachment_fields = entity_config.fields.select { |_, f| attachment_types.include?(f[:type]) }
+  %>
+
+  <div class="rp-form-layout">
+    <!-- Main content column -->
+    <div class="rp-form-main">
+      <% main_fields.each_with_index do |(name, field), index| %>
+        <div class="rp-form-group">
+          <%
+            is_first = index == 0
+            is_required = @record.class.validators_on(name).any? { |v| v.is_a?(ActiveModel::Validations::PresenceValidator) }
+            label_class = "rp-label"
+          %>
+          <%= form.label name, class: label_class %>
+
+          <% case field[:type] %>
+          <% when :rich_text %>
+            <%= form.rich_text_area name, class: "rp-rich-text" %>
+          <% when :text %>
+            <%= form.text_area name,
+                rows: 4,
+                class: "rp-input",
+                placeholder: "Enter #{name.to_s.humanize.downcase}..." %>
+          <% else %>
+            <%= form.text_field name,
+                class: "rp-input#{is_first ? ' rp-input--title' : ''}",
+                placeholder: "Enter #{name.to_s.humanize.downcase}...",
+                required: is_required %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if sidebar_fields.any? || attachment_fields.any? %>
+      <!-- Sidebar column -->
+      <div class="rp-form-sidebar">
+        <% if sidebar_fields.any? %>
+          <div class="rp-sidebar-section">
+            <h3 class="rp-sidebar-title">Options</h3>
+
+            <% sidebar_fields.each do |name, field| %>
+              <div class="rp-form-group">
+                <% case field[:type] %>
+                <% when :boolean %>
+                  <label class="rp-checkbox-label">
+                    <%= form.check_box name %>
+                    <%= name.to_s.humanize %>
+                  </label>
+                <% when :integer %>
+                  <%= form.label name, class: "rp-label" %>
+                  <%= form.number_field name, class: "rp-input", step: 1 %>
+                <% when :decimal %>
+                  <%= form.label name, class: "rp-label" %>
+                  <%= form.number_field name, class: "rp-input", step: "any" %>
+                <% when :datetime %>
+                  <%= form.label name, class: "rp-label" %>
+                  <%= form.datetime_local_field name, class: "rp-input" %>
+                <% when :date %>
+                  <%= form.label name, class: "rp-label" %>
+                  <%= form.date_field name, class: "rp-input" %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% attachment_fields.each do |name, field| %>
+          <div class="rp-sidebar-section">
+            <h3 class="rp-sidebar-title"><%= name.to_s.humanize %></h3>
+
+            <% if field[:type] == :attachments %>
+              <%# Show existing attachments with remove option %>
+              <% attachments = @record.public_send(name) %>
+              <% if attachments.attached? %>
+                <div class="rp-gallery-preview">
+                  <% attachments.each do |attachment| %>
+                    <div class="rp-gallery-item">
+                      <% if attachment.image? %>
+                        <%= image_tag main_app.url_for(attachment), class: "rp-gallery-thumb" %>
+                      <% else %>
+                        <div class="rp-gallery-file">
+                          <span class="rp-gallery-file-icon">📄</span>
+                          <span class="rp-gallery-file-name"><%= attachment.filename %></span>
+                        </div>
+                      <% end %>
+                      <label class="rp-gallery-remove">
+                        <%= check_box_tag "#{entity_config.param_key}[remove_#{name}][]", attachment.id, false %>
+                        Remove
+                      </label>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <div class="rp-form-group">
+                <%= form.label name, "Add images", class: "rp-label" %>
+                <%= form.file_field name, multiple: true, accept: "image/*", class: "rp-file-input", direct_upload: true %>
+                <p class="rp-form-hint">Select multiple images to upload</p>
+              </div>
+            <% else %>
+              <%# Single attachment %>
+              <% attachment = @record.public_send(name) %>
+              <% if attachment.attached? %>
+                <div class="rp-attachment-preview">
+                  <% if attachment.image? %>
+                    <%= image_tag main_app.url_for(attachment), class: "rp-attachment-thumb" %>
+                  <% else %>
+                    <div class="rp-attachment-file">
+                      <span class="rp-attachment-file-name"><%= attachment.filename %></span>
+                    </div>
+                  <% end %>
+                  <label class="rp-attachment-remove">
+                    <%= check_box_tag "#{entity_config.param_key}[remove_#{name}]", "1", false %>
+                    Remove
+                  </label>
+                </div>
+              <% end %>
+
+              <div class="rp-form-group">
+                <%= form.label name, class: "rp-label" %>
+                <%= form.file_field name, accept: "image/*", class: "rp-file-input", direct_upload: true %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rp-form-actions">
+    <%= form.submit class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Cancel", entity_index_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+<% end %>

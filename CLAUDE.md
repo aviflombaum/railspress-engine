@@ -95,13 +95,24 @@ Admin routes: `/cms/admin/posts`, `/cms/admin/categories`, `/cms/admin/tags`
 - UI prototypes in `.ai/railspress-ui/` directory
 - Main stylesheet: `app/assets/stylesheets/railspress/admin.css`
 - No Tailwind or CSS framework dependencies
+- **IMPORTANT**: See `.ai/ENTITY_VIEW_STYLE_GUIDE.md` for view styling patterns
+
+### Creating New Entity Views
+
+When adding new entity types, follow the patterns documented in `.ai/ENTITY_VIEW_STYLE_GUIDE.md`:
+
+1. Use `AdminHelper` methods for consistent page structure
+2. Choose simple vs complex form pattern based on entity complexity
+3. Run styling consistency tests: `bundle exec rspec spec/system/railspress/admin/view_styling_spec.rb`
 
 ## Important Files
 
 - `.ai/sprints/OVERVIEW.md` - Sprint planning and architecture decisions
 - `.ai/PLAN.md` - Full extraction plan with future features
 - `.ai/railspress-ui/` - HTML/CSS prototypes for admin interface
+- `.ai/ENTITY_VIEW_STYLE_GUIDE.md` - **View styling patterns and checklists**
 - `lib/railspress/engine.rb` - Engine configuration and initializers
+- `app/helpers/railspress/admin_helper.rb` - Helper methods for consistent admin views
 
 ## Conventions
 

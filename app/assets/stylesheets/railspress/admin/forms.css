@@ -331,3 +331,129 @@ textarea.rp-input {
   height: 16px;
   cursor: pointer;
 }
+
+/* Form hint */
+.rp-form-hint {
+  font-size: 0.75rem;
+  color: var(--rp-text-muted);
+  margin-top: 4px;
+}
+
+/* Gallery Preview (Edit Form) */
+.rp-gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--rp-space-sm);
+  margin-bottom: var(--rp-space-md);
+}
+
+.rp-gallery-item {
+  position: relative;
+  background: var(--rp-bg-elevated);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  padding: var(--rp-space-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rp-space-xs);
+}
+
+.rp-gallery-thumb {
+  width: 100%;
+  height: auto;
+  border-radius: calc(var(--rp-radius) - 2px);
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+
+.rp-gallery-file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--rp-space-sm);
+  text-align: center;
+}
+
+.rp-gallery-file-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--rp-space-xs);
+}
+
+.rp-gallery-file-name {
+  font-size: 0.6875rem;
+  color: var(--rp-text-muted);
+  word-break: break-all;
+}
+
+.rp-gallery-remove {
+  font-size: 0.6875rem;
+  color: var(--rp-danger);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.rp-gallery-remove input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+}
+
+/* Single Attachment Preview */
+.rp-attachment-preview {
+  margin-bottom: var(--rp-space-md);
+  text-align: center;
+}
+
+.rp-attachment-thumb {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--rp-radius);
+  border: 1px solid var(--rp-border);
+}
+
+.rp-attachment-remove {
+  font-size: 0.75rem;
+  color: var(--rp-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: var(--rp-space-sm);
+  cursor: pointer;
+}
+
+/* Gallery Grid (Show Page) */
+.rp-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--rp-space-md);
+}
+
+.rp-gallery-grid-item {
+  border-radius: var(--rp-radius);
+  overflow: hidden;
+}
+
+.rp-gallery-grid-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.2s;
+}
+
+.rp-gallery-grid-item:hover .rp-gallery-grid-image {
+  transform: scale(1.02);
+}
+
+/* Attachment Display (Show Page) */
+.rp-attachment-display {
+  max-width: 400px;
+}
+
+.rp-attachment-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--rp-radius);
+}

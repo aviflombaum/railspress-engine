@@ -46,5 +46,21 @@
       </svg>
       <span class="rp-nav-text">Tags</span>
     <% end %>
+
+    <% if Railspress.registered_entities.any? %>
+      <div class="rp-nav-divider"></div>
+
+      <% Railspress.registered_entities.each do |route_key, config| %>
+        <%= link_to railspress.admin_entity_index_path(entity_type: route_key),
+            class: "rp-nav-link #{controller_name == 'entities' && params[:entity_type] == route_key ? 'rp-nav-link--active' : ''}" do %>
+          <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+          <span class="rp-nav-text"><%= config.label %></span>
+        <% end %>
+      <% end %>
+    <% end %>
   </nav>
 </div>

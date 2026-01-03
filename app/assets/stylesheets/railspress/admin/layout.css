@@ -124,6 +124,12 @@
   transition: opacity 0.2s ease;
 }
 
+.rp-nav-divider {
+  height: 1px;
+  background: var(--rp-sidebar-hover);
+  margin: var(--rp-space-md) 0;
+}
+
 /* Main Content Area */
 .rp-main {
   flex: 1;

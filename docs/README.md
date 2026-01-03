@@ -2,6 +2,7 @@
 
 ## Guides
 
+- **[ENTITIES.md](ENTITIES.md)** - Manage any ActiveRecord model through the admin interface with the Entity system.
 - **[BLOGGING.md](BLOGGING.md)** - Complete guide to building a blog frontend with RailsPress, including recent posts, categories, tags, search, RSS feeds, and SEO optimization.
 - **[CONFIGURING.md](CONFIGURING.md)** - Configuration options for authors, header images, and other features.
 - **[IMPORT_EXPORT.md](IMPORT_EXPORT.md)** - Bulk import and export posts with markdown and YAML frontmatter.

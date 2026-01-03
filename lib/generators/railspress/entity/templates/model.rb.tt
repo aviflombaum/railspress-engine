@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+class <%= class_name %> < ApplicationRecord
+  include Railspress::Entity
+<% rich_text_fields.each do |attribute| -%>
+
+  has_rich_text :<%= attribute.name %>
+<% end -%>
+
+  # Declare which fields appear in the CMS admin
+  railspress_fields <%= railspress_field_names %>
+<% rich_text_fields.each do |attribute| -%>
+  railspress_fields :<%= attribute.name %>, as: :rich_text
+<% end -%>
+
+  # Optional: customize sidebar label (defaults to pluralized class name)
+  # railspress_label "Custom Label"
+
+  # Add your validations
+  # validates :title, presence: true
+end

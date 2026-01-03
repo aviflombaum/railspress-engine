@@ -3,8 +3,8 @@ require_relative "lib/railspress/version"
 Gem::Specification.new do |spec|
   spec.name        = "railspress-engine"
   spec.version     = Railspress::VERSION
-  spec.authors     = ["Avi Flombaum"]
-  spec.email       = ["avi@flatironschool.com"]
+  spec.authors     = [ "Avi Flombaum" ]
+  spec.email       = [ "avi@flatironschool.com" ]
   spec.homepage    = "https://github.com/aviflombaum/railspress-engine"
   spec.summary     = "A mountable blog engine for Rails 8+"
   spec.description = "RailsPress provides drop-in blog functionality with categories, tags, rich text editing, and an admin interface."
@@ -21,8 +21,8 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "rails", ">= 8.0"
-  spec.add_dependency "lexxy", "~> 0.1.23.beta"
+  spec.add_dependency "rails", ">= 8.1"
+  spec.add_dependency "lexxy", "~> 0.1.24.beta"
   spec.add_dependency "rubyzip", "~> 2.3"
   spec.add_dependency "redcarpet", "~> 3.6"
 

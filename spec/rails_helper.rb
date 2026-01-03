@@ -10,6 +10,9 @@ require "rspec/rails"
 
 # Add additional requires below this line.
 
+# Load support files
+Dir[Rails.root.join("../support/**/*.rb")].each { |f| require f }
+
 begin
   ActiveRecord::Migration.maintain_test_schema!
 rescue ActiveRecord::PendingMigrationError => e

@@ -2,6 +2,7 @@ module Railspress
   module Admin
     class BaseController < ActionController::Base
       layout "railspress/admin"
+      helper Railspress::AdminHelper
 
       helper_method :current_author, :available_authors, :authors_enabled?, :header_images_enabled?
 

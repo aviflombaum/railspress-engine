@@ -18,5 +18,19 @@ Railspress::Engine.routes.draw do
         get :download
       end
     end
+
+    # Dynamic entity routes for host-defined CMS models
+    scope "entities" do
+      scope ":entity_type", constraints: ->(req) { Railspress.entity_registered?(req.params[:entity_type]) } do
+        get "/", to: "entities#index", as: :entity_index
+        get "/new", to: "entities#new", as: :new_entity
+        post "/", to: "entities#create"
+        get "/:id", to: "entities#show", as: :entity
+        get "/:id/edit", to: "entities#edit", as: :edit_entity
+        patch "/:id", to: "entities#update"
+        put "/:id", to: "entities#update"
+        delete "/:id", to: "entities#destroy"
+      end
+    end
   end
 end

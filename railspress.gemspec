@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 8.1"
   spec.add_dependency "lexxy", "~> 0.1.24.beta"
-  spec.add_dependency "rubyzip", "~> 2.3"
+  spec.add_dependency "rubyzip", ">= 2.3", "< 4.0"
   spec.add_dependency "redcarpet", "~> 3.6"
 
   spec.add_development_dependency "cuprite"

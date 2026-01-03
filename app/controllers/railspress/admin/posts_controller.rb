@@ -5,11 +5,14 @@ module Railspress
       before_action :load_categories, only: [:new, :create, :edit, :update]
 
       def index
+        @sort = params[:sort].presence || "created_at"
+        @direction = params[:direction].presence || "desc"
+
         @posts = Post.includes(:category, :tags)
                      .search(params[:q])
                      .by_category(params[:category_id])
                      .by_status(params[:status])
-                     .ordered
+                     .sorted_by(@sort, @direction)
 
         @total_count = @posts.count
         @page = [params[:page].to_i, 1].max

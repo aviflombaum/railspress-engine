@@ -26,6 +26,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rubyzip", "~> 2.3"
   spec.add_dependency "redcarpet", "~> 3.6"
 
+  spec.add_development_dependency "cuprite"
+  spec.add_development_dependency "capybara"
+
   spec.post_install_message = <<~MSG
 
     ============================================================

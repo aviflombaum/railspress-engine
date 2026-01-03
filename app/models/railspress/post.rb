@@ -1,5 +1,26 @@
 module Railspress
   class Post < ApplicationRecord
+    include Railspress::Entity
+
+    # === Entity Field Declarations ===
+    # These fields use the Entity system for type detection and config introspection.
+    # Post is NOT registered as an entity (it keeps its dedicated controller/views).
+    railspress_fields :title, :slug, :excerpt
+    railspress_fields :meta_title, :meta_description
+    railspress_fields :content                        # auto-detects :rich_text
+    railspress_fields :header_image, as: :attachment
+    railspress_fields :published_at, :reading_time
+
+    # Fields NOT declared above (Entity doesn't support these types yet):
+    # - category_id (belongs_to association)
+    # - status (enum)
+    # - author_id (configurable polymorphic)
+    # - tags (has_many through)
+    # See .ai/FUTURE_ENTITY.md for planned Entity enhancements
+
+    railspress_label "Posts"
+
+    # === Associations ===
     belongs_to :category, optional: true
     # Author association - only functional when Railspress.authors_enabled?
     # The author class is configured via Railspress.configure { |c| c.author_class_name = "User" }
@@ -30,21 +51,31 @@ module Railspress
     before_save :set_published_at
     before_save :set_reading_time, if: -> { reading_time.blank? && content.present? }
 
-    scope :ordered, -> { order(created_at: :desc) }
-    scope :recent, -> { ordered.limit(10) }
+    # Generic scopes (ordered, recent) and pagination (page) provided by Entity concern
+    # Post-specific scopes below:
     scope :published, -> { where(status: :published).where.not(published_at: nil) }
     scope :drafts, -> { where(status: :draft) }
     scope :by_author, ->(author) { where(author_id: author.id) }
     scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
     scope :by_category, ->(category_id) { where(category_id: category_id) if category_id.present? }
     scope :by_status, ->(status) { where(status: status) if status.present? }
-
-    PER_PAGE = 20
-
-    def self.page(page_number)
-      page_number = [page_number.to_i, 1].max
-      offset((page_number - 1) * PER_PAGE).limit(PER_PAGE)
-    end
+    scope :sorted_by, ->(column, direction) {
+      direction = direction.to_s.downcase == "desc" ? :desc : :asc
+      case column.to_s
+      when "title"
+        order(title: direction)
+      when "category"
+        left_joins(:category).order(Arel.sql("railspress_categories.name #{direction == :desc ? 'DESC' : 'ASC'} NULLS LAST"))
+      when "status"
+        order(status: direction)
+      when "reading_time"
+        order(reading_time: direction)
+      when "created_at"
+        order(created_at: direction)
+      else
+        order(created_at: :desc)
+      end
+    }
 
     # Accepts CSV string and syncs tags
     def tag_list=(csv_string)

@@ -33,47 +33,17 @@
     <table class="rp-table">
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Category</th>
-          <% if authors_enabled? %><th>Author</th><% end %>
-          <th>Status</th>
-          <th>Read</th>
-          <th>Date</th>
-          <th class="rp-table-actions">Actions</th>
+          <th><%= rp_sortable_header(:title, "Title", current_sort: @sort, current_direction: @direction) %></th>
+          <th><%= rp_sortable_header(:category, "Category", current_sort: @sort, current_direction: @direction) %></th>
+          <% if authors_enabled? %><th><%= rp_table_header("Author") %></th><% end %>
+          <th><%= rp_sortable_header(:status, "Status", current_sort: @sort, current_direction: @direction) %></th>
+          <th><%= rp_sortable_header(:reading_time, "Read", current_sort: @sort, current_direction: @direction) %></th>
+          <th><%= rp_sortable_header(:created_at, "Date", current_sort: @sort, current_direction: @direction) %></th>
+          <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
         </tr>
       </thead>
       <tbody>
-        <% @posts.each do |post| %>
-          <tr>
-            <td>
-              <%= link_to post.title, admin_post_path(post), class: "rp-link rp-table-primary" %>
-              <% if post.tags.any? %>
-                <div class="rp-tag-list">
-                  <% post.tags.each do |tag| %>
-                    <span class="rp-tag"><%= tag.name %></span>
-                  <% end %>
-                </div>
-              <% end %>
-            </td>
-            <td><%= post.category&.name || "—" %></td>
-            <% if authors_enabled? %>
-              <td><%= post.author&.public_send(Railspress.author_display_method) || "—" %></td>
-            <% end %>
-            <td>
-              <span class="rp-badge rp-badge--<%= post.status %>">
-                <%= post.status.titleize %>
-              </span>
-            </td>
-            <td class="rp-table-secondary"><%= post.reading_time_display %> min</td>
-            <td class="rp-table-secondary"><%= post.created_at.strftime("%b %d, %Y") %></td>
-            <td class="rp-table-actions">
-              <%= link_to "Edit", edit_admin_post_path(post), class: "rp-link" %>
-              <%= button_to "Delete", admin_post_path(post), method: :delete,
-                  data: { turbo_confirm: "Delete this post?" },
-                  class: "rp-link rp-link--danger" %>
-            </td>
-          </tr>
-        <% end %>
+        <%= render partial: "post_row", collection: @posts, as: :post %>
       </tbody>
     </table>
   </div>

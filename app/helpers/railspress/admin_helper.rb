@@ -162,5 +162,40 @@ module Railspress
       classes << "rp-label--required" if required
       classes.join(" ")
     end
+
+    # Renders a sortable table header link.
+    # Clicking toggles between ascending and descending order.
+    # @param column [Symbol, String] the column name for sorting
+    # @param label [String] the display text for the header
+    # @param current_sort [String, nil] the currently sorted column
+    # @param current_direction [String] current sort direction ("asc" or "desc")
+    # @return [String] rendered HTML
+    #
+    # @example Basic usage
+    #   <%= rp_sortable_header(:title, "Title", current_sort: @sort, current_direction: @direction) %>
+    def rp_sortable_header(column, label, current_sort:, current_direction:)
+      column = column.to_s
+      is_active = current_sort == column
+      # Toggle direction if clicking the same column, otherwise default to asc
+      new_direction = is_active && current_direction == "asc" ? "desc" : "asc"
+
+      classes = ["rp-sortable"]
+      classes << "rp-sortable--active" if is_active
+      classes << "rp-sortable--#{current_direction}" if is_active
+
+      link_to(
+        label,
+        url_for(request.query_parameters.merge(sort: column, direction: new_direction)),
+        class: classes.join(" ")
+      )
+    end
+
+    # Renders a non-sortable table header.
+    # @param label [String] the display text for the header
+    # @param options [Hash] additional HTML attributes
+    # @return [String] rendered HTML
+    def rp_table_header(label, **options)
+      content_tag(:span, label, options)
+    end
   end
 end

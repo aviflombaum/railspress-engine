@@ -16,7 +16,7 @@
 .rp-form-layout {
   display: grid;
   grid-template-columns: 1fr 280px;
-  gap: var(--rp-space-2xl);
+  gap: var(--rp-space-xl);
   align-items: start;
 }
 

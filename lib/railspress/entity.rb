@@ -107,9 +107,27 @@ module Railspress
       class_attribute :_railspress_config, instance_writer: false
       # Store class name (string) for Rails reloader compatibility
       self._railspress_config = EntityConfig.new(self.name)
+
+      # Default scopes available to all entities
+      scope :ordered, -> { order(created_at: :desc) }
+      scope :recent, -> { ordered.limit(10) }
     end
 
+    # Default pagination - can be overridden in model
+    PER_PAGE = 20
+
     class_methods do
+      # Simple pagination for index views
+      def page(page_number)
+        page_number = [page_number.to_i, 1].max
+        offset((page_number - 1) * per_page_count).limit(per_page_count)
+      end
+
+      # Allow models to override PER_PAGE
+      def per_page_count
+        const_defined?(:PER_PAGE, false) ? const_get(:PER_PAGE) : Railspress::Entity::PER_PAGE
+      end
+
       # Declare which fields should appear in the CMS
       #
       # @example Simple field list (types auto-detected from schema)

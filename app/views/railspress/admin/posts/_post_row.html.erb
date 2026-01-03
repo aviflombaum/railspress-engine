@@ -1,0 +1,29 @@
+<tr>
+  <td>
+    <%= link_to post.title, admin_post_path(post), class: "rp-link rp-table-primary" %>
+    <% if post.tags.any? %>
+      <div class="rp-tag-list">
+        <% post.tags.each do |tag| %>
+          <span class="rp-tag"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </td>
+  <td><%= post.category&.name || "—" %></td>
+  <% if authors_enabled? %>
+    <td><%= post.author&.public_send(Railspress.author_display_method) || "—" %></td>
+  <% end %>
+  <td>
+    <span class="rp-badge rp-badge--<%= post.status %>">
+      <%= post.status.titleize %>
+    </span>
+  </td>
+  <td class="rp-table-secondary"><%= post.reading_time_display %> min</td>
+  <td class="rp-table-secondary"><%= post.created_at.strftime("%b %d, %Y") %></td>
+  <td class="rp-table-actions">
+    <%= link_to "Edit", edit_admin_post_path(post), class: "rp-link" %>
+    <%= button_to "Delete", admin_post_path(post), method: :delete,
+        data: { turbo_confirm: "Delete this post?" },
+        class: "rp-link rp-link--danger" %>
+  </td>
+</tr>

@@ -37,7 +37,6 @@
           <th><%= rp_sortable_header(:category, "Category", current_sort: @sort, current_direction: @direction) %></th>
           <% if authors_enabled? %><th><%= rp_table_header("Author") %></th><% end %>
           <th><%= rp_sortable_header(:status, "Status", current_sort: @sort, current_direction: @direction) %></th>
-          <th><%= rp_sortable_header(:reading_time, "Read", current_sort: @sort, current_direction: @direction) %></th>
           <th><%= rp_sortable_header(:published_at, "Published", current_sort: @sort, current_direction: @direction) %></th>
           <th><%= rp_sortable_header(:created_at, "Created", current_sort: @sort, current_direction: @direction) %></th>
           <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>

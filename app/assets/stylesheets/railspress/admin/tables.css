@@ -46,6 +46,15 @@
 .rp-table-actions {
   text-align: right;
   white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--rp-space-xs);
+}
+
+/* button_to generates forms - make them inline */
+.rp-table-actions form {
+  display: inline;
 }
 
 .rp-table-actions .rp-link {
@@ -58,6 +67,45 @@
 
 .rp-table--responsive {
   overflow-x: auto;
+}
+
+/* Truncated text cell */
+.rp-table-truncate {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .rp-table-truncate {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 767px) {
+  .rp-table-truncate {
+    max-width: 120px;
+  }
+}
+
+/* Date display - show short on small screens */
+.rp-table-date-full {
+  display: inline;
+}
+
+.rp-table-date-short {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .rp-table-date-full {
+    display: none;
+  }
+
+  .rp-table-date-short {
+    display: inline;
+  }
 }
 
 /* Sortable column headers */

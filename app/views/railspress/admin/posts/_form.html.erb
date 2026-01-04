@@ -30,10 +30,42 @@
         <p class="rp-hint">Leave blank to auto-generate from title</p>
       </div>
 
-      <div class="rp-form-group">
-        <%= form.label :content, class: "rp-label" %>
+      <div class="rp-form-group" data-markdown-mode>
+        <div class="rp-editor-header">
+          <%= form.label :content, class: "rp-label" %>
+          <div class="rp-editor-mode-toggle">
+            <button type="button"
+                    class="rp-btn rp-btn--small rp-btn--ghost"
+                    data-markdown-toggle
+                    aria-pressed="false"
+                    title="Toggle markdown mode">
+              <span data-mode-label="rich">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 7V4h16v3M9 20h6M12 4v16"/>
+                </svg>
+                Markdown
+              </span>
+              <span data-mode-label="markdown" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="9" y1="9" x2="15" y2="9"/>
+                  <line x1="9" y1="13" x2="15" y2="13"/>
+                  <line x1="9" y1="17" x2="12" y2="17"/>
+                </svg>
+                Rich Text
+              </span>
+            </button>
+          </div>
+        </div>
         <%= form.rich_text_area :content, class: "rp-rich-text" %>
-        <p class="rp-hint">Rich text editor powered by Lexxy</p>
+        <textarea data-markdown-textarea
+                  class="rp-markdown-editor"
+                  placeholder="Write in Markdown..."
+                  hidden></textarea>
+        <p class="rp-hint">
+          <span data-mode-label="rich">Rich text editor powered by Lexxy. Click "Markdown" to edit raw markdown.</span>
+          <span data-mode-label="markdown" hidden>Editing in Markdown mode. Supports **bold**, *italic*, # headings, - lists, and more.</span>
+        </p>
       </div>
     </div>
 

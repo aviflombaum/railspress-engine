@@ -1,6 +1,6 @@
 <tr>
-  <td>
-    <%= link_to post.title, admin_post_path(post), class: "rp-link rp-table-primary" %>
+  <td class="rp-table-truncate">
+    <%= link_to post.title, admin_post_path(post), class: "rp-link rp-table-primary", title: post.title %>
     <% if post.tags.any? %>
       <div class="rp-tag-list">
         <% post.tags.each do |tag| %>
@@ -18,9 +18,18 @@
       <%= post.status.titleize %>
     </span>
   </td>
-  <td class="rp-table-secondary"><%= post.reading_time_display %> min</td>
-  <td class="rp-table-secondary"><%= post.published_at&.strftime("%-m/%-d/%Y %-I:%M%P") || "—" %></td>
-  <td class="rp-table-secondary"><%= post.created_at.strftime("%-m/%-d/%Y") %></td>
+  <td class="rp-table-secondary" title="<%= post.published_at&.strftime("%B %-d, %Y at %-I:%M %p") %>">
+    <% if post.published_at %>
+      <span class="rp-table-date-full"><%= post.published_at.strftime("%-m/%-d/%Y %-I:%M%P") %></span>
+      <span class="rp-table-date-short"><%= post.published_at.strftime("%-m/%-d/%y") %></span>
+    <% else %>
+      —
+    <% end %>
+  </td>
+  <td class="rp-table-secondary" title="<%= post.created_at.strftime("%B %-d, %Y at %-I:%M %p") %>">
+    <span class="rp-table-date-full"><%= post.created_at.strftime("%-m/%-d/%Y") %></span>
+    <span class="rp-table-date-short"><%= post.created_at.strftime("%-m/%-d/%y") %></span>
+  </td>
   <td class="rp-table-actions">
     <%= link_to edit_admin_post_path(post), class: "rp-icon-btn", title: "Edit" do %>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

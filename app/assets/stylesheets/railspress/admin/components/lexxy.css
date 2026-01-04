@@ -59,3 +59,87 @@
 .rp-rich-text ul, ol {
   padding-left: 16px;
 }
+
+/* ============================================
+ * Markdown Mode
+ * ============================================ */
+
+/* Editor header with label and toggle */
+.rp-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--rp-space-sm);
+}
+
+.rp-editor-header .rp-label {
+  margin-bottom: 0;
+}
+
+/* Mode toggle button */
+.rp-editor-mode-toggle {
+  flex-shrink: 0;
+}
+
+.rp-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--rp-border);
+  color: var(--rp-text-muted);
+}
+
+.rp-btn--ghost:hover {
+  background: var(--rp-bg-subtle);
+  color: var(--rp-text);
+  border-color: var(--rp-border-hover);
+}
+
+.rp-btn--ghost[aria-pressed="true"] {
+  background: var(--rp-primary);
+  color: white;
+  border-color: var(--rp-primary);
+}
+
+.rp-btn--ghost svg {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.rp-btn--ghost span {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Markdown textarea */
+.rp-markdown-editor {
+  width: 100%;
+  min-height: 400px;
+  padding: var(--rp-space-md);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  background: var(--rp-bg-elevated);
+  color: var(--rp-text);
+  resize: vertical;
+  tab-size: 2;
+}
+
+.rp-markdown-editor:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px rgba(var(--rp-primary-rgb), 0.1);
+}
+
+.rp-markdown-editor::placeholder {
+  color: var(--rp-text-muted);
+}
+
+/* Hide hint labels based on mode */
+[data-markdown-mode] [data-mode-label="markdown"][hidden] {
+  display: none;
+}
+
+[data-markdown-mode] [data-mode-label="rich"][hidden] {
+  display: none;
+}

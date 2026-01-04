@@ -10,7 +10,8 @@ module Railspress
                   :current_author_proc,
                   :author_scope,
                   :author_display_method,
-                  :words_per_minute
+                  :words_per_minute,
+                  :blog_path
 
     attr_reader :authors_enabled, :header_images_enabled
 
@@ -23,6 +24,7 @@ module Railspress
       @author_scope = nil
       @author_display_method = :name
       @words_per_minute = 200
+      @blog_path = "/blog"
     end
 
     # Declarative setter: config.enable_authors
@@ -169,6 +171,10 @@ module Railspress
 
     def words_per_minute
       configuration.words_per_minute
+    end
+
+    def blog_path
+      configuration.blog_path
     end
 
     # Entity registry convenience accessors

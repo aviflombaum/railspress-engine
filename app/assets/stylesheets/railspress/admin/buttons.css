@@ -100,3 +100,36 @@
   font: inherit;
   cursor: pointer;
 }
+
+/* Icon Buttons */
+.rp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--rp-radius);
+  color: var(--rp-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rp-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rp-icon-btn:hover {
+  background: var(--rp-bg);
+  color: var(--rp-primary);
+  border-color: var(--rp-border);
+}
+
+.rp-icon-btn--danger:hover {
+  background: var(--rp-danger-light);
+  color: var(--rp-danger);
+  border-color: var(--rp-danger-light);
+}

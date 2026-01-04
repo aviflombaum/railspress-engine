@@ -41,6 +41,10 @@ module Railspress
         rp_attachment_field(form, name, multiple: true, **options)
       when :select
         rp_select_field(form, name, **options)
+      when :list
+        rp_list_field(form, name, **options)
+      when :lines
+        rp_lines_field(form, name, **options)
       else
         rp_string_field(form, name, **options)
       end
@@ -195,6 +199,55 @@ module Railspress
         output = form.label(name, label, class: "rp-label")
         output += form.select(name, choices, { include_blank: include_blank }, { class: "rp-select" }.merge(options))
         output += rp_hint(hint) if hint
+        output
+      end
+    end
+
+    # Renders a comma-separated list input field with label.
+    # Uses the virtual attribute `#{name}_list` for form binding.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name (e.g., :tech_stack)
+    # @param placeholder [String] placeholder text
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_list_field(f, :tech_stack)
+    #   rp_list_field(f, :tech_stack, hint: "Add technologies separated by commas")
+    def rp_list_field(form, name, placeholder: nil, label: nil, hint: nil, **options)
+      virtual_name = "#{name}_list"
+      placeholder ||= "Item 1, Item 2, Item 3"
+
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(virtual_name, label || name.to_s.humanize, class: "rp-label")
+        output += form.text_field(virtual_name, class: "rp-input", placeholder: placeholder, **options)
+        output += rp_hint(hint || "Separate items with commas")
+        output
+      end
+    end
+
+    # Renders a line-separated list textarea field with label.
+    # Uses the virtual attribute `#{name}_list` for form binding.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the field name (e.g., :highlights)
+    # @param rows [Integer] number of textarea rows
+    # @param placeholder [String] placeholder text
+    # @param label [String] custom label text
+    # @param hint [String] hint text shown below input
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_lines_field(f, :highlights)
+    #   rp_lines_field(f, :highlights, rows: 6, hint: "Each line becomes one item")
+    def rp_lines_field(form, name, rows: 5, placeholder: nil, label: nil, hint: nil, **options)
+      virtual_name = "#{name}_list"
+      placeholder ||= "One item per line"
+
+      content_tag(:div, class: "rp-form-group") do
+        output = form.label(virtual_name, label || name.to_s.humanize, class: "rp-label")
+        output += form.text_area(virtual_name, rows: rows, class: "rp-input", placeholder: placeholder, **options)
+        output += rp_hint(hint || "Enter one item per line")
         output
       end
     end

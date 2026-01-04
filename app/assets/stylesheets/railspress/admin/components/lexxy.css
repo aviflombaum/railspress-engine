@@ -56,6 +56,6 @@
   font-style: italic;
 }
 
-.rp-rich-text ul {
-  margin-left: 12px;
+.rp-rich-text ul, ol {
+  padding-left: 16px;
 }

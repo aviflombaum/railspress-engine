@@ -30,6 +30,22 @@
             <%= value&.strftime("%B %d, %Y") || "—" %>
           <% when :text %>
             <div class="rp-text-content"><%= simple_format(value) %></div>
+          <% when :list %>
+            <% if value.is_a?(Array) && value.any? %>
+              <span class="rp-list-inline"><%= value.join(", ") %></span>
+            <% else %>
+              <span class="rp-text-muted">—</span>
+            <% end %>
+          <% when :lines %>
+            <% if value.is_a?(Array) && value.any? %>
+              <ul class="rp-list-block">
+                <% value.each do |item| %>
+                  <li><%= item %></li>
+                <% end %>
+              </ul>
+            <% else %>
+              <span class="rp-text-muted">—</span>
+            <% end %>
           <% when :attachments %>
             <% if value.attached? %>
               <div class="rp-gallery-grid">

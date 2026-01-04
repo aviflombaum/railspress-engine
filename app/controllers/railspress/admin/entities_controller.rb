@@ -71,6 +71,11 @@ module Railspress
           case field[:type]
           when :attachments
             permitted << { name => [] }
+          when :list, :lines
+            # Permit virtual attribute for HTML form input
+            permitted << "#{name}_list"
+            # Also permit direct array for API/agent access
+            permitted << { name => [] }
           else
             permitted << name
           end

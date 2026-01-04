@@ -214,6 +214,89 @@ has_one_attached :file
 
 Both gems are included in the railspress gemspec.
 
+## Job Queue Configuration
+
+Import and export operations use ActiveJob for background processing. Configure your queue adapter for production use.
+
+### Queue Adapter Setup
+
+```ruby
+# config/application.rb
+config.active_job.queue_adapter = :sidekiq  # Or :solid_queue, :good_job, etc.
+```
+
+### Queue Names
+
+RailsPress jobs use the default queue. To configure a specific queue:
+
+```ruby
+# config/initializers/railspress.rb
+Rails.application.config.to_prepare do
+  Railspress::ImportPostsJob.queue_as :imports
+  Railspress::ExportPostsJob.queue_as :exports
+end
+```
+
+### Job Classes
+
+| Job | Purpose | Default Queue |
+|-----|---------|---------------|
+| `Railspress::ImportPostsJob` | Process uploaded import files | `default` |
+| `Railspress::ExportPostsJob` | Generate export zip archives | `default` |
+
+### Sidekiq Example
+
+```yaml
+# config/sidekiq.yml
+:queues:
+  - default
+  - imports
+  - exports
+```
+
+### Solid Queue Example (Rails 8+)
+
+```ruby
+# config/queue.yml
+production:
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    - queues: "*"
+      threads: 3
+      processes: 1
+```
+
+### Monitoring Jobs
+
+Check job status via:
+
+1. Your queue adapter's UI (Sidekiq Web, GoodJob dashboard, etc.)
+2. The Recent Imports/Exports tables in the RailsPress admin
+3. Rails logs for job completion/failure messages
+
+### Failure Handling
+
+When jobs fail:
+
+- **Import failures**: Individual file errors are recorded in `error_messages`. Processing continues for remaining files. Import marked "failed" only if all files fail.
+- **Export failures**: Export status set to "failed" with error message. Partial exports are cleaned up.
+
+Retry behavior follows your queue adapter's configuration. RailsPress jobs are safe to retry.
+
+### File Cleanup
+
+Temporary files are cleaned up after processing:
+
+| Location | Cleaned When |
+|----------|--------------|
+| `tmp/uploads/import_{id}/` | After import job completes |
+| `tmp/imports/{id}_{timestamp}/` | After import job completes |
+| `tmp/exports/{id}_{timestamp}/` | After export zip is attached to record |
+
+Export zip files are stored via ActiveStorage and follow your storage configuration's lifecycle.
+
 ## Routes
 
 ```ruby

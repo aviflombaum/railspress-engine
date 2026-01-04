@@ -76,14 +76,182 @@ railspress_fields :gallery, as: :attachments
 | `:date` | Date columns | Date picker | Formatted date |
 | `:attachment` | `has_one_attached` | File input | Attached/None badge |
 | `:attachments` | `has_many_attached` | Multiple file input | "N images" badge |
+| `:list` | Explicit only | Text field (comma-separated) | "N items" badge |
+| `:lines` | Explicit only | Textarea (line-separated) | "N items" badge |
 
 ### Form layout
 
 Fields are automatically organized into a two-column layout:
 
-- **Main column**: String, text, and rich text fields
-- **Sidebar**: Boolean, numeric, and date fields in an "Options" section
+- **Main column**: String, text, rich text, and `:lines` fields
+- **Sidebar**: Boolean, numeric, date, and `:list` fields in an "Options" section
 - **Sidebar**: Each attachment field gets its own section with preview and removal
+
+---
+
+## Array Fields
+
+Store arrays of strings in JSON columns using `:list` and `:lines` field types. These are useful for things like tech stacks, features lists, or highlights.
+
+### Quick Start
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  railspress_fields :title, :client
+  railspress_fields :tech_stack, as: :list      # Comma-separated input
+  railspress_fields :highlights, as: :lines     # Line-separated input
+end
+```
+
+That's it. Virtual attributes are auto-generated. No extra concerns or boilerplate needed.
+
+### Migration
+
+Use JSON or JSONB columns with array defaults:
+
+```ruby
+class AddArrayFieldsToProjects < ActiveRecord::Migration[8.0]
+  def change
+    add_column :projects, :tech_stack, :jsonb, default: [], null: false
+    add_column :projects, :highlights, :jsonb, default: [], null: false
+  end
+end
+```
+
+### Two Field Types
+
+| Type | Input Format | Best For | Deduplicates? |
+|------|--------------|----------|---------------|
+| `:list` | Comma-separated | Short items (tags, tech names) | Yes |
+| `:lines` | One per line | Sentences, paragraphs | No |
+
+### How It Works
+
+When you declare `railspress_fields :tech_stack, as: :list`, RailsPress auto-generates:
+
+```ruby
+# Nil guard - always returns array, never nil
+def tech_stack
+  super || []
+end
+
+# Virtual getter: array → comma string (for form population)
+def tech_stack_list
+  tech_stack.join(", ")
+end
+
+# Virtual setter: comma string → array (for form submission)
+def tech_stack_list=(value)
+  self.tech_stack = value.split(",").map(&:strip).reject(&:blank?).uniq
+end
+```
+
+For `:lines` fields, the separator is newline instead of comma, and duplicates are preserved.
+
+### Form Behavior
+
+**`:list` fields** render as a single-line text input:
+```
+Tech Stack: [Ruby, Rails, PostgreSQL, Redis_______]
+            Separate items with commas
+```
+
+**`:lines` fields** render as a textarea:
+```
+Highlights:
+┌─────────────────────────────────────┐
+│ Built API in 2 weeks               │
+│ Reduced load time by 50%           │
+│ Featured in Ruby Weekly            │
+└─────────────────────────────────────┘
+Enter one item per line
+```
+
+### Display Behavior
+
+**Index view**: Shows item count badge ("3 items")
+
+**Show view**:
+- `:list` displays inline: "Ruby, Rails, PostgreSQL"
+- `:lines` displays as bullet list
+
+### Input Parsing
+
+**`:list` fields**:
+- Split on comma
+- Strip whitespace from each item
+- Remove empty items
+- Deduplicate (preserves first occurrence)
+
+```ruby
+project.tech_stack_list = "  Ruby ,, Rails , Ruby  "
+project.tech_stack  # => ["Ruby", "Rails"]
+```
+
+**`:lines` fields**:
+- Split on newline (handles both `\n` and `\r\n`)
+- Strip whitespace from each item
+- Remove empty lines
+- Preserves duplicates (order matters for content like steps)
+
+```ruby
+project.highlights_list = "Step 1\nStep 2\nStep 1"
+project.highlights  # => ["Step 1", "Step 2", "Step 1"]
+```
+
+### API/Agent Access
+
+The controller permits both virtual attributes (for HTML forms) and direct arrays (for API/agent access):
+
+```ruby
+# HTML form submission
+params = { project: { tech_stack_list: "Ruby, Rails" } }
+
+# API/Agent submission
+params = { project: { tech_stack: ["Ruby", "Rails"] } }
+```
+
+Both work. Agents don't need to serialize arrays to strings.
+
+### Limitations
+
+- `:list` items cannot contain commas (use `:lines` for comma-containing text)
+- No auto-detection from JSON columns (must explicitly declare `as: :list` or `as: :lines`)
+- No built-in validation (use standard Rails validators if needed)
+
+### Adding Validation
+
+Use standard Rails validators:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  railspress_fields :tech_stack, as: :list
+
+  validate :tech_stack_limit
+
+  private
+
+  def tech_stack_limit
+    if tech_stack.length > 20
+      errors.add(:tech_stack, "has too many items (maximum is 20)")
+    end
+  end
+end
+```
+
+Or use a length validator with a guard:
+
+```ruby
+validates :tech_stack, length: { maximum: 20 }, if: -> { tech_stack.is_a?(Array) }
+```
+
+### Server Restart Required
+
+When you add new array field declarations to a model, you must restart your Rails server. The virtual attributes are defined at class load time via `define_method`, so changes aren't picked up until the class is reloaded.
 
 ---
 
@@ -332,6 +500,77 @@ Admin available at: `/railspress/admin/entities/team_members`
 
 ---
 
+## Pagination and Scopes
+
+The Entity concern includes built-in pagination and common scopes.
+
+### Pagination
+
+Entities support simple pagination with the `page` method:
+
+```ruby
+# In your controller
+@projects = Project.ordered.page(params[:page])
+
+# Get paginated results with 20 per page (default)
+Project.page(1)   # First 20 records
+Project.page(2)   # Records 21-40
+
+# Check pagination info
+Project.per_page_count  # => 20 (default)
+```
+
+Override the default page size in your model:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  PER_PAGE = 50  # Override default of 20
+
+  railspress_fields :title, :client
+end
+```
+
+### Built-in Scopes
+
+Every Entity includes these scopes:
+
+| Scope | Description |
+|-------|-------------|
+| `ordered` | By `created_at` descending |
+| `recent` | First 10 records, ordered |
+| `page(n)` | Pagination helper (uses `PER_PAGE`) |
+
+```ruby
+# Examples
+Project.ordered                    # All projects, newest first
+Project.recent                     # Last 10 projects
+Project.ordered.page(2)            # Second page of projects
+Project.where(featured: true).recent  # Last 10 featured projects
+```
+
+### Custom Scopes
+
+Add your own scopes as usual:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  railspress_fields :title, :client, :featured, :published_at
+
+  scope :published, -> { where.not(published_at: nil) }
+  scope :featured, -> { where(featured: true) }
+  scope :by_client, ->(client) { where(client: client) }
+
+  # Override ordered scope if needed
+  scope :ordered, -> { order(published_at: :desc, title: :asc) }
+end
+```
+
+---
+
 ## Differences from Posts
 
 | Feature | Posts | Entities |
@@ -390,3 +629,16 @@ Ensure ActiveStorage is set up in your host app and the model has the attachment
 has_many_attached :photos
 railspress_fields :photos, as: :attachments
 ```
+
+### Array field methods not found (`tech_stack_list=` undefined)
+
+After adding new `:list` or `:lines` field declarations, you must restart your Rails server:
+
+```ruby
+# You added this...
+railspress_fields :tech_stack, as: :list
+```
+
+The virtual attributes (`tech_stack_list`, `tech_stack_list=`) are defined via `define_method` when the class loads. In development, Rails caches classes after the first request, so new method definitions require a server restart to take effect.
+
+**Fix**: Restart your Rails server.

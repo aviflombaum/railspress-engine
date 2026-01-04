@@ -7,4 +7,6 @@ Rails.application.routes.draw do
   get "blog/category/:slug", to: "blog#category", as: :blog_category
   get "blog/tag/:slug", to: "blog#tag", as: :blog_tag
   get "blog/:slug", to: "blog#show", as: :blog_post
+
+  root 'railspress/admin/dashboard#index'
 end

@@ -594,6 +594,89 @@ end
 
 ---
 
+## View Helpers
+
+RailsPress provides helper methods for common blog display patterns. Include them in your application helper or blog helper.
+
+### Including the Helpers
+
+```ruby
+# app/helpers/application_helper.rb
+module ApplicationHelper
+  include Railspress::ApplicationHelper
+end
+```
+
+Or use them directly with the module prefix:
+
+```ruby
+Railspress::ApplicationHelper.rp_reading_time(@post)
+```
+
+### `rp_reading_time`
+
+Displays estimated reading time for a post based on word count.
+
+```erb
+<%# Short format (default) %>
+<%= rp_reading_time(@post) %>
+<%# Output: "5 min" %>
+
+<%# Long format %>
+<%= rp_reading_time(@post, format: :long) %>
+<%# Output: "5 minute read" %>
+```
+
+Uses `Railspress.words_per_minute` (default: 200) for calculation. Configure in your initializer:
+
+```ruby
+Railspress.configure do |config|
+  config.words_per_minute = 250  # faster readers
+end
+```
+
+### `rp_featured_image_url`
+
+Returns the URL for a post's header/featured image with optional variant transformation.
+
+```erb
+<%# Default (original size) %>
+<img src="<%= rp_featured_image_url(@post) %>" alt="<%= @post.title %>">
+
+<%# With variant (resized) %>
+<img src="<%= rp_featured_image_url(@post, variant: { resize_to_limit: [1200, 630] }) %>"
+     alt="<%= @post.title %>">
+
+<%# For Open Graph images %>
+<meta property="og:image" content="<%= rp_featured_image_url(@post, variant: { resize_to_limit: [1200, 630] }) %>">
+```
+
+Returns `nil` if:
+- Header images are not enabled (`enable_header_images` not called)
+- The post has no header image attached
+
+### Example: Post Card with Reading Time
+
+```erb
+<article class="post-card">
+  <% if @post.header_image.attached? %>
+    <%= image_tag rp_featured_image_url(@post, variant: { resize_to_limit: [800, 400] }),
+                  class: "post-card__image" %>
+  <% end %>
+
+  <h2><%= link_to @post.title, blog_post_path(slug: @post.slug) %></h2>
+
+  <div class="post-meta">
+    <time><%= @post.published_at.strftime("%B %d, %Y") %></time>
+    <span class="reading-time"><%= rp_reading_time(@post) %></span>
+  </div>
+
+  <p><%= truncate(strip_tags(@post.content.to_plain_text), length: 200) %></p>
+</article>
+```
+
+---
+
 ## Styling Tips
 
 ### Basic CSS Structure

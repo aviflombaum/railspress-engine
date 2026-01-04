@@ -29,6 +29,11 @@ module Railspress
         options: options.except(:as),
         needs_detection: explicit_type.nil?
       }
+
+      # Auto-wire virtual attributes for array types
+      if explicit_type.in?([:list, :lines])
+        define_array_accessors(name, explicit_type)
+      end
     end
 
     # Access fields with resolved types (lazy resolution)
@@ -54,6 +59,33 @@ module Railspress
     end
 
     private
+
+    # Auto-generate virtual attributes for :list and :lines fields
+    # This eliminates the need for a separate ArrayFields concern
+    def define_array_accessors(name, type)
+      separator = type == :list ? ", " : "\n"
+      delimiter = type == :list ? "," : /\r?\n/
+      dedupe = type == :list
+
+      model_class.class_eval do
+        # Nil guard - always return array
+        define_method(name) do
+          super() || []
+        end
+
+        # Virtual getter: array → string
+        define_method("#{name}_list") do
+          send(name).join(separator)
+        end
+
+        # Virtual setter: string → array
+        define_method("#{name}_list=") do |value|
+          parsed = value.to_s.split(delimiter).map(&:strip).reject(&:blank?)
+          parsed = parsed.uniq if dedupe
+          send("#{name}=", parsed)
+        end
+      end
+    end
 
     def resolve_field_types!
       @field_definitions.each do |name, field|

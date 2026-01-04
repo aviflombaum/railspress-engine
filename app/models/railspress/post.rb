@@ -42,6 +42,16 @@ module Railspress
 
     enum :status, { draft: 0, published: 1 }, default: :draft
 
+    # Predicate: post is scheduled for future publication
+    def scheduled?
+      published_at.present? && published_at > Time.current
+    end
+
+    # Predicate: post is live (published_at in past or present)
+    def live?
+      published_at.present? && published_at <= Time.current
+    end
+
     validates :title, presence: true
     validates :slug, presence: true, uniqueness: true
 
@@ -53,21 +63,26 @@ module Railspress
     # Post-specific scopes below:
     scope :published, -> { where(status: :published).where.not(published_at: nil) }
     scope :drafts, -> { where(status: :draft) }
+    scope :scheduled, -> { where("published_at > ?", Time.current) }
+    scope :live, -> { where("published_at <= ?", Time.current) }
     scope :by_author, ->(author) { where(author_id: author.id) }
     scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
     scope :by_category, ->(category_id) { where(category_id: category_id) if category_id.present? }
     scope :by_status, ->(status) { where(status: status) if status.present? }
     scope :sorted_by, ->(column, direction) {
       direction = direction.to_s.downcase == "desc" ? :desc : :asc
+      dir_sql = direction == :desc ? "DESC" : "ASC"
       case column.to_s
       when "title"
         order(title: direction)
       when "category"
-        left_joins(:category).order(Arel.sql("railspress_categories.name #{direction == :desc ? 'DESC' : 'ASC'} NULLS LAST"))
+        left_joins(:category).order(Arel.sql("railspress_categories.name #{dir_sql} NULLS LAST"))
       when "status"
         order(status: direction)
       when "reading_time"
         order(reading_time: direction)
+      when "published_at"
+        order(Arel.sql("published_at #{dir_sql} NULLS LAST"))
       when "created_at"
         order(created_at: direction)
       else

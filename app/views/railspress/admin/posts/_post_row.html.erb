@@ -19,11 +19,23 @@
     </span>
   </td>
   <td class="rp-table-secondary"><%= post.reading_time_display %> min</td>
-  <td class="rp-table-secondary"><%= post.created_at.strftime("%b %d, %Y") %></td>
+  <td class="rp-table-secondary"><%= post.published_at&.strftime("%-m/%-d/%Y %-I:%M%P") || "—" %></td>
+  <td class="rp-table-secondary"><%= post.created_at.strftime("%-m/%-d/%Y") %></td>
   <td class="rp-table-actions">
-    <%= link_to "Edit", edit_admin_post_path(post), class: "rp-link" %>
-    <%= button_to "Delete", admin_post_path(post), method: :delete,
+    <%= link_to edit_admin_post_path(post), class: "rp-icon-btn", title: "Edit" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        <path d="m15 5 4 4"/>
+      </svg>
+    <% end %>
+    <%= button_to admin_post_path(post), method: :delete,
         data: { turbo_confirm: "Delete this post?" },
-        class: "rp-link rp-link--danger" %>
+        class: "rp-icon-btn rp-icon-btn--danger", title: "Delete" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"/>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+      </svg>
+    <% end %>
   </td>
 </tr>

@@ -46,7 +46,7 @@
 
 /* Prose / Rich content */
 .rp-prose {
-  font-family: var(--rp-font-display);
+  font-family: var(--rp-font-body);
   font-size: 1.0625rem;
   line-height: 1.7;
 }
@@ -85,6 +85,14 @@
 .rp-prose pre code {
   background: none;
   padding: 0;
+}
+
+.rp-prose ul {
+  padding-left: var(--rp-space-md);
+}
+
+.rp-prose ol li{
+  margin-left: var(--rp-space-xs);
 }
 
 /* SEO Preview */

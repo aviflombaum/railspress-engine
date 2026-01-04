@@ -96,6 +96,45 @@ RSpec.describe Railspress::Post, type: :model do
     end
   end
 
+  describe "#scheduled?" do
+    it "returns true when published_at is in the future" do
+      post = Railspress::Post.new(published_at: 1.day.from_now)
+      expect(post.scheduled?).to be true
+    end
+
+    it "returns false when published_at is nil" do
+      post = Railspress::Post.new(published_at: nil)
+      expect(post.scheduled?).to be false
+    end
+
+    it "returns false when published_at is in the past" do
+      post = Railspress::Post.new(published_at: 1.day.ago)
+      expect(post.scheduled?).to be false
+    end
+  end
+
+  describe "#live?" do
+    it "returns true when published_at is in the past" do
+      post = Railspress::Post.new(published_at: 1.day.ago)
+      expect(post.live?).to be true
+    end
+
+    it "returns true when published_at is now" do
+      post = Railspress::Post.new(published_at: Time.current)
+      expect(post.live?).to be true
+    end
+
+    it "returns false when published_at is nil" do
+      post = Railspress::Post.new(published_at: nil)
+      expect(post.live?).to be false
+    end
+
+    it "returns false when published_at is in the future" do
+      post = Railspress::Post.new(published_at: 1.day.from_now)
+      expect(post.live?).to be false
+    end
+  end
+
   describe "header_image" do
     let(:post) { Railspress::Post.create!(title: "Image Test") }
     let(:image_path) { Rails.root.join("../../spec/fixtures/files/test_image.png") }

@@ -11,6 +11,8 @@ class Project < ApplicationRecord
   railspress_fields :description # , as: :text
   railspress_fields :body # , as: :rich_text
   railspress_fields :gallery, as: :attachments
+  railspress_fields :tech_stack, as: :list
+  railspress_fields :highlights, as: :lines
 
   # Custom sidebar label
   railspress_label "Client Projects"

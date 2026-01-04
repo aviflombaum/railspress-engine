@@ -118,6 +118,60 @@ config.author_display_method = :display_name
 
 **Default:** `:name`
 
+#### `current_author_proc`
+
+Alternative to `current_author_method`. Use a Proc when your current user logic is more complex or uses patterns like `Current` attributes.
+
+```ruby
+config.current_author_proc = -> { Current.user }
+config.current_author_proc = -> { RequestStore.store[:current_user] }
+```
+
+**Default:** `nil` (uses `current_author_method` instead)
+
+### Reading Time
+
+#### `words_per_minute`
+
+Words per minute used for calculating estimated reading time on posts. The reading time is calculated as `word_count / words_per_minute`.
+
+```ruby
+config.words_per_minute = 200    # default
+config.words_per_minute = 250    # faster readers
+config.words_per_minute = 150    # more technical content
+```
+
+**Default:** `200`
+
+Access programmatically:
+
+```ruby
+Railspress.words_per_minute  # => 200
+```
+
+### Blog Path
+
+#### `blog_path`
+
+The public URL path where your blog posts are displayed on your site. This is used to generate "View" links in the admin interface that link to the live post on your frontend.
+
+```ruby
+config.blog_path = "/blog"       # default
+config.blog_path = "/articles"   # custom path
+config.blog_path = "/news"       # news section
+config.blog_path = ""            # posts at root (e.g., /my-post-slug)
+```
+
+**Default:** `"/blog"`
+
+The admin post show page displays a "View" button for published posts that links to `#{blog_path}/#{post.slug}`.
+
+Access programmatically:
+
+```ruby
+Railspress.blog_path  # => "/blog"
+```
+
 ## Example Configurations
 
 ### Minimal Setup (No Authors)
@@ -184,6 +238,7 @@ Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name
 Railspress.current_author_method   # => :current_user
+Railspress.blog_path               # => "/blog"
 ```
 
 ## Adding Authentication
@@ -245,3 +300,113 @@ bin/rails db:migrate
 ```
 
 Configure your storage service in `config/storage.yml` and set `config.active_storage.service` in your environment files.
+
+## Customizing Views
+
+RailsPress uses standard Rails engine view overrides. Copy engine views to your app to customize them.
+
+### Override Specific Views
+
+```bash
+# Copy a specific view
+mkdir -p app/views/railspress/admin/posts
+cp $(bundle show railspress)/app/views/railspress/admin/posts/_form.html.erb \
+   app/views/railspress/admin/posts/
+
+# Your app's views take precedence over engine views
+```
+
+### Available Partials for Override
+
+| View | Path | Use Case |
+|------|------|----------|
+| Admin layout | `layouts/railspress/admin.html.erb` | Custom header/footer |
+| Sidebar | `railspress/admin/shared/_sidebar.html.erb` | Navigation changes |
+| Flash messages | `railspress/admin/shared/_flash.html.erb` | Custom flash styling |
+| Post form | `railspress/admin/posts/_form.html.erb` | Add custom fields |
+| Entity form | `railspress/admin/entities/_form.html.erb` | Entity form layout |
+
+### Override the Admin Layout
+
+```erb
+<!-- app/views/layouts/railspress/admin.html.erb -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Custom Admin</title>
+  <%= csrf_meta_tags %>
+  <%= stylesheet_link_tag "railspress/admin", "data-turbo-track": "reload" %>
+  <%= yield :head %>
+</head>
+<body class="rp-admin">
+  <div class="rp-layout">
+    <!-- Your custom sidebar -->
+    <%= render "railspress/admin/shared/sidebar" %>
+
+    <main class="rp-main">
+      <%= render "railspress/admin/shared/flash" %>
+      <%= yield %>
+    </main>
+  </div>
+
+  <%= javascript_importmap_tags %>
+</body>
+</html>
+```
+
+### Adding Custom Sidebar Links
+
+Override the sidebar partial to add your own navigation:
+
+```erb
+<!-- app/views/railspress/admin/shared/_sidebar.html.erb -->
+<aside class="rp-sidebar">
+  <div class="rp-sidebar__header">
+    <h1 class="rp-sidebar__title">My Blog</h1>
+  </div>
+
+  <nav class="rp-sidebar__nav">
+    <%= link_to "Dashboard", railspress.admin_root_path, class: "rp-sidebar__link" %>
+    <%= link_to "Posts", railspress.admin_posts_path, class: "rp-sidebar__link" %>
+    <%= link_to "Categories", railspress.admin_categories_path, class: "rp-sidebar__link" %>
+    <%= link_to "Tags", railspress.admin_tags_path, class: "rp-sidebar__link" %>
+
+    <!-- Your custom links -->
+    <%= link_to "Analytics", main_app.analytics_path, class: "rp-sidebar__link" %>
+    <%= link_to "Settings", main_app.settings_path, class: "rp-sidebar__link" %>
+  </nav>
+</aside>
+```
+
+### Customizing Form Fields
+
+Override the post form to add custom fields or change layout:
+
+```erb
+<!-- app/views/railspress/admin/posts/_form.html.erb -->
+<%= form_with model: [:admin, @post], local: true, class: "rp-form" do |f| %>
+  <%= rp_form_errors(@post) %>
+
+  <div class="rp-form__layout">
+    <div class="rp-form__main">
+      <%= rp_string_field f, :title, autofocus: true %>
+      <%= rp_rich_text_field f, :content %>
+
+      <!-- Your custom field -->
+      <%= rp_string_field f, :custom_field %>
+    </div>
+
+    <div class="rp-form__sidebar">
+      <%= rp_sidebar_section "Publishing" do %>
+        <%= rp_select_field f, :status, choices: Railspress::Post.statuses.keys %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="rp-form__actions">
+    <%= f.submit "Save", class: "rp-btn rp-btn--primary" %>
+  </div>
+<% end %>
+```
+
+See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.

@@ -52,9 +52,9 @@
 
         <div class="rp-form-group">
           <%= form.label :published_at, "Publish Date", class: "rp-label" %>
-          <%= form.date_field :published_at,
+          <%= form.datetime_local_field :published_at,
               class: "rp-input",
-              value: @post.published_at&.to_date || Date.current %>
+              value: @post.published_at || Time.current %>
         </div>
 
         <div class="rp-form-group">

@@ -6,8 +6,8 @@
 
   <%
     # Separate fields into main content vs sidebar metadata vs attachments
-    main_types = [:string, :text, :rich_text]
-    sidebar_types = [:boolean, :integer, :decimal, :datetime, :date]
+    main_types = [:string, :text, :rich_text, :lines]
+    sidebar_types = [:boolean, :integer, :decimal, :datetime, :date, :list]
     attachment_types = [:attachment, :attachments]
 
     main_fields = entity_config.fields.select { |_, f| main_types.include?(f[:type]) }

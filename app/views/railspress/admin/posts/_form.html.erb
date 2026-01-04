@@ -106,7 +106,7 @@
           <h3 class="rp-sidebar-title">Featured Image</h3>
 
           <div class="rp-form-group">
-            <% if @post.header_image.attached? %>
+            <% if @post.header_image.attached? && @post.header_image.blob&.persisted? %>
               <div class="rp-featured-image-preview">
                 <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [400, 300])), class: "rp-featured-image-thumb" %>
               </div>
@@ -116,7 +116,7 @@
             <%= form.file_field :header_image, accept: "image/*", class: "rp-file-input" %>
             <p class="rp-hint">Recommended: 1200x630px for social sharing</p>
 
-            <% if @post.header_image.attached? %>
+            <% if @post.header_image.attached? && @post.header_image.blob&.persisted? %>
               <label class="rp-checkbox-label">
                 <%= form.check_box :remove_header_image, {}, "1", "0" %>
                 Remove featured image

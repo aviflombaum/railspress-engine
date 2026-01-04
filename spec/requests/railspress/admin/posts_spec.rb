@@ -178,5 +178,40 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       get railspress.admin_post_path(post_record)
       expect(response.body).to include("rp-featured-image")
     end
+
+    it "re-renders form with validation errors when create fails with header image" do
+      # First, create a post to cause a slug collision
+      existing_post = railspress_posts(:hello_world)
+
+      # Try to create another post with same slug and a header image
+      post railspress.admin_posts_path, params: {
+        post: {
+          title: "Different Title",
+          slug: existing_post.slug, # duplicate slug should fail validation
+          header_image: image_file
+        }
+      }
+
+      # Should re-render form with validation errors, not crash
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("has already been taken")
+    end
+
+    it "re-renders form with validation errors when update fails with header image" do
+      post_record = railspress_posts(:draft_post)
+      existing_post = railspress_posts(:hello_world)
+
+      # Try to update with duplicate slug and a header image
+      patch railspress.admin_post_path(post_record), params: {
+        post: {
+          slug: existing_post.slug, # duplicate slug should fail validation
+          header_image: image_file
+        }
+      }
+
+      # Should re-render form with validation errors, not crash
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("has already been taken")
+    end
   end
 end

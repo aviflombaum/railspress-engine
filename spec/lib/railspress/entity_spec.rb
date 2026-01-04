@@ -55,6 +55,38 @@ RSpec.describe Railspress::Entity do
       expect(model_class.railspress_config).to be_a(Railspress::EntityConfig)
     end
   end
+
+  describe ".railspress_index_columns" do
+    it "returns columns the model responds to from default_index_columns" do
+      # Project has :title and :created_at, but not :name or :id method that returns something useful
+      columns = model_class.railspress_index_columns
+      expect(columns).to include(:title)
+      expect(columns).to include(:created_at)
+    end
+
+    it "uses RAILSPRESS_INDEX_COLUMNS constant if defined" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+        include Railspress::Entity
+      end
+      test_class.const_set(:RAILSPRESS_INDEX_COLUMNS, [:client, :featured, :created_at])
+
+      expect(test_class.railspress_index_columns).to eq([:client, :featured, :created_at])
+    end
+
+    it "respects global default_index_columns config" do
+      original = Railspress.configuration.default_index_columns
+
+      Railspress.configure do |config|
+        config.default_index_columns = [:title, :client, :created_at]
+      end
+
+      # Project has title, client, and created_at
+      expect(model_class.railspress_index_columns).to include(:title, :client, :created_at)
+
+      Railspress.configuration.default_index_columns = original
+    end
+  end
 end
 
 RSpec.describe Railspress::EntityConfig do

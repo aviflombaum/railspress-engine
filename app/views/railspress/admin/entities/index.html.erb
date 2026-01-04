@@ -4,56 +4,62 @@
 
 <%= rp_card do %>
   <% if @records.any? %>
+    <% columns = entity_class.railspress_index_columns %>
     <div class="rp-table--responsive">
       <table class="rp-table">
         <thead>
           <tr>
-            <% entity_config.fields.each do |name, field| %>
-              <th><%= name.to_s.humanize %></th>
+            <% columns.each do |col| %>
+              <th><%= col.to_s.humanize %></th>
             <% end %>
-            <th>Created</th>
             <th class="rp-table-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           <% @records.each do |record| %>
             <tr>
-              <% entity_config.fields.each_with_index do |(name, field), index| %>
-                <td>
-                  <% value = record.public_send(name) %>
+              <% columns.each_with_index do |col, index| %>
+                <td<%= ' class="rp-table-truncate"'.html_safe if index == 0 %>>
+                  <% value = record.public_send(col) %>
                   <% if index == 0 %>
-                    <%= link_to entity_show_path(record), class: "rp-link rp-table-primary" do %>
+                    <%= link_to entity_show_path(record), class: "rp-link rp-table-primary", title: value do %>
                       <%= rp_truncated_text(value, length: 60) %>
                     <% end %>
+                  <% elsif value.is_a?(Time) || value.is_a?(DateTime) %>
+                    <span class="rp-table-secondary" title="<%= value.strftime("%B %-d, %Y at %-I:%M %p") %>">
+                      <span class="rp-table-date-full"><%= value.strftime("%-m/%-d/%Y") %></span>
+                      <span class="rp-table-date-short"><%= value.strftime("%-m/%-d/%y") %></span>
+                    </span>
+                  <% elsif value.is_a?(Date) %>
+                    <span class="rp-table-secondary" title="<%= value.strftime("%B %-d, %Y") %>">
+                      <span class="rp-table-date-full"><%= value.strftime("%-m/%-d/%Y") %></span>
+                      <span class="rp-table-date-short"><%= value.strftime("%-m/%-d/%y") %></span>
+                    </span>
+                  <% elsif value == true || value == false %>
+                    <%= rp_boolean_badge(value) %>
+                  <% elsif value.is_a?(Integer) %>
+                    <%= value %>
                   <% else %>
-                    <% case field[:type] %>
-                    <% when :rich_text %>
-                      <%= rp_truncated_text(strip_tags(value.to_s), length: 60) %>
-                    <% when :boolean %>
-                      <%= rp_boolean_badge(value) %>
-                    <% when :datetime, :date %>
-                      <%= value&.strftime("%b %d, %Y") || "—" %>
-                    <% when :attachments %>
-                      <%= rp_attachment_badge(value) %>
-                    <% when :attachment %>
-                      <%= rp_attachment_badge(value) %>
-                    <% when :list, :lines %>
-                      <% count = value.is_a?(Array) ? value.length : 0 %>
-                      <span class="rp-badge <%= count > 0 ? 'rp-badge--info' : 'rp-badge--draft' %>">
-                        <%= pluralize(count, "item") %>
-                      </span>
-                    <% else %>
-                      <%= rp_truncated_text(value, length: 60) %>
-                    <% end %>
+                    <%= rp_truncated_text(value, length: 60) %>
                   <% end %>
                 </td>
               <% end %>
-              <td class="rp-table-secondary"><%= record.created_at.strftime("%b %d, %Y") %></td>
               <td class="rp-table-actions">
-                <%= link_to "Edit", entity_edit_path(record), class: "rp-link" %>
-                <%= button_to "Delete", entity_show_path(record), method: :delete,
+                <%= link_to entity_edit_path(record), class: "rp-icon-btn", title: "Edit" do %>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                  </svg>
+                <% end %>
+                <%= button_to entity_show_path(record), method: :delete,
                     data: { turbo_confirm: "Delete this #{entity_config.singular_label.downcase}?" },
-                    class: "rp-link rp-link--danger" %>
+                    class: "rp-icon-btn rp-icon-btn--danger", title: "Delete" do %>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                  </svg>
+                <% end %>
               </td>
             </tr>
           <% end %>

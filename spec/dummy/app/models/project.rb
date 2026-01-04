@@ -3,6 +3,9 @@
 class Project < ApplicationRecord
   include Railspress::Entity
 
+  # Columns to display in the admin index table
+  RAILSPRESS_INDEX_COLUMNS = [:title, :client, :featured, :created_at].freeze
+
   has_rich_text :body
   has_many_attached :gallery
 

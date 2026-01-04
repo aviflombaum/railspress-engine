@@ -11,7 +11,8 @@ module Railspress
                   :author_scope,
                   :author_display_method,
                   :words_per_minute,
-                  :blog_path
+                  :blog_path,
+                  :default_index_columns
 
     attr_reader :authors_enabled, :header_images_enabled
 
@@ -25,6 +26,7 @@ module Railspress
       @author_display_method = :name
       @words_per_minute = 200
       @blog_path = "/blog"
+      @default_index_columns = [:id, :title, :name, :created_at]
     end
 
     # Declarative setter: config.enable_authors
@@ -175,6 +177,10 @@ module Railspress
 
     def blog_path
       configuration.blog_path
+    end
+
+    def default_index_columns
+      configuration.default_index_columns
     end
 
     # Entity registry convenience accessors

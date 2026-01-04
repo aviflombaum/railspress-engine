@@ -202,6 +202,32 @@ module Railspress
       def railspress_config
         _railspress_config
       end
+
+      # Columns to display in the admin index table
+      #
+      # Override hierarchy:
+      # 1. Model overrides this method directly (full control)
+      # 2. Model defines RAILSPRESS_INDEX_COLUMNS constant
+      # 3. Auto-detect from Railspress.default_index_columns
+      #
+      # @example Override with constant
+      #   class Project < ApplicationRecord
+      #     include Railspress::Entity
+      #     RAILSPRESS_INDEX_COLUMNS = [:name, :client, :status, :created_at]
+      #   end
+      #
+      # @example Override with method (for dynamic logic)
+      #   def self.railspress_index_columns
+      #     [:name, :client, admin? ? :budget : nil, :created_at].compact
+      #   end
+      #
+      def railspress_index_columns
+        return self::RAILSPRESS_INDEX_COLUMNS if const_defined?(:RAILSPRESS_INDEX_COLUMNS, false)
+
+        Railspress.default_index_columns.select do |col|
+          new.respond_to?(col)
+        end
+      end
     end
   end
 end

@@ -652,7 +652,7 @@ Returns the URL for a post's header/featured image with optional variant transfo
 ```
 
 Returns `nil` if:
-- Header images are not enabled (`enable_header_images` not called)
+- Header images are not enabled (`enable_post_images` not called)
 - The post has no header image attached
 
 ### Example: Post Card with Reading Time

@@ -2,6 +2,7 @@ module Railspress
   class Post < ApplicationRecord
     include Railspress::Entity
     include Railspress::Taggable
+    include Railspress::HasFocalPoint
 
     # === Entity Field Declarations ===
     # These fields use the Entity system for type detection and config introspection.
@@ -35,6 +36,7 @@ module Railspress
     end
     has_rich_text :content
     has_one_attached :header_image
+    has_focal_point :header_image
 
     # Virtual attribute for removing header image via checkbox
     attr_accessor :remove_header_image

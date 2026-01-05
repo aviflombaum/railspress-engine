@@ -245,7 +245,7 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
 
     it "attaches header image from zip" do
       # Enable header images for this test
-      allow(Railspress).to receive(:header_images_enabled?).and_return(true)
+      allow(Railspress).to receive(:post_images_enabled?).and_return(true)
 
       processor.process!
       post_with_image = Railspress::Post.find_by(title: "Post With Header Image")
@@ -259,7 +259,7 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
       let(:processor) { described_class.new(import: import, file_path: fixtures_path.join("valid_post.md")) }
 
       before do
-        allow(Railspress).to receive(:header_images_enabled?).and_return(false)
+        allow(Railspress).to receive(:post_images_enabled?).and_return(false)
       end
 
       it "does not attempt to attach header image" do
@@ -273,7 +273,7 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
       let(:processor) { described_class.new(import: import, file_path: fixtures_path.join("valid_post.md")) }
 
       before do
-        allow(Railspress).to receive(:header_images_enabled?).and_return(true)
+        allow(Railspress).to receive(:post_images_enabled?).and_return(true)
       end
 
       it "detects URLs correctly" do

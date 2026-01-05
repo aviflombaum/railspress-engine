@@ -123,7 +123,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
     let(:image_file) { Rack::Test::UploadedFile.new(image_path, "image/png") }
 
     before do
-      Railspress.configure { |c| c.enable_header_images }
+      Railspress.configure { |c| c.enable_post_images }
     end
 
     after do

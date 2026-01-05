@@ -50,7 +50,7 @@ Access the admin at `/railspress/admin`:
 | `author_id` | integer | Author reference (when `enable_authors` is set) |
 | `author_type` | string | Author class name (polymorphic) |
 
-**Attachments (when `enable_header_images` is set):**
+**Attachments (when `enable_post_images` is set):**
 - `header_image` - ActiveStorage single attachment
 
 **Associations:**

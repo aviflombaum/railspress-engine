@@ -115,7 +115,7 @@ RSpec.describe Railspress::PostExportProcessor, type: :model do
     let(:post) { railspress_posts(:hello_world) }
 
     before do
-      allow(Railspress).to receive(:header_images_enabled?).and_return(true)
+      allow(Railspress).to receive(:post_images_enabled?).and_return(true)
       post.header_image.attach(
         io: File.open(Rails.root.join("../../spec/fixtures/files/test_image.png")),
         filename: "test_image.png",

@@ -1,0 +1,102 @@
+<%#
+  Focal Point Editor Partial
+  ==========================
+  An interactive focal point picker with live previews.
+
+  Required locals:
+    form - The Rails form builder
+    record - The record with HasFocalPoint concern
+    attachment_name - Symbol for the attachment (e.g., :header_image)
+
+  Optional locals:
+    contexts - Array of context configs for previews (default: Railspress.image_contexts)
+
+  Example:
+    render "railspress/admin/shared/focal_point_editor",
+           form: form, record: @post, attachment_name: :header_image
+%>
+
+<% contexts ||= Railspress.image_contexts %>
+<% focal_point = record.focal_point(attachment_name) %>
+<% attachment = record.send(attachment_name) %>
+
+<div data-controller="railspress--focal-point"
+     data-railspress--focal-point-x-value="<%= focal_point[:x] %>"
+     data-railspress--focal-point-y-value="<%= focal_point[:y] %>"
+     class="rp-focal-editor">
+
+  <div class="rp-focal-editor__layout">
+    <%# Source image with crosshair %>
+    <div class="rp-focal-editor__source">
+      <div class="rp-focal-editor__image-wrap"
+           data-action="click->railspress--focal-point#pick
+                        touchstart->railspress--focal-point#touch"
+           tabindex="0"
+           data-action="keydown->railspress--focal-point#keydown">
+        <% if attachment.attached? %>
+          <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [1200, 800])),
+                data: { railspress__focal_point_target: "image" },
+                class: "rp-focal-editor__image",
+                alt: "Source image for focal point selection" %>
+        <% end %>
+        <div data-railspress--focal-point-target="crosshair"
+             class="rp-focal-editor__crosshair"
+             style="left: <%= focal_point[:x] * 100 %>%; top: <%= focal_point[:y] * 100 %>%;"></div>
+      </div>
+
+      <div class="rp-focal-editor__hint">
+        <span>Click to set focal point</span>
+        <span class="rp-focal-editor__coords" data-railspress--focal-point-target="coordsDisplay">
+          <%= "#{(focal_point[:x] * 100).round}%, #{(focal_point[:y] * 100).round}%" %>
+        </span>
+      </div>
+
+      <div class="rp-focal-editor__actions">
+        <button type="button"
+                class="rp-btn rp-btn--outline rp-btn--sm"
+                data-action="railspress--focal-point#reset">
+          Reset to Center
+        </button>
+      </div>
+    </div>
+
+    <%# Live previews %>
+    <% if contexts.any? %>
+      <div class="rp-focal-editor__previews">
+        <span class="rp-focal-editor__previews-title">Live Preview</span>
+
+        <% contexts.each do |name, config| %>
+          <% aspect = config[:aspect] %>
+          <% aspect_ratio = aspect.is_a?(Array) ? "#{aspect[0]} / #{aspect[1]}" : aspect %>
+          <% ratio_label = aspect.is_a?(Array) ? "#{aspect[0]}:#{aspect[1]}" : aspect.to_s %>
+
+          <div class="rp-focal-editor__preview">
+            <div class="rp-focal-editor__preview-image" style="aspect-ratio: <%= aspect_ratio %>;">
+              <% if attachment.attached? %>
+                <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [400, 300])),
+                      data: { railspress__focal_point_target: "preview" },
+                      style: record.image_css_for(name, attachment_name),
+                      alt: "#{name.to_s.titleize} preview" %>
+              <% end %>
+            </div>
+            <div class="rp-focal-editor__preview-label">
+              <span class="rp-focal-editor__preview-name"><%= name.to_s.titleize %></span>
+              <span class="rp-focal-editor__preview-ratio"><%= ratio_label %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Hidden inputs for form submission via nested attributes %>
+  <% association_name = :"#{attachment_name}_focal_point" %>
+  <%= form.fields_for association_name, record.send(association_name) do |fp| %>
+    <%= fp.hidden_field :focal_x,
+          value: focal_point[:x],
+          data: { railspress__focal_point_target: "xInput" } %>
+    <%= fp.hidden_field :focal_y,
+          value: focal_point[:y],
+          data: { railspress__focal_point_target: "yInput" } %>
+  <% end %>
+</div>

@@ -99,7 +99,7 @@ Railspress.configure do |config|
   config.author_class_name = "User"
   config.author_display_method = :name
 
-  config.enable_header_images
+  config.enable_post_images
 end
 ```
 

@@ -191,7 +191,7 @@ module Railspress
 
     def attach_header_image(post, header_image_value, source_path, base_dir)
       return unless header_image_value.present?
-      return unless Railspress.header_images_enabled?
+      return unless Railspress.post_images_enabled?
 
       if url?(header_image_value)
         attach_image_from_url(post, header_image_value)

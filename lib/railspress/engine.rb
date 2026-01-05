@@ -9,6 +9,15 @@ module Railspress
         app.config.assets.paths << root.join("app", "assets", "stylesheets", "railspress").to_s
         app.config.assets.paths << root.join("app", "assets", "javascripts").to_s
         app.config.assets.paths << root.join("app", "assets", "images").to_s
+        app.config.assets.paths << root.join("app", "javascript").to_s
+      end
+    end
+
+    # Configure importmap for Stimulus controllers
+    initializer "railspress.importmap", before: "importmap" do |app|
+      if app.respond_to?(:importmap)
+        app.config.importmap.paths << root.join("config", "importmap.rb")
+        app.config.importmap.cache_sweepers << root.join("app", "javascript")
       end
     end
   end

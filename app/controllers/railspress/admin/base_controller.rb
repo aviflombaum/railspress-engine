@@ -4,7 +4,7 @@ module Railspress
       layout "railspress/admin"
       helper Railspress::AdminHelper
 
-      helper_method :current_author, :available_authors, :authors_enabled?, :header_images_enabled?
+      helper_method :current_author, :available_authors, :authors_enabled?, :post_images_enabled?
 
       # Authentication hook - to be configured later
       # before_action :authenticate_admin!
@@ -19,8 +19,8 @@ module Railspress
         Railspress.authors_enabled?
       end
 
-      def header_images_enabled?
-        Railspress.header_images_enabled?
+      def post_images_enabled?
+        Railspress.post_images_enabled?
       end
 
       def current_author

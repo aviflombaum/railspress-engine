@@ -300,7 +300,7 @@ The `as: :railspress` provides the `railspress.` route helper prefix.
 
 1. **Use the helper**: `rp_featured_image_url(@post)`
 2. **Check if attached**: `@post.header_image.attached?`
-3. **Ensure feature is enabled**: `config.enable_header_images`
+3. **Ensure feature is enabled**: `config.enable_post_images`
 4. **Configure storage**: Ensure ActiveStorage service is properly configured
 
 ### Rich Text Content Displays as Plain Text

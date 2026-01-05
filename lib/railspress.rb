@@ -14,11 +14,13 @@ module Railspress
                   :blog_path,
                   :default_index_columns
 
-    attr_reader :authors_enabled, :header_images_enabled
+    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :image_contexts
 
     def initialize
       @authors_enabled = false
-      @header_images_enabled = false
+      @post_images_enabled = false
+      @focal_points_enabled = false
+      @image_contexts = default_image_contexts
       @author_class_name = "User"
       @current_author_method = :current_user
       @current_author_proc = nil
@@ -34,9 +36,33 @@ module Railspress
       @authors_enabled = true
     end
 
-    # Declarative setter: config.enable_header_images
-    def enable_header_images
-      @header_images_enabled = true
+    # Declarative setter: config.enable_post_images
+    def enable_post_images
+      @post_images_enabled = true
+    end
+
+    # Declarative setter: config.enable_focal_points
+    def enable_focal_points
+      @focal_points_enabled = true
+    end
+
+    # Set custom image contexts
+    def image_contexts=(contexts)
+      @image_contexts = contexts.transform_keys(&:to_sym)
+    end
+
+    # Add a single image context
+    def add_image_context(name, aspect:, label: nil, sizes: [])
+      @image_contexts[name.to_sym] = {
+        aspect: aspect,
+        label: label || name.to_s.humanize,
+        sizes: sizes
+      }
+    end
+
+    # Remove an image context
+    def remove_image_context(name)
+      @image_contexts.delete(name.to_sym)
     end
 
     # Register a host model as a CMS-managed entity
@@ -110,6 +136,14 @@ module Railspress
 
     private
 
+    def default_image_contexts
+      {
+        hero:  { aspect: [16, 9], label: "Hero", sizes: [1920, 1280] },
+        card:  { aspect: [4, 3], label: "Card", sizes: [800, 400] },
+        thumb: { aspect: [1, 1], label: "Thumbnail", sizes: [200] }
+      }
+    end
+
     def resolve_entity(class_name, options)
       klass = class_name.constantize
       unless klass.included_modules.include?(Railspress::Entity)
@@ -140,8 +174,16 @@ module Railspress
       configuration.authors_enabled
     end
 
-    def header_images_enabled?
-      configuration.header_images_enabled
+    def post_images_enabled?
+      configuration.post_images_enabled
+    end
+
+    def focal_points_enabled?
+      configuration.focal_points_enabled
+    end
+
+    def image_contexts
+      configuration.image_contexts
     end
 
     def author_class

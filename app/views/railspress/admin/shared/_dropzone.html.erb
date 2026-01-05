@@ -1,0 +1,84 @@
+<%#
+  Dropzone Partial
+  ================
+  A drag-and-drop file upload component with progress indicator.
+
+  Required locals:
+    form - The Rails form builder
+    field_name - Symbol for the attachment field (e.g., :header_image)
+
+  Optional locals:
+    accept - MIME types to accept (default: "image/*")
+    max_size - Max file size in bytes (default: 10MB)
+    prompt - Text prompt to display (default: "Drag image here or click to browse")
+    hint - Hint text below prompt (default: "PNG, JPG, WebP up to 10MB")
+
+  Example:
+    render "railspress/admin/shared/dropzone",
+           form: form, field_name: :header_image, prompt: "Drop featured image here"
+%>
+
+<% accept ||= "image/*" %>
+<% max_size ||= 10 * 1024 * 1024 %>
+<% prompt ||= "Drag image here or click to browse" %>
+<% hint ||= "PNG, JPG, WebP up to 10MB" %>
+
+<div data-controller="railspress--dropzone"
+     data-railspress--dropzone-url-value="<%= main_app.rails_direct_uploads_path %>"
+     data-railspress--dropzone-accept-value="<%= accept %>"
+     data-railspress--dropzone-max-size-value="<%= max_size %>"
+     data-action="drop->railspress--dropzone#drop
+                  dragover->railspress--dropzone#dragover
+                  dragleave->railspress--dropzone#dragleave"
+     class="rp-dropzone">
+
+  <%# Hidden file input %>
+  <%= form.file_field field_name,
+        accept: accept,
+        class: "rp-sr-only",
+        data: {
+          railspress__dropzone_target: "input",
+          action: "change->railspress--dropzone#change"
+        } %>
+
+  <%# Hidden field for signed_id (populated after upload) %>
+  <input type="hidden"
+         name="<%= form.object_name %>[<%= field_name %>]"
+         data-railspress--dropzone-target="signedId">
+
+  <%# Drop area %>
+  <div data-railspress--dropzone-target="dropArea" class="rp-dropzone__area">
+    <svg class="rp-dropzone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <polyline points="21 15 16 10 5 21"/>
+    </svg>
+    <p class="rp-dropzone__prompt" data-railspress--dropzone-target="prompt">
+      <strong><%= prompt.split.first %></strong> <%= prompt.split[1..].join(" ") %>
+    </p>
+    <p class="rp-dropzone__hint"><%= hint %></p>
+  </div>
+
+  <%# Preview (shown after file selected) %>
+  <div data-railspress--dropzone-target="preview" class="rp-dropzone__preview" hidden>
+    <img data-railspress--dropzone-target="previewImage" class="rp-dropzone__preview-image" alt="">
+    <button type="button"
+            class="rp-dropzone__remove rp-btn rp-btn--ghost rp-btn--sm"
+            data-action="railspress--dropzone#remove">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+      Remove
+    </button>
+  </div>
+
+  <%# Progress indicator %>
+  <div data-railspress--dropzone-target="progress" class="rp-dropzone__progress" hidden>
+    <div class="rp-dropzone__progress-bar" data-railspress--dropzone-target="progressBar"></div>
+    <span class="rp-dropzone__progress-text" data-railspress--dropzone-target="progressText">0%</span>
+  </div>
+
+  <%# Error message %>
+  <div data-railspress--dropzone-target="error" class="rp-dropzone__error" hidden></div>
+</div>

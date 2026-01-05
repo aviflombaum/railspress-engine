@@ -1,0 +1,6 @@
+post_with_focal_point_header:
+  record: post_with_focal_point (Railspress::Post)
+  attachment_name: header_image
+  focal_x: 0.3
+  focal_y: 0.7
+  overrides: {}

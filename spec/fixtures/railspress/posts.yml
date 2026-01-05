@@ -10,3 +10,10 @@ draft_post:
   slug: draft-post
   category: business
   status: 0
+
+post_with_focal_point:
+  title: Post With Focal Point
+  slug: post-with-focal-point
+  category: technology
+  status: 1
+  published_at: <%= Time.current %>

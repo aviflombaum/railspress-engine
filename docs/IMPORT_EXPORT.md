@@ -332,7 +332,7 @@ Import/export respects these Railspress configuration options:
 
 ```ruby
 Railspress.configure do |config|
-  config.enable_header_images = true   # Include header images in import/export
+  config.enable_post_images = true   # Include header images in import/export
   config.enable_authors = true         # Include author in frontmatter
   config.author_class = "User"         # Model for author lookup
   config.author_display_method = :name # Field to match/display author

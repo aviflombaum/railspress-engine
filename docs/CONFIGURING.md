@@ -49,13 +49,13 @@ end
 
 **Default:** Disabled
 
-#### `enable_header_images`
+#### `enable_post_images`
 
 Enables header image uploads for posts. When enabled, posts can have a featured/header image attached via Active Storage.
 
 ```ruby
 Railspress.configure do |config|
-  config.enable_header_images
+  config.enable_post_images
 end
 ```
 
@@ -179,7 +179,7 @@ Railspress.blog_path  # => "/blog"
 ```ruby
 # config/initializers/railspress.rb
 Railspress.configure do |config|
-  config.enable_header_images
+  config.enable_post_images
 end
 ```
 
@@ -189,7 +189,7 @@ end
 # config/initializers/railspress.rb
 Railspress.configure do |config|
   config.enable_authors
-  config.enable_header_images
+  config.enable_post_images
   config.author_class_name = "User"
   config.current_author_method = :current_user
   config.author_display_method = :email
@@ -233,7 +233,7 @@ You can check configuration values programmatically:
 
 ```ruby
 Railspress.authors_enabled?        # => true/false
-Railspress.header_images_enabled?  # => true/false
+Railspress.post_images_enabled?  # => true/false
 Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name

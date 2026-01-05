@@ -79,7 +79,13 @@ module Railspress
           :tag_list
         ]
         permitted << :author_id if authors_enabled?
-        permitted.push(:header_image, :remove_header_image) if header_images_enabled?
+        if post_images_enabled?
+          permitted.push(:header_image, :remove_header_image)
+          # Focal point nested attributes
+          if Railspress.focal_points_enabled?
+            permitted.push(header_image_focal_point_attributes: [:focal_x, :focal_y, :overrides])
+          end
+        end
         params.require(:post).permit(permitted)
       end
     end

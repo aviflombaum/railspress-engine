@@ -1,0 +1,159 @@
+<%#
+  Image Section Partial
+  =====================
+  Complete image upload and focal point editing section.
+  Shows compact view with Edit button; expands to full editor.
+
+  Required locals:
+    form - The Rails form builder
+    record - The record with HasFocalPoint concern
+    attachment_name - Symbol for the attachment (e.g., :header_image)
+
+  Optional locals:
+    label - Section label (default: "Main Image")
+    contexts - Array of context configs for previews
+    show_advanced - Show per-context overrides (default: false)
+
+  Example:
+    render "railspress/admin/shared/image_section",
+           form: form, record: @post, attachment_name: :header_image
+%>
+
+<% label ||= "Main Image" %>
+<% contexts ||= Railspress.image_contexts %>
+<% show_advanced ||= false %>
+<% attachment = record.send(attachment_name) %>
+<% has_image = attachment.attached? && attachment.blob&.persisted? %>
+
+<div class="rp-image-section">
+  <div class="rp-image-section__label">
+    <label class="rp-label"><%= label %></label>
+  </div>
+
+  <% if has_image %>
+    <%# Compact view (default, collapsed state) %>
+    <details class="rp-image-section__details">
+      <summary class="rp-image-section__compact">
+        <div class="rp-image-section__thumb">
+          <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [120, 80])),
+                style: record.focal_point_css(attachment_name),
+                alt: "" %>
+        </div>
+        <div class="rp-image-section__info">
+          <span class="rp-image-section__filename"><%= attachment.filename %></span>
+          <span class="rp-image-section__meta">
+            <%= number_to_human_size(attachment.byte_size) %>
+          </span>
+          <% if record.has_focal_point?(attachment_name) %>
+            <span class="rp-image-section__focal-indicator">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/>
+              </svg>
+              Focal point set
+            </span>
+          <% end %>
+        </div>
+        <div class="rp-image-section__toggle">
+          <span class="rp-btn rp-btn--outline rp-btn--sm">Edit</span>
+        </div>
+      </summary>
+
+      <%# Expanded editor %>
+      <div class="rp-image-section__editor">
+        <div class="rp-image-section__editor-header">
+          <span class="rp-image-section__editor-title"><%= label %> Settings</span>
+          <div class="rp-image-section__editor-actions">
+            <label class="rp-btn rp-btn--outline rp-btn--sm">
+              Change
+              <%= form.file_field attachment_name,
+                    accept: "image/*",
+                    class: "rp-sr-only",
+                    direct_upload: true %>
+            </label>
+            <label class="rp-checkbox-inline rp-btn rp-btn--outline rp-btn--sm">
+              <%= form.check_box :"remove_#{attachment_name}", {}, "1", "0" %>
+              Remove
+            </label>
+          </div>
+        </div>
+
+        <div class="rp-image-section__editor-body">
+          <%= render "railspress/admin/shared/focal_point_editor",
+                form: form,
+                record: record,
+                attachment_name: attachment_name,
+                contexts: contexts %>
+
+          <% if show_advanced && contexts.any? %>
+            <details class="rp-advanced-section">
+              <summary class="rp-advanced-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+                Advanced: Per-context image overrides
+              </summary>
+
+              <div class="rp-advanced-content">
+                <p class="rp-hint">Override specific contexts with custom crops or separate images.</p>
+
+                <div class="rp-context-overrides">
+                  <% contexts.each do |name, config| %>
+                    <% override = record.image_override(name, attachment_name) %>
+                    <% has_override = record.has_image_override?(name, attachment_name) %>
+
+                    <div class="rp-context-override">
+                      <div class="rp-context-override__header">
+                        <span class="rp-context-override__name"><%= name.to_s.titleize %></span>
+                        <span class="rp-context-override__badge <%= 'rp-context-override__badge--custom' if has_override %>">
+                          <%= has_override ? override[:type].titleize : "Using focal" %>
+                        </span>
+                      </div>
+
+                      <div class="rp-context-override__preview" style="aspect-ratio: <%= config[:aspect].is_a?(Array) ? "#{config[:aspect][0]} / #{config[:aspect][1]}" : config[:aspect] %>;">
+                        <% context_image = record.image_for(name, attachment_name) %>
+                        <% if context_image.respond_to?(:variant) %>
+                          <%= image_tag main_app.url_for(context_image.variant(resize_to_limit: [400, 300])),
+                                style: record.image_css_for(name, attachment_name),
+                                alt: "" %>
+                        <% elsif context_image.respond_to?(:url) %>
+                          <%= image_tag main_app.url_for(context_image),
+                                style: record.image_css_for(name, attachment_name),
+                                alt: "" %>
+                        <% end %>
+                      </div>
+
+                      <div class="rp-context-override__actions">
+                        <% if has_override %>
+                          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm" style="flex:1;">
+                            Change
+                          </button>
+                          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm" style="flex:1;">
+                            Use Focal
+                          </button>
+                        <% else %>
+                          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm" style="flex:1;">
+                            Custom Crop
+                          </button>
+                          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm" style="flex:1;">
+                            Upload
+                          </button>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </details>
+          <% end %>
+        </div>
+      </div>
+    </details>
+  <% else %>
+    <%# No image - show dropzone %>
+    <%= render "railspress/admin/shared/dropzone",
+          form: form,
+          field_name: attachment_name,
+          prompt: "Click to upload #{label.downcase}" %>
+  <% end %>
+</div>

@@ -86,6 +86,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_010000) do
     t.index ["user_id"], name: "index_railspress_exports_on_user_id"
   end
 
+  create_table "railspress_focal_points", force: :cascade do |t|
+    t.string "attachment_name", null: false
+    t.datetime "created_at", null: false
+    t.decimal "focal_x", precision: 5, scale: 4, default: "0.5", null: false
+    t.decimal "focal_y", precision: 5, scale: 4, default: "0.5", null: false
+    t.json "overrides", default: {}
+    t.integer "record_id", null: false
+    t.string "record_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "attachment_name"], name: "idx_focal_points_record_attachment", unique: true
+  end
+
   create_table "railspress_imports", force: :cascade do |t|
     t.string "content_type"
     t.datetime "created_at", null: false

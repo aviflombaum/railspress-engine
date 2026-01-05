@@ -17,7 +17,7 @@ RSpec.describe Railspress::Configuration do
     end
 
     it "has header images disabled by default" do
-      expect(Railspress.header_images_enabled?).to be false
+      expect(Railspress.post_images_enabled?).to be false
     end
 
     it "defaults author_class_name to User" do
@@ -52,12 +52,12 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.authors_enabled?).to be true
     end
 
-    it "allows enabling header images with enable_header_images" do
+    it "allows enabling post images with enable_post_images" do
       Railspress.configure do |config|
-        config.enable_header_images
+        config.enable_post_images
       end
 
-      expect(Railspress.header_images_enabled?).to be true
+      expect(Railspress.post_images_enabled?).to be true
     end
 
     it "allows setting author_class_name" do
@@ -152,14 +152,14 @@ RSpec.describe Railspress::Configuration do
     it "resets to defaults" do
       Railspress.configure do |config|
         config.enable_authors
-        config.enable_header_images
+        config.enable_post_images
         config.author_class_name = "Admin"
       end
 
       Railspress.reset_configuration!
 
       expect(Railspress.authors_enabled?).to be false
-      expect(Railspress.header_images_enabled?).to be false
+      expect(Railspress.post_images_enabled?).to be false
       expect(Railspress.configuration.author_class_name).to eq("User")
     end
   end

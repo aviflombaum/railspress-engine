@@ -4,11 +4,11 @@ Gem::Specification.new do |spec|
   spec.name        = "railspress-engine"
   spec.version     = Railspress::VERSION
   spec.authors     = [ "Avi Flombaum" ]
-  spec.email       = [ "avi@flatironschool.com" ]
+  spec.email       = [ "git@avi.nyc" ]
   spec.homepage    = "https://github.com/aviflombaum/railspress-engine"
-  spec.summary     = "A mountable blog engine for Rails 8+"
+  spec.summary     = "A mountable blog engine for Rails 7+"
   spec.description = "RailsPress provides drop-in blog functionality with categories, tags, rich text editing, and an admin interface."
-  spec.license     = "MIT"
+  spec.license     = "O'Sassy"
 
   spec.required_ruby_version = ">= 3.3.0"
 
@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+    Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
   end
 
   spec.add_dependency "rails", ">= 8.1"

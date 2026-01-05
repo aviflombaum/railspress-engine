@@ -128,7 +128,7 @@ bundle exec rspec
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [O'Saasy License](https://osaasy.dev/).
 
 ## Trademarks
 

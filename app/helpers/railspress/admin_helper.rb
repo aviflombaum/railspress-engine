@@ -327,6 +327,58 @@ module Railspress
     end
 
     # ============================================================
+    # TABLE ACTION HELPERS
+    # ============================================================
+
+    # Renders the standard edit icon button for table rows.
+    # @param path [String] the edit path
+    # @param title [String] tooltip text
+    # @return [String] rendered HTML
+    def rp_edit_icon(path, title: "Edit")
+      link_to path, class: "rp-icon-btn", title: title do
+        rp_icon(:edit)
+      end
+    end
+
+    # Renders the standard delete icon button for table rows.
+    # @param path [String] the delete path
+    # @param confirm [String] confirmation message
+    # @param title [String] tooltip text
+    # @return [String] rendered HTML
+    def rp_delete_icon(path, confirm: "Delete this item?", title: "Delete")
+      button_to path, method: :delete,
+        data: { turbo_confirm: confirm },
+        class: "rp-icon-btn rp-icon-btn--danger", title: title do
+        rp_icon(:trash)
+      end
+    end
+
+    # Renders standard edit and delete action icons for table rows.
+    # @param edit_path [String] the edit path
+    # @param delete_path [String] the delete path
+    # @param confirm [String] confirmation message for delete
+    # @return [String] rendered HTML
+    #
+    # @example Usage
+    #   rp_table_actions(edit_admin_category_path(category), admin_category_path(category), confirm: "Delete this category?")
+    def rp_table_action_icons(edit_path:, delete_path:, confirm: "Delete this item?")
+      rp_edit_icon(edit_path) + rp_delete_icon(delete_path, confirm: confirm)
+    end
+
+    # Renders an SVG icon.
+    # @param name [Symbol] the icon name (:edit, :trash, :plus, :search)
+    # @return [String] rendered SVG HTML
+    def rp_icon(name)
+      icons = {
+        edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>',
+        trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+        plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+        search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
+      }
+      icons[name]&.html_safe || ""
+    end
+
+    # ============================================================
     # TABLE DISPLAY HELPERS
     # ============================================================
 

@@ -46,15 +46,20 @@
 .rp-table-actions {
   text-align: right;
   white-space: nowrap;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--rp-space-xs);
 }
 
-/* button_to generates forms - make them inline */
+.rp-table-actions > * {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.rp-table-actions > * + * {
+  margin-left: var(--rp-space-xs);
+}
+
+/* button_to generates forms - keep them inline-flex for vertical alignment */
 .rp-table-actions form {
-  display: inline;
+  display: inline-flex;
 }
 
 .rp-table-actions .rp-link {

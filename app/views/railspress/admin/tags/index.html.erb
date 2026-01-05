@@ -1,11 +1,6 @@
 <% content_for :title, "Tags" %>
 
-<div class="rp-page-header">
-  <h1 class="rp-page-title">Tags</h1>
-  <div class="rp-page-actions">
-    <%= link_to "New Tag", new_admin_tag_path, class: "rp-btn rp-btn--primary" %>
-  </div>
-</div>
+<%= rp_page_header "Tags", "New Tag" => new_admin_tag_path %>
 
 <div class="rp-card">
   <% if @tags.any? %>
@@ -13,10 +8,10 @@
       <table class="rp-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Slug</th>
-            <th>Usage</th>
-            <th class="rp-table-actions">Actions</th>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Slug") %></th>
+            <th><%= rp_table_header("Usage") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
           </tr>
         </thead>
         <tbody>
@@ -26,10 +21,11 @@
               <td class="rp-table-secondary"><%= tag.slug %></td>
               <td><%= tag.taggings.count %></td>
               <td class="rp-table-actions">
-                <%= link_to "Edit", edit_admin_tag_path(tag), class: "rp-link" %>
-                <%= button_to "Delete", admin_tag_path(tag), method: :delete,
-                    data: { turbo_confirm: "Delete this tag?" },
-                    class: "rp-link rp-link--danger" %>
+                <%= rp_table_action_icons(
+                      edit_path: edit_admin_tag_path(tag),
+                      delete_path: admin_tag_path(tag),
+                      confirm: "Delete this tag?"
+                    ) %>
               </td>
             </tr>
           <% end %>
@@ -37,6 +33,6 @@
       </table>
     </div>
   <% else %>
-    <p class="rp-empty-state">No tags yet. <%= link_to "Create your first tag", new_admin_tag_path, class: "rp-link" %>.</p>
+    <%= rp_empty_state "No tags yet.", link_text: "Create your first tag", link_path: new_admin_tag_path %>
   <% end %>
 </div>

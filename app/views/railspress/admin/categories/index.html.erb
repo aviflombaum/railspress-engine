@@ -1,11 +1,6 @@
 <% content_for :title, "Categories" %>
 
-<div class="rp-page-header">
-  <h1 class="rp-page-title">Categories</h1>
-  <div class="rp-page-actions">
-    <%= link_to "New Category", new_admin_category_path, class: "rp-btn rp-btn--primary" %>
-  </div>
-</div>
+<%= rp_page_header "Categories", "New Category" => new_admin_category_path %>
 
 <div class="rp-card">
   <% if @categories.any? %>
@@ -13,10 +8,10 @@
       <table class="rp-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Slug</th>
-            <th>Posts</th>
-            <th class="rp-table-actions">Actions</th>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Slug") %></th>
+            <th><%= rp_table_header("Posts") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
           </tr>
         </thead>
         <tbody>
@@ -26,10 +21,11 @@
               <td class="rp-table-secondary"><%= category.slug %></td>
               <td><%= category.posts.count %></td>
               <td class="rp-table-actions">
-                <%= link_to "Edit", edit_admin_category_path(category), class: "rp-link" %>
-                <%= button_to "Delete", admin_category_path(category), method: :delete,
-                    data: { turbo_confirm: "Delete this category?" },
-                    class: "rp-link rp-link--danger" %>
+                <%= rp_table_action_icons(
+                      edit_path: edit_admin_category_path(category),
+                      delete_path: admin_category_path(category),
+                      confirm: "Delete this category?"
+                    ) %>
               </td>
             </tr>
           <% end %>
@@ -37,6 +33,6 @@
       </table>
     </div>
   <% else %>
-    <p class="rp-empty-state">No categories yet. <%= link_to "Create your first category", new_admin_category_path, class: "rp-link" %>.</p>
+    <%= rp_empty_state "No categories yet.", link_text: "Create your first category", link_path: new_admin_category_path %>
   <% end %>
 </div>

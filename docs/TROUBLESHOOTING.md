@@ -385,6 +385,138 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/blog/admin
 
 ---
 
+## Focal Point Issues
+
+### Focal Point Not Saving
+
+**Symptom**: Focal point is set in the editor but doesn't persist after saving.
+
+**Solutions**:
+
+1. **Check migrations**: Ensure the `railspress_focal_points` migration has run:
+   ```bash
+   bin/rails railspress:install:migrations
+   bin/rails db:migrate
+   ```
+
+2. **Verify nested attributes**: The focal point requires proper strong parameters. Check your controller permits focal point attributes:
+   ```ruby
+   params.require(:post).permit(..., focal_point_attributes: [:x, :y, :context])
+   ```
+
+3. **Feature enabled**: Ensure focal points are enabled in configuration:
+   ```ruby
+   Railspress.configure do |config|
+     config.enable_post_images
+     config.enable_focal_points
+   end
+   ```
+
+### Focal Point Editor Not Appearing
+
+**Symptom**: Image uploads work but no crosshair or focal point picker appears.
+
+**Solutions**:
+
+1. **Check JavaScript loading**: Ensure Stimulus controllers are imported:
+   ```javascript
+   // app/javascript/application.js
+   import "railspress"
+   ```
+
+2. **Verify feature toggle**: The editor only appears when `enable_focal_points` is configured
+
+3. **Check browser console**: Look for JavaScript errors related to `focal_point_controller`
+
+### Crosshair Position Wrong
+
+**Symptom**: Focal point crosshair doesn't match the clicked position.
+
+**Cause**: CSS transforms or absolute positioning conflicts.
+
+**Solution**: Ensure the image container doesn't have conflicting transforms. The focal point editor requires standard positioning.
+
+---
+
+## Markdown Mode Issues
+
+### Markdown Toggle Not Appearing
+
+**Symptom**: No button to switch between rich text and markdown modes.
+
+**Solutions**:
+
+1. **Check Stimulus controller**: Ensure the markdown mode controller is loaded:
+   ```javascript
+   // app/javascript/application.js
+   import "railspress"
+   ```
+
+2. **Verify Lexxy editor**: The toggle is part of the Lexxy editor toolbar. If the rich text editor isn't loading, the toggle won't appear either.
+
+3. **Check browser console**: Look for JavaScript errors related to `markdown_mode`
+
+### Content Lost After Mode Switch
+
+**Symptom**: Switching from markdown to rich text (or vice versa) loses some formatting.
+
+**Cause**: Some complex HTML structures don't have markdown equivalents.
+
+**Solution**: This is expected behavior for complex HTML. For best results:
+- Use standard markdown syntax when in markdown mode
+- Avoid complex nested structures when switching modes frequently
+- The conversion preserves: headings, bold, italic, links, images, lists, code blocks
+
+### Markdown Not Rendering Correctly
+
+**Symptom**: Markdown syntax appears as plain text in the preview.
+
+**Solution**: Ensure you're in markdown mode (toggle should show "Switch to Rich Text"). The markdown is converted to HTML only when:
+- Switching to rich text mode
+- Saving the post
+
+---
+
+## Custom Index Columns Issues
+
+### Custom Columns Not Showing
+
+**Symptom**: Index table shows default columns instead of custom ones.
+
+**Solutions**:
+
+1. **Check syntax**: Use the class method, not instance method:
+   ```ruby
+   class Project < ApplicationRecord
+     include Railspress::Entity
+
+     railspress_fields :title, :client, :status
+
+     # Correct - class level
+     railspress_index_columns :title, :client, :status
+   end
+   ```
+
+2. **Restart server**: Changes to entity configuration require a server restart
+
+3. **Verify column names**: Columns must match declared `railspress_fields` names exactly
+
+### Column Shows Wrong Type
+
+**Symptom**: Boolean shows as "true/false" instead of Yes/No badge, or datetime shows raw timestamp.
+
+**Solution**: Ensure the field type is declared correctly:
+
+```ruby
+railspress_fields :featured, as: :boolean    # Shows Yes/No badge
+railspress_fields :published_at, as: :datetime  # Shows formatted date
+railspress_fields :logo, as: :attachment     # Shows Attached/None badge
+```
+
+The column renderer uses the field type declaration to determine display format.
+
+---
+
 ## Getting Help
 
 1. Check this troubleshooting guide

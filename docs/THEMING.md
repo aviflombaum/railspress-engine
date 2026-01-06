@@ -320,6 +320,58 @@ CSS custom properties are supported in all modern browsers. For older browser su
 
 ---
 
+## Collapsible Sidebar
+
+The admin sidebar can be collapsed by clicking the toggle button in the sidebar header. The collapsed state persists across page loads and browser sessions via localStorage.
+
+### How It Works
+
+- Click the toggle button (hamburger icon) to collapse/expand the sidebar
+- When collapsed, only icons are visible (if using icon navigation)
+- State is stored in `localStorage` under the key `rp-sidebar-collapsed`
+- Persists per-browser, not per-user account
+
+### CSS Classes
+
+```css
+/* Sidebar in collapsed state */
+.rp-sidebar--collapsed {
+  width: var(--rp-sidebar-collapsed-width, 60px);
+}
+
+/* Toggle button */
+.rp-sidebar__toggle {
+  /* Styles for the hamburger/close button */
+}
+
+/* Hide text labels when collapsed */
+.rp-sidebar--collapsed .rp-sidebar__link-text {
+  display: none;
+}
+```
+
+### Customizing Collapsed Width
+
+Override the collapsed width via CSS variable:
+
+```css
+:root {
+  --rp-sidebar-collapsed-width: 80px;
+}
+```
+
+### Disabling Collapse
+
+If you don't want the collapsible sidebar, hide the toggle button:
+
+```css
+.rp-sidebar__toggle {
+  display: none;
+}
+```
+
+---
+
 ## Finding All Variables
 
 The complete list of CSS variables is defined in:

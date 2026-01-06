@@ -5,10 +5,12 @@ A simple blog engine for Rails 8 applications.
 ## Features
 
 - Blog posts with rich text editing (Lexxy editor)
+- **Markdown Mode** - Toggle between rich text and markdown editing
 - Categories and tags
 - SEO metadata (meta title, meta description)
 - Draft/published workflow with automatic publish timestamps
 - Admin interface for content management
+- **Focal Points** - Set image focal points for smart cropping across different aspect ratios ([docs](docs/image-focal-point-system.md))
 - **Entity System** - Manage any ActiveRecord model through the admin ([docs](docs/ENTITIES.md))
 - **Import/Export** - Bulk markdown operations with YAML frontmatter ([docs](docs/IMPORT_EXPORT.md))
 - **Theming** - CSS variable customization ([docs](docs/THEMING.md))
@@ -115,6 +117,7 @@ rails generate railspress:entity Project title:string description:text content:r
 - **[Import/Export](docs/IMPORT_EXPORT.md)** - Bulk operations
 - **[Theming](docs/THEMING.md)** - CSS customization
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common errors
+- **[Changelog](CHANGELOG.md)** - Version history and release notes
 
 ## Development
 

@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest a new feature for RailsPress
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature. Please describe what you'd like to see added to RailsPress.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem does this feature solve? Is it related to a frustration with RailsPress?
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe how you'd like this feature to work
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you considered any alternative solutions or workarounds?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature area
+      description: Which part of RailsPress would this affect?
+      options:
+        - Admin interface
+        - Entity system
+        - Import/Export
+        - Rich text editor
+        - Image handling
+        - Theming/CSS
+        - Configuration
+        - Other
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context, mockups, or examples about the feature request

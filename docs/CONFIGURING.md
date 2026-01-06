@@ -61,6 +61,23 @@ end
 
 **Default:** Disabled
 
+#### `enable_focal_points`
+
+Enables focal point selection for header images. When enabled, editors can set the focal point (important area) of images to control cropping across different aspect ratios.
+
+```ruby
+Railspress.configure do |config|
+  config.enable_post_images    # Required first
+  config.enable_focal_points   # Then enable focal points
+end
+```
+
+**Default:** Disabled
+
+**Requirements:** Must also enable `enable_post_images`. Requires running migrations for the `railspress_focal_points` table.
+
+See [Image Focal Point System](image-focal-point-system.md) for full documentation including image contexts, per-context overrides, and view helpers.
+
 ### Author Configuration
 
 These options are only relevant when `enable_authors` is called.
@@ -233,7 +250,8 @@ You can check configuration values programmatically:
 
 ```ruby
 Railspress.authors_enabled?        # => true/false
-Railspress.post_images_enabled?  # => true/false
+Railspress.post_images_enabled?    # => true/false
+Railspress.focal_points_enabled?   # => true/false
 Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name

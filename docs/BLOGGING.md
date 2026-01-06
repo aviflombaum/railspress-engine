@@ -5,6 +5,8 @@ This guide covers how to use RailsPress to create a fully-featured blog with a r
 ## Table of Contents
 
 1. [Managing Content in the Admin](#managing-content-in-the-admin)
+   - [Creating a Post](#creating-a-post)
+   - [Markdown Mode](#markdown-mode)
 2. [Building the Frontend Blog](#building-the-frontend-blog)
 3. [Recent Posts Feed](#recent-posts-feed)
 4. [Individual Post Pages](#individual-post-pages)
@@ -37,6 +39,45 @@ RailsPress provides a full admin interface at `/railspress/admin`. Here you can:
 4. Select a category and add comma-separated tags
 5. Set status to "Published" when ready
 6. Click "Create Post"
+
+### Markdown Mode
+
+The post editor supports switching between rich text and markdown editing modes. Click the toggle button in the editor toolbar to switch modes.
+
+**Switching to Markdown Mode:**
+- Click the markdown toggle button in the editor toolbar
+- Your rich text content is converted to markdown syntax
+- Edit directly in markdown format
+- Ideal for developers who prefer markdown
+
+**Switching Back to Rich Text:**
+- Click the toggle button again
+- Markdown is converted back to HTML
+- Continue editing with the visual editor
+
+**Supported Markdown Syntax:**
+
+| Syntax | Result |
+|--------|--------|
+| `# Heading` | H1 heading |
+| `## Heading` | H2 heading |
+| `**bold**` | Bold text |
+| `*italic*` | Italic text |
+| `~~strikethrough~~` | Strikethrough |
+| `` `code` `` | Inline code |
+| ```` ``` ```` | Code block |
+| `> quote` | Blockquote |
+| `- item` | Unordered list |
+| `1. item` | Ordered list |
+| `[text](url)` | Link |
+| `![alt](url)` | Image |
+| `---` | Horizontal rule |
+
+**Important Notes:**
+- Content is automatically converted when you switch modes
+- On form submission, markdown is converted to HTML for storage
+- Complex HTML (custom styles, nested tables) may not convert cleanly to markdown
+- The rich text editor preserves all formatting when switching back
 
 ---
 

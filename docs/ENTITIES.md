@@ -571,6 +571,139 @@ end
 
 ---
 
+## Adding Tags to Entities
+
+Make any entity taggable by including the `Railspress::Taggable` concern:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+  include Railspress::Taggable
+
+  railspress_fields :title, :description
+end
+```
+
+### What Taggable Provides
+
+| Method | Description |
+|--------|-------------|
+| `tag_list` | Returns tags as comma-separated string |
+| `tag_list=` | Sets tags from comma-separated string |
+| `tags` | Returns associated `Railspress::Tag` records |
+| `taggings` | Returns the join records |
+
+### Database Requirement
+
+The taggings migration is included with RailsPress. Ensure you've run:
+
+```bash
+rails railspress:install:migrations
+rails db:migrate
+```
+
+This creates the `railspress_taggings` polymorphic join table.
+
+### Form Integration
+
+Add a tag field to your entity form:
+
+```erb
+<%= rp_string_field f, :tag_list, label: "Tags", hint: "Comma-separated" %>
+```
+
+Or if you're building a custom form:
+
+```erb
+<%= f.text_field :tag_list, placeholder: "ruby, rails, api" %>
+```
+
+### Querying by Tags
+
+```ruby
+# Find entities with a specific tag
+tag = Railspress::Tag.find_by(slug: "ruby")
+tag.taggings.where(taggable_type: "Project").map(&:taggable)
+
+# Or add a scope to your model
+class Project < ApplicationRecord
+  include Railspress::Entity
+  include Railspress::Taggable
+
+  scope :tagged_with, ->(tag_name) {
+    joins(:tags).where(railspress_tags: { name: tag_name.downcase })
+  }
+end
+
+Project.tagged_with("ruby")
+```
+
+### Note on Shared Tags
+
+Tags are shared across all taggable models. A tag "ruby" used on a Post and a Project points to the same `Railspress::Tag` record. This enables cross-model tag pages and unified tag management.
+
+---
+
+## Custom Index Columns
+
+By default, entity index pages display columns based on `Railspress.default_index_columns` (defaults to `:id`, `:title`, `:name`, `:created_at`). Only columns that the model responds to are shown.
+
+### Overriding with a Constant
+
+Define `RAILSPRESS_INDEX_COLUMNS` in your model:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  RAILSPRESS_INDEX_COLUMNS = [:title, :client, :status, :created_at]
+
+  railspress_fields :title, :client, :description, :status, :featured
+end
+```
+
+### Overriding with a Method
+
+For dynamic logic, override the `railspress_index_columns` class method:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+
+  def self.railspress_index_columns
+    columns = [:title, :client, :created_at]
+    columns << :budget if Current.user&.admin?
+    columns
+  end
+end
+```
+
+### Global Default
+
+Configure the default columns for all entities in your initializer:
+
+```ruby
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.default_index_columns = [:title, :name, :updated_at]
+end
+```
+
+### Column Type Rendering
+
+| Type | Index Display |
+|------|---------------|
+| `:string` | Truncated text |
+| `:text` | Truncated text |
+| `:boolean` | Yes/No badge |
+| `:integer` | Raw value |
+| `:datetime` | Formatted date |
+| `:date` | Formatted date |
+| `:attachment` | Attached/None badge |
+| `:attachments` | "N images" badge |
+
+---
+
 ## Differences from Posts
 
 | Feature | Posts | Entities |

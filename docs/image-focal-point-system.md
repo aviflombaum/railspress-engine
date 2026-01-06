@@ -31,7 +31,16 @@ rails db:migrate
 
 This creates the `railspress_focal_points` table for storing focal point data.
 
-### 3. Use in Views
+### 3. Add JavaScript Import
+
+```javascript
+// app/javascript/application.js
+import "railspress"
+```
+
+This auto-registers all RailsPress Stimulus controllers (focal point picker, dropzone, etc.).
+
+### 4. Use in Views
 
 ```erb
 <%# In your view %>
@@ -406,7 +415,26 @@ permitted.push(header_image_focal_point_attributes: [:focal_x, :focal_y, :overri
 
 ### Stimulus Controllers Not Loading
 
-Check that your importmap includes the RailsPress controllers and `@hotwired/stimulus`:
+Add the RailsPress import to your application.js:
+
+```javascript
+// app/javascript/application.js
+import "railspress"  // Auto-registers all RailsPress Stimulus controllers
+```
+
+This requires `window.Stimulus` to be set. If you use a custom Stimulus setup:
+
+```javascript
+// app/javascript/application.js
+import { Application } from "@hotwired/stimulus"
+import { register } from "railspress"
+
+const application = Application.start()
+window.Stimulus = application  // Required for auto-registration
+register(application)  // Or register manually
+```
+
+Also ensure Stimulus is properly pinned in your importmap:
 
 ```ruby
 # config/importmap.rb

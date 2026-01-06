@@ -35,7 +35,13 @@ module Railspress
       self.author_id = user&.id
     end
     has_rich_text :content
-    has_one_attached :header_image
+    has_one_attached :header_image do |attachable|
+      # Apply configured variants from host app's initializer
+      # e.g., config.post_image_variants = { hero: { resize_to_fill: [1920, 1080] } }
+      Railspress.post_image_variants.each do |name, options|
+        attachable.variant name, **options
+      end
+    end
     has_focal_point :header_image
 
     # Virtual attribute for removing header image via checkbox

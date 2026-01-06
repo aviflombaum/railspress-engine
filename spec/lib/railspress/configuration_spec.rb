@@ -101,6 +101,22 @@ RSpec.describe Railspress::Configuration do
 
       expect(Railspress.author_display_method).to eq(:email)
     end
+
+    it "allows setting post_image_variants" do
+      Railspress.configure do |config|
+        config.post_image_variants = {
+          hero: { resize_to_fill: [1920, 1080] },
+          card: { resize_to_fill: [800, 500] }
+        }
+      end
+
+      expect(Railspress.post_image_variants[:hero]).to eq({ resize_to_fill: [1920, 1080] })
+      expect(Railspress.post_image_variants[:card]).to eq({ resize_to_fill: [800, 500] })
+    end
+
+    it "defaults post_image_variants to empty hash" do
+      expect(Railspress.post_image_variants).to eq({})
+    end
   end
 
   describe ".available_authors" do

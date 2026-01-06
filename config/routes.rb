@@ -19,6 +19,13 @@ Railspress::Engine.routes.draw do
       end
     end
 
+    # UI/UX Prototypes (development only)
+    resources :prototypes, only: [] do
+      collection do
+        get :image_section
+      end
+    end
+
     # Dynamic entity routes for host-defined CMS models
     scope "entities" do
       scope ":entity_type", constraints: ->(req) { Railspress.entity_registered?(req.params[:entity_type]) } do

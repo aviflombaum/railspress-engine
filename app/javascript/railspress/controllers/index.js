@@ -21,13 +21,15 @@
 import FocalPointController from "./focal_point_controller"
 import DropzoneController from "./dropzone_controller"
 import CropController from "./crop_controller"
+import ImageSectionController from "./image_section_controller"
 
 // Export individual controllers
-export { FocalPointController, DropzoneController, CropController }
+export { FocalPointController, DropzoneController, CropController, ImageSectionController }
 
 // Export registration function for convenience
 export function registerRailspressControllers(application) {
   application.register("railspress--focal-point", FocalPointController)
   application.register("railspress--dropzone", DropzoneController)
   application.register("railspress--crop", CropController)
+  application.register("rp-image-section", ImageSectionController)
 }

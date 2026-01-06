@@ -1,0 +1,42 @@
+<h1 class="rp-page-title rp-page-title--standalone">Image Section Prototype</h1>
+
+<p class="rp-hint" style="margin-bottom: var(--rp-space-xl); max-width: 700px;">
+  <strong>Purpose:</strong> Iterate on the main image section UI/UX.
+  This uses real CSS and Stimulus controllers with mock data.
+</p>
+
+<div class="rp-card rp-card--padded" style="max-width: 800px;">
+  <h2 style="font-size: 1rem; margin-bottom: var(--rp-space-lg); color: var(--rp-text-muted);">
+    State 1: Image Exists (Compact View)
+  </h2>
+
+  <%= render "railspress/admin/shared/image_section_v2",
+        has_image: true,
+        image_url: @mock_image_url,
+        filename: @mock_filename,
+        filesize: @mock_filesize,
+        focal_point: @mock_focal_point,
+        contexts: @contexts,
+        label: "Main Image" %>
+</div>
+
+<div class="rp-card rp-card--padded" style="max-width: 800px; margin-top: var(--rp-space-xl);">
+  <h2 style="font-size: 1rem; margin-bottom: var(--rp-space-lg); color: var(--rp-text-muted);">
+    State 2: No Image (Upload Prompt)
+  </h2>
+
+  <%= render "railspress/admin/shared/image_section_v2",
+        has_image: false,
+        label: "Main Image" %>
+</div>
+
+<div style="margin-top: var(--rp-space-2xl); padding: var(--rp-space-lg); background: var(--rp-bg); border: 1px solid var(--rp-border); border-radius: var(--rp-radius);">
+  <h3 style="font-size: 0.875rem; margin-bottom: var(--rp-space-md);">Implementation Notes</h3>
+  <ul style="font-size: 0.875rem; color: var(--rp-text-muted); padding-left: var(--rp-space-lg); margin: 0;">
+    <li>Stimulus controller handles expand/collapse (no server round-trip)</li>
+    <li>Clicking compact view or Edit button expands the editor</li>
+    <li>Done button collapses back to compact view</li>
+    <li>Focal point picker reuses existing <code>railspress--focal-point</code> controller</li>
+    <li>CSS animations for smooth transitions</li>
+  </ul>
+</div>

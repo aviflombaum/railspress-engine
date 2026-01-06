@@ -529,3 +529,206 @@
   width: auto;
   margin: 0;
 }
+
+/* =================================
+   Image Section V2
+   ================================= */
+
+.rp-image-section-v2 {
+  background: var(--rp-bg);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  margin-bottom: var(--rp-space-lg);
+  overflow: hidden;
+}
+
+.rp-image-section-v2__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rp-space-sm) var(--rp-space-md);
+  border-bottom: 1px solid var(--rp-border);
+  background: var(--rp-bg-elevated);
+}
+
+.rp-image-section-v2__header .rp-label {
+  margin-bottom: 0;
+  font-size: 0.875rem;
+}
+
+/* Compact view */
+.rp-image-section-v2__compact {
+  display: flex;
+  gap: var(--rp-space-md);
+  padding: var(--rp-space-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.rp-image-section-v2__compact:hover {
+  background: var(--rp-bg-hover, rgba(0, 0, 0, 0.02));
+}
+
+.rp-image-section-v2__thumb {
+  width: 120px;
+  height: 80px;
+  border-radius: calc(var(--rp-radius) - 2px);
+  overflow: hidden;
+  background: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.rp-image-section-v2__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rp-image-section-v2__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--rp-space-xs);
+}
+
+.rp-image-section-v2__filename {
+  font-weight: 500;
+  color: var(--rp-text);
+  font-size: 0.875rem;
+}
+
+.rp-image-section-v2__meta {
+  font-size: 0.75rem;
+  color: var(--rp-text-muted);
+}
+
+.rp-image-section-v2__focal-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-xs);
+  font-size: 0.75rem;
+  color: var(--rp-primary);
+  margin-top: var(--rp-space-xs);
+}
+
+.rp-image-section-v2__focal-indicator svg {
+  flex-shrink: 0;
+}
+
+/* Editor panel */
+.rp-image-section-v2__editor {
+  background: var(--rp-bg-elevated);
+}
+
+.rp-image-section-v2__editor--entering {
+  animation: rp-slide-down 0.2s ease-out;
+}
+
+@keyframes rp-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rp-image-section-v2__editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rp-space-sm);
+  padding: var(--rp-space-md) var(--rp-space-lg);
+  background: var(--rp-bg);
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.rp-image-section-v2__editor-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--rp-text);
+}
+
+.rp-image-section-v2__editor-actions {
+  display: flex;
+  gap: var(--rp-space-sm);
+}
+
+.rp-image-section-v2__editor-body {
+  padding: var(--rp-space-lg);
+}
+
+/* Dropzone */
+.rp-image-section-v2__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rp-space-2xl);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.rp-image-section-v2__dropzone:hover {
+  background: var(--rp-primary-light);
+}
+
+.rp-image-section-v2__dropzone-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--rp-space-md);
+  color: var(--rp-text-muted);
+}
+
+.rp-image-section-v2__dropzone-text {
+  font-size: 0.875rem;
+  color: var(--rp-text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.rp-image-section-v2__dropzone-text strong {
+  color: var(--rp-primary);
+}
+
+/* Expanded state modifier */
+.rp-image-section-v2--expanded {
+  box-shadow: var(--rp-shadow-md);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .rp-image-section-v2__compact {
+    flex-direction: column;
+  }
+
+  .rp-image-section-v2__thumb {
+    width: 100%;
+    height: 120px;
+  }
+
+  .rp-image-section-v2__editor-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--rp-space-md);
+  }
+
+  .rp-image-section-v2__editor-actions {
+    flex-wrap: wrap;
+  }
+
+  .rp-image-section-v2__editor-actions .rp-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  /* Hide third preview on mobile */
+  .rp-image-section-v2 .rp-focal-editor__preview:nth-child(n+4) {
+    display: none;
+  }
+}

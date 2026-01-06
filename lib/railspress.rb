@@ -12,7 +12,8 @@ module Railspress
                   :author_display_method,
                   :words_per_minute,
                   :blog_path,
-                  :default_index_columns
+                  :default_index_columns,
+                  :post_image_variants
 
     attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :image_contexts
 
@@ -21,6 +22,7 @@ module Railspress
       @post_images_enabled = false
       @focal_points_enabled = false
       @image_contexts = default_image_contexts
+      @post_image_variants = {}
       @author_class_name = "User"
       @current_author_method = :current_user
       @current_author_proc = nil
@@ -223,6 +225,10 @@ module Railspress
 
     def default_index_columns
       configuration.default_index_columns
+    end
+
+    def post_image_variants
+      configuration.post_image_variants
     end
 
     # Entity registry convenience accessors

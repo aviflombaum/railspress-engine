@@ -1,0 +1,172 @@
+<%#
+  Image Section V2 Partial
+  ========================
+  Improved image section with Stimulus-powered expand/collapse.
+  Located in main column (not sidebar) with better UX.
+
+  Required locals:
+    has_image - Boolean, whether an image is attached
+
+  Optional locals (when has_image is true):
+    image_url - URL of the image to display
+    filename - Original filename
+    filesize - Human-readable file size
+    focal_point - Hash with :x and :y (0.0-1.0)
+    contexts - Hash of context configs for previews
+
+  Optional locals (always):
+    label - Section label (default: "Main Image")
+
+  For production use with form builder, see image_section partial.
+%>
+
+<% label ||= "Main Image" %>
+<% contexts ||= {} %>
+<% focal_point ||= { x: 0.5, y: 0.5 } %>
+
+<div class="rp-image-section-v2"
+     data-controller="railspress--image-section"
+     data-railspress--image-section-expanded-value="false">
+
+  <%# Header row with label and action %>
+  <div class="rp-image-section-v2__header">
+    <label class="rp-label"><%= label %></label>
+    <% if local_assigns[:has_image] %>
+      <button type="button"
+              class="rp-btn rp-btn--outline rp-btn--sm"
+              data-railspress--image-section-target="editButton"
+              data-action="railspress--image-section#toggle">
+        Edit
+      </button>
+    <% end %>
+  </div>
+
+  <% if local_assigns[:has_image] %>
+    <%# Compact view (shown when collapsed) %>
+    <div class="rp-image-section-v2__compact"
+         data-railspress--image-section-target="compact"
+         data-action="click->railspress--image-section#expand">
+      <div class="rp-image-section-v2__thumb">
+        <img src="<%= image_url %>"
+             style="object-position: <%= focal_point[:x] * 100 %>% <%= focal_point[:y] * 100 %>%;"
+             alt="">
+      </div>
+      <div class="rp-image-section-v2__info">
+        <span class="rp-image-section-v2__filename"><%= filename %></span>
+        <span class="rp-image-section-v2__meta"><%= filesize %></span>
+        <% if focal_point[:x] != 0.5 || focal_point[:y] != 0.5 %>
+          <span class="rp-image-section-v2__focal-indicator">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/>
+            </svg>
+            Focal point set
+          </span>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Expanded editor (hidden by default) %>
+    <div class="rp-image-section-v2__editor"
+         data-railspress--image-section-target="editor"
+         hidden>
+      <div class="rp-image-section-v2__editor-header">
+        <span class="rp-image-section-v2__editor-title"><%= label %> Settings</span>
+        <div class="rp-image-section-v2__editor-actions">
+          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Change</button>
+          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Remove</button>
+          <button type="button"
+                  class="rp-btn rp-btn--primary rp-btn--sm"
+                  data-action="railspress--image-section#collapse">
+            Done
+          </button>
+        </div>
+      </div>
+
+      <div class="rp-image-section-v2__editor-body">
+        <%# Focal point editor %>
+        <div class="rp-focal-editor"
+             data-controller="railspress--focal-point"
+             data-railspress--focal-point-x-value="<%= focal_point[:x] %>"
+             data-railspress--focal-point-y-value="<%= focal_point[:y] %>">
+
+          <div class="rp-focal-editor__layout">
+            <%# Source image with crosshair %>
+            <div class="rp-focal-editor__source">
+              <div class="rp-focal-editor__image-wrap"
+                   data-action="click->railspress--focal-point#pick
+                                touchstart->railspress--focal-point#touch"
+                   tabindex="0"
+                   data-action="keydown->railspress--focal-point#keydown">
+                <img src="<%= image_url %>"
+                     data-railspress--focal-point-target="image"
+                     class="rp-focal-editor__image"
+                     alt="Source image for focal point selection">
+                <div data-railspress--focal-point-target="crosshair"
+                     class="rp-focal-editor__crosshair"
+                     style="left: <%= focal_point[:x] * 100 %>%; top: <%= focal_point[:y] * 100 %>%;"></div>
+              </div>
+
+              <div class="rp-focal-editor__hint">
+                <span>Click to set focal point</span>
+                <span class="rp-focal-editor__coords" data-railspress--focal-point-target="coordsDisplay">
+                  <%= "#{(focal_point[:x] * 100).round}%, #{(focal_point[:y] * 100).round}%" %>
+                </span>
+              </div>
+
+              <div class="rp-focal-editor__actions">
+                <button type="button"
+                        class="rp-btn rp-btn--outline rp-btn--sm"
+                        data-action="railspress--focal-point#reset">
+                  Reset to Center
+                </button>
+              </div>
+            </div>
+
+            <%# Live previews %>
+            <% if contexts.any? %>
+              <div class="rp-focal-editor__previews">
+                <span class="rp-focal-editor__previews-title">Live Preview</span>
+
+                <% contexts.each do |name, config| %>
+                  <% aspect = config[:aspect] %>
+                  <% aspect_ratio = aspect.is_a?(Array) ? "#{aspect[0]} / #{aspect[1]}" : aspect %>
+                  <% ratio_label = aspect.is_a?(Array) ? "#{aspect[0]}:#{aspect[1]}" : aspect.to_s %>
+
+                  <div class="rp-focal-editor__preview">
+                    <div class="rp-focal-editor__preview-image" style="aspect-ratio: <%= aspect_ratio %>;">
+                      <img src="<%= image_url %>"
+                           data-railspress--focal-point-target="preview"
+                           style="object-position: <%= focal_point[:x] * 100 %>% <%= focal_point[:y] * 100 %>%;"
+                           alt="<%= name.to_s.titleize %> preview">
+                    </div>
+                    <div class="rp-focal-editor__preview-label">
+                      <span class="rp-focal-editor__preview-name"><%= name.to_s.titleize %></span>
+                      <span class="rp-focal-editor__preview-ratio"><%= ratio_label %></span>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <%# Hidden inputs would go here in production %>
+        </div>
+      </div>
+    </div>
+
+  <% else %>
+    <%# No image - show dropzone %>
+    <div class="rp-image-section-v2__dropzone">
+      <svg class="rp-image-section-v2__dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      <p class="rp-image-section-v2__dropzone-text">
+        <strong>Click to upload</strong> or drag and drop<br>
+        <span class="rp-hint">PNG, JPG, WebP up to 10MB</span>
+      </p>
+    </div>
+  <% end %>
+</div>

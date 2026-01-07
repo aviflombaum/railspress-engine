@@ -97,7 +97,40 @@ Posts automatically have focal points when `enable_post_images` and `enable_foca
 
 ### For Custom Models (Entities)
 
-Include the `HasFocalPoint` concern and declare which attachments support focal points:
+Use the `focal_point_image` macro for a one-liner that handles everything:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+  include Railspress::HasFocalPoint
+
+  # One call does it all:
+  # - has_one_attached with variants
+  # - has_focal_point for editing
+  # - railspress_fields registration (auto)
+  focal_point_image :main_image do |attachable|
+    attachable.variant :hero, resize_to_fill: [2100, 900, { crop: :centre }]
+    attachable.variant :card, resize_to_fill: [800, 500, { crop: :centre }]
+    attachable.variant :thumb, resize_to_fill: [400, 250, { crop: :centre }]
+    attachable.variant :og, resize_to_fill: [1200, 630, { crop: :centre }]
+  end
+
+  # Other fields (main_image auto-registered above)
+  railspress_fields :title, :client, :featured
+end
+```
+
+#### Without Variants
+
+If you don't need variants, skip the block:
+
+```ruby
+focal_point_image :cover_image
+```
+
+#### Manual Approach (Alternative)
+
+For more control, you can use the separate declarations:
 
 ```ruby
 class Project < ApplicationRecord
@@ -109,10 +142,12 @@ class Project < ApplicationRecord
 
   has_focal_point :cover_image
   has_focal_point :banner_image
+
+  railspress_fields :cover_image, as: :focal_point_image
 end
 ```
 
-That's it! No migrations needed on your model - the polymorphic `railspress_focal_points` table stores all focal point data.
+No migrations needed on your model - the polymorphic `railspress_focal_points` table stores all focal point data.
 
 ## Model API
 

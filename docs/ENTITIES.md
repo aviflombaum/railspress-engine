@@ -76,6 +76,7 @@ railspress_fields :gallery, as: :attachments
 | `:date` | Date columns | Date picker | Formatted date |
 | `:attachment` | `has_one_attached` | File input | Attached/None badge |
 | `:attachments` | `has_many_attached` | Multiple file input | "N images" badge |
+| `:focal_point_image` | `focal_point_image` macro | Image upload + focal picker | Attached/None badge |
 | `:list` | Explicit only | Text field (comma-separated) | "N items" badge |
 | `:lines` | Explicit only | Textarea (line-separated) | "N items" badge |
 
@@ -445,6 +446,63 @@ Attachment fields support:
 - Individual removal checkboxes
 - Direct upload (if configured in host app)
 - Adding new files while keeping existing ones
+
+---
+
+## Focal Point Images
+
+For images that need focal point editing (hero banners, cards, OG images), use the `focal_point_image` macro. It combines ActiveStorage attachment, focal point support, and entity field registration in one call.
+
+### Basic Usage
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+  include Railspress::HasFocalPoint
+
+  focal_point_image :cover_image
+end
+```
+
+### With Variants
+
+Define image variants for different contexts:
+
+```ruby
+class Project < ApplicationRecord
+  include Railspress::Entity
+  include Railspress::HasFocalPoint
+
+  focal_point_image :main_image do |attachable|
+    attachable.variant :hero, resize_to_fill: [2100, 900, { crop: :centre }]
+    attachable.variant :card, resize_to_fill: [800, 500, { crop: :centre }]
+    attachable.variant :thumb, resize_to_fill: [400, 250, { crop: :centre }]
+    attachable.variant :og, resize_to_fill: [1200, 630, { crop: :centre }]
+  end
+
+  # No need to declare main_image in railspress_fields - auto-registered
+  railspress_fields :title, :client, :featured
+end
+```
+
+### What focal_point_image Does
+
+One call handles three things:
+
+1. **`has_one_attached`** - Declares the ActiveStorage attachment with optional variants
+2. **`has_focal_point`** - Adds focal point editing support
+3. **`railspress_fields`** - Registers the field in the entity system (auto)
+
+### Using in Views
+
+```erb
+<%# Apply focal point to hero image %>
+<%= image_tag url_for(@project.main_image.variant(:hero)),
+      style: @project.focal_point_css(:main_image),
+      class: "object-cover w-full h-full" %>
+```
+
+See [Image Focal Point System](image-focal-point-system.md) for full documentation on focal points, context overrides, and the admin UI.
 
 ---
 

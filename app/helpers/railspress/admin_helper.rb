@@ -2,8 +2,6 @@ module Railspress
   # Helper methods for building consistent admin views.
   # Use these helpers to ensure styling consistency across all entity views.
   module AdminHelper
-    # Include Turbo helpers for turbo_frame_tag support in engine views
-    include Turbo::FramesHelper if defined?(Turbo::FramesHelper)
 
     # ============================================================
     # FIELD RENDERING HELPERS

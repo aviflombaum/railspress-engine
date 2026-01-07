@@ -20,5 +20,13 @@ module Railspress
         app.config.importmap.cache_sweepers << root.join("app", "javascript")
       end
     end
+
+    # Include Turbo helpers in admin views (deferred until app is ready)
+    config.to_prepare do
+      if defined?(::Turbo::FramesHelper)
+        Railspress::Admin::BaseController.helper ::Turbo::FramesHelper
+        Railspress::Admin::BaseController.helper ::Turbo::StreamsHelper
+      end
+    end
   end
 end

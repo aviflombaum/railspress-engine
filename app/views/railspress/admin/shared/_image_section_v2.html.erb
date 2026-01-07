@@ -14,15 +14,21 @@
     focal_point - Hash with :x and :y (0.0-1.0)
     contexts - Hash of context configs for previews
 
+  Optional locals (for form integration):
+    form - Rails form builder (enables form fields)
+    record - The record with HasFocalPoint concern
+    attachment_name - Symbol for the attachment (e.g., :header_image)
+
   Optional locals (always):
     label - Section label (default: "Main Image")
-
-  For production use with form builder, see image_section partial.
 %>
 
 <% label ||= "Main Image" %>
 <% contexts ||= {} %>
 <% focal_point ||= { x: 0.5, y: 0.5 } %>
+<% has_form = local_assigns[:form].present? %>
+<% attachment_name ||= :header_image %>
+<% focal_point_record = has_form && local_assigns[:record] ? record.send("#{attachment_name}_focal_point") : nil %>
 
 <div class="rp-image-section-v2"
      data-controller="railspress--image-section"
@@ -73,8 +79,22 @@
       <div class="rp-image-section-v2__editor-header">
         <span class="rp-image-section-v2__editor-title"><%= label %> Settings</span>
         <div class="rp-image-section-v2__editor-actions">
-          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Change</button>
-          <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Remove</button>
+          <% if has_form %>
+            <label class="rp-btn rp-btn--outline rp-btn--sm">
+              Change
+              <%= form.file_field attachment_name,
+                    accept: "image/*",
+                    class: "rp-sr-only",
+                    direct_upload: true %>
+            </label>
+            <label class="rp-btn rp-btn--outline rp-btn--sm">
+              <%= form.check_box :"remove_#{attachment_name}", { class: "rp-sr-only" }, "1", "0" %>
+              Remove
+            </label>
+          <% else %>
+            <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Change</button>
+            <button type="button" class="rp-btn rp-btn--outline rp-btn--sm">Remove</button>
+          <% end %>
           <button type="button"
                   class="rp-btn rp-btn--primary rp-btn--sm"
                   data-action="railspress--image-section#collapse">
@@ -150,23 +170,36 @@
             <% end %>
           </div>
 
-          <%# Hidden inputs would go here in production %>
+          <%# Hidden inputs for form submission %>
+          <% if has_form && focal_point_record %>
+            <%= form.fields_for "#{attachment_name}_focal_point_attributes", focal_point_record do |fp_form| %>
+              <%= fp_form.hidden_field :focal_x, data: { railspress__focal_point_target: "inputX" } %>
+              <%= fp_form.hidden_field :focal_y, data: { railspress__focal_point_target: "inputY" } %>
+            <% end %>
+          <% end %>
         </div>
       </div>
     </div>
 
   <% else %>
     <%# No image - show dropzone %>
-    <div class="rp-image-section-v2__dropzone">
-      <svg class="rp-image-section-v2__dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <circle cx="8.5" cy="8.5" r="1.5"/>
-        <polyline points="21 15 16 10 5 21"/>
-      </svg>
-      <p class="rp-image-section-v2__dropzone-text">
-        <strong>Click to upload</strong> or drag and drop<br>
-        <span class="rp-hint">PNG, JPG, WebP up to 10MB</span>
-      </p>
-    </div>
+    <% if has_form %>
+      <%= render "railspress/admin/shared/dropzone",
+            form: form,
+            field_name: attachment_name,
+            prompt: "Click to upload #{label.downcase}" %>
+    <% else %>
+      <div class="rp-image-section-v2__dropzone">
+        <svg class="rp-image-section-v2__dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p class="rp-image-section-v2__dropzone-text">
+          <strong>Click to upload</strong> or drag and drop<br>
+          <span class="rp-hint">PNG, JPG, WebP up to 10MB</span>
+        </p>
+      </div>
+    <% end %>
   <% end %>
 </div>

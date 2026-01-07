@@ -24,6 +24,12 @@
   margin-bottom: var(--rp-space-xl);
 }
 
+.rp-byline {
+  margin-top: var(--rp-space-xs);
+  font-size: 0.875rem;
+  color: var(--rp-text-muted);
+}
+
 .rp-page-actions {
   display: flex;
   gap: var(--rp-space-sm);
@@ -49,4 +55,57 @@
   font-weight: 600;
   color: var(--rp-text);
   letter-spacing: 0;
+}
+
+/* Post meta card */
+.rp-post-meta-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rp-space-lg) var(--rp-space-xl);
+  padding: var(--rp-space-md) var(--rp-space-lg);
+  margin-bottom: var(--rp-space-xl);
+  background: var(--rp-bg-elevated);
+  border-radius: var(--rp-radius);
+  border: 1px solid var(--rp-border-light);
+}
+
+.rp-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-xs);
+}
+
+.rp-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rp-space-xl);
+  flex-basis: 100%;
+}
+
+.rp-meta-item--tags {
+  align-items: flex-end;
+}
+
+.rp-meta-item--tags .rp-tag-list {
+  justify-content: flex-end;
+}
+
+.rp-meta-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rp-text-muted);
+}
+
+.rp-meta-value {
+  font-size: 0.875rem;
+  color: var(--rp-text);
+}
+
+.rp-meta-value--mono {
+  font-family: var(--rp-font-mono);
+  font-size: 0.8125rem;
+  color: var(--rp-text-muted);
 }

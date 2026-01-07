@@ -30,6 +30,23 @@
         <p class="rp-hint">Leave blank to auto-generate from title</p>
       </div>
 
+      <% if post_images_enabled? %>
+        <% attachment = @post.header_image %>
+        <% has_image = attachment.attached? && attachment.blob&.persisted? %>
+        <% focal = @post.header_image_focal_point %>
+        <%= render "railspress/admin/shared/image_section_v2",
+              has_image: has_image,
+              image_url: has_image ? main_app.url_for(attachment) : nil,
+              filename: has_image ? attachment.filename.to_s : nil,
+              filesize: has_image ? number_to_human_size(attachment.byte_size) : nil,
+              focal_point: { x: focal&.focal_x || 0.5, y: focal&.focal_y || 0.5 },
+              contexts: Railspress.image_contexts,
+              form: form,
+              record: @post,
+              attachment_name: :header_image,
+              label: "Main Image" %>
+      <% end %>
+
       <div class="rp-form-group" data-markdown-mode>
         <div class="rp-editor-header">
           <%= form.label :content, class: "rp-label" %>
@@ -132,39 +149,6 @@
           <p class="rp-hint">Comma-separated. New tags created automatically.</p>
         </div>
       </div>
-
-      <% if post_images_enabled? %>
-        <div class="rp-sidebar-section">
-          <h3 class="rp-sidebar-title">Featured Image</h3>
-
-          <% if Railspress.focal_points_enabled? %>
-            <%= render "railspress/admin/shared/image_section",
-                  form: form,
-                  record: @post,
-                  attachment_name: :header_image,
-                  label: "Featured Image" %>
-          <% else %>
-            <div class="rp-form-group">
-              <% if @post.header_image.attached? && @post.header_image.blob&.persisted? %>
-                <div class="rp-featured-image-preview">
-                  <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [400, 300])), class: "rp-featured-image-thumb" %>
-                </div>
-              <% end %>
-
-              <%= form.label :header_image, "Featured Image", class: "rp-label" %>
-              <%= form.file_field :header_image, accept: "image/*", class: "rp-file-input" %>
-              <p class="rp-hint">Recommended: 1200x630px for social sharing</p>
-
-              <% if @post.header_image.attached? && @post.header_image.blob&.persisted? %>
-                <label class="rp-checkbox-label">
-                  <%= form.check_box :remove_header_image, {}, "1", "0" %>
-                  Remove featured image
-                </label>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
 
       <div class="rp-sidebar-section">
         <h3 class="rp-sidebar-title">SEO</h3>

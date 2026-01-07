@@ -1,17 +1,9 @@
 <div class="rp-page-header">
   <div>
     <h1 class="rp-page-title"><%= @post.title %></h1>
-    <div class="rp-post-meta">
-      <span class="rp-badge rp-badge--<%= @post.status %>"><%= @post.status.titleize %></span>
-      <% if @post.category %>
-        <span><%= @post.category.name %></span>
-      <% end %>
-      <% if authors_enabled? && @post.author %>
-        <span>by <%= @post.author.public_send(Railspress.author_display_method) %></span>
-      <% end %>
-      <span><%= @post.reading_time_display %> min read</span>
-      <span><%= @post.created_at.strftime("%b %d, %Y") %></span>
-    </div>
+    <% if authors_enabled? && @post.author %>
+      <p class="rp-byline">by <%= @post.author.public_send(Railspress.author_display_method) %></p>
+    <% end %>
   </div>
   <div class="rp-page-actions">
     <% if @post.published? %>
@@ -22,18 +14,67 @@
   </div>
 </div>
 
-<% if @post.tags.any? %>
-  <div class="rp-tag-list rp-post-tags">
-    <% @post.tags.each do |tag| %>
-      <span class="rp-tag"><%= tag.name %></span>
-    <% end %>
+<div class="rp-post-meta-card">
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Status</span>
+    <span class="rp-badge rp-badge--<%= @post.status %>"><%= @post.status.titleize %></span>
   </div>
-<% end %>
+  <% if @post.published_at %>
+    <div class="rp-meta-item">
+      <span class="rp-meta-label">Published</span>
+      <span class="rp-meta-value"><%= @post.published_at.strftime("%b %d, %Y at %l:%M %p") %></span>
+    </div>
+  <% end %>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Created</span>
+    <span class="rp-meta-value"><%= @post.created_at.strftime("%b %d, %Y") %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Updated</span>
+    <span class="rp-meta-value"><%= @post.updated_at.strftime("%b %d, %Y") %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Reading Time</span>
+    <span class="rp-meta-value"><%= @post.reading_time_display %> min</span>
+  </div>
+  <% if @post.category || @post.tags.any? %>
+    <div class="rp-meta-row">
+      <% if @post.category %>
+        <div class="rp-meta-item">
+          <span class="rp-meta-label">Category</span>
+          <span class="rp-meta-value"><%= @post.category.name %></span>
+        </div>
+      <% end %>
+      <% if @post.tags.any? %>
+        <div class="rp-meta-item rp-meta-item--tags">
+          <span class="rp-meta-label">Tags</span>
+          <div class="rp-tag-list">
+            <% @post.tags.each do |tag| %>
+              <span class="rp-tag"><%= tag.name %></span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
 
-<% if post_images_enabled? && @post.header_image.attached? %>
-  <div class="rp-featured-image">
-    <%= image_tag main_app.url_for(@post.header_image.variant(resize_to_limit: [1200, 630])), class: "rp-featured-image-full" %>
-  </div>
+<% if post_images_enabled? %>
+  <% if @post.header_image.attached? %>
+    <% focal = @post.header_image_focal_point %>
+    <%= render "railspress/admin/shared/image_section_v2",
+          has_image: true,
+          image_url: main_app.url_for(@post.header_image),
+          filename: @post.header_image.filename.to_s,
+          filesize: number_to_human_size(@post.header_image.byte_size),
+          focal_point: { x: focal&.focal_x || 0.5, y: focal&.focal_y || 0.5 },
+          contexts: Railspress.image_contexts,
+          label: "Main Image" %>
+  <% else %>
+    <%= render "railspress/admin/shared/image_section_v2",
+          has_image: false,
+          label: "Main Image" %>
+  <% end %>
 <% end %>
 
 <article class="rp-card rp-card--padded rp-prose">

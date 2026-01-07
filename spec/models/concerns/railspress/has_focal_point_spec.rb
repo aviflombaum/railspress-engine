@@ -208,6 +208,33 @@ RSpec.describe Railspress::HasFocalPoint do
       expect(Railspress::Post.focal_point_attachments).to include(:header_image)
     end
   end
+
+  describe ".focal_point_image" do
+    it "creates attachment with focal point support" do
+      # Project uses focal_point_image :main_image
+      expect(Project.focal_point_attachments).to include(:main_image)
+    end
+
+    it "creates the ActiveStorage attachment" do
+      expect(Project.reflect_on_attachment(:main_image)).to be_present
+    end
+
+    it "creates the focal point association" do
+      project = Project.new(title: "Test")
+      expect(project).to respond_to(:main_image_focal_point)
+    end
+
+    it "registers as has_one_attached" do
+      attachment = Project.reflect_on_attachment(:main_image)
+      expect(attachment.macro).to eq(:has_one_attached)
+    end
+
+    it "auto-registers with railspress_fields" do
+      fields = Project.railspress_config.fields
+      expect(fields[:main_image]).to be_present
+      expect(fields[:main_image][:type]).to eq(:focal_point_image)
+    end
+  end
 end
 
 RSpec.describe Railspress::FocalPoint do

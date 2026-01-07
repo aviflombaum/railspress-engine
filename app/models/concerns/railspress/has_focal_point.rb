@@ -4,6 +4,40 @@ module Railspress::HasFocalPoint
   extend ActiveSupport::Concern
 
   class_methods do
+    # Unified DSL for declaring an image attachment with focal point support
+    #
+    # One call that handles everything:
+    # - has_one_attached with variant configuration
+    # - has_focal_point for focal point editing
+    # - railspress_fields registration (if Railspress::Entity included)
+    #
+    # @param attachment_name [Symbol] Name of the attachment
+    # @yield [attachable] Optional block for ActiveStorage variant configuration
+    #
+    # @example Simple usage (no variants)
+    #   focal_point_image :cover_image
+    #
+    # @example With variants
+    #   focal_point_image :header_image do |attachable|
+    #     attachable.variant :hero, resize_to_fill: [2100, 900, { crop: :centre }]
+    #     attachable.variant :card, resize_to_fill: [800, 500, { crop: :centre }]
+    #     attachable.variant :thumb, resize_to_fill: [400, 250, { crop: :centre }]
+    #     attachable.variant :og, resize_to_fill: [1200, 630, { crop: :centre }]
+    #   end
+    #
+    def focal_point_image(attachment_name, &block)
+      # Declare the ActiveStorage attachment with optional variant block
+      has_one_attached attachment_name, &block
+
+      # Add focal point support
+      has_focal_point attachment_name
+
+      # Auto-register with Railspress entity system if available
+      if respond_to?(:railspress_fields)
+        railspress_fields attachment_name, as: :focal_point_image
+      end
+    end
+
     # Declare focal point support for an attachment
     #
     # Creates a polymorphic association to Railspress::FocalPoint.

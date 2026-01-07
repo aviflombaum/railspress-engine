@@ -4,7 +4,7 @@ module Railspress
   module Admin
     class EntitiesController < BaseController
       before_action :set_entity_config
-      before_action :set_record, only: [:show, :edit, :update, :destroy]
+      before_action :set_record, only: [:show, :edit, :update, :destroy, :image_editor]
 
       def index
         @records = entity_class.order(created_at: :desc)
@@ -42,6 +42,33 @@ module Railspress
       def destroy
         @record.destroy
         redirect_to entity_index_path, notice: "#{entity_config.singular_label} deleted."
+      end
+
+      # GET /admin/entities/:entity_type/:id/image_editor/:attachment
+      # Returns the expanded image editor in a Turbo Frame
+      # Pass ?compact=true to get the compact view (for Cancel)
+      def image_editor
+        @attachment_name = params[:attachment].to_sym
+
+        if params[:compact] == "true"
+          render partial: "railspress/admin/shared/image_section_compact",
+                 locals: {
+                   record: @record,
+                   attachment_name: @attachment_name,
+                   label: entity_config.singular_label
+                 }
+        else
+          # Ensure focal point is persisted before editing
+          focal_point = @record.send("#{@attachment_name}_focal_point")
+          focal_point.save! if focal_point.new_record?
+
+          render partial: "railspress/admin/shared/image_section_editor",
+                 locals: {
+                   record: @record,
+                   attachment_name: @attachment_name,
+                   contexts: Railspress.image_contexts
+                 }
+        end
       end
 
       private

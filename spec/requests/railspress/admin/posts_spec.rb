@@ -176,7 +176,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       )
 
       get railspress.admin_post_path(post_record)
-      expect(response.body).to include("rp-featured-image")
+      expect(response.body).to include("rp-image-section")
     end
 
     it "re-renders form with validation errors when create fails with header image" do
@@ -212,6 +212,46 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       # Should re-render form with validation errors, not crash
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("has already been taken")
+    end
+  end
+
+  describe "GET /admin/posts/:id/image_editor/:attachment" do
+    let(:image_path) { Rails.root.join("../../spec/fixtures/files/test_image.png") }
+
+    it "returns expanded editor partial" do
+      post_record = railspress_posts(:hello_world)
+      post_record.header_image.attach(
+        io: File.open(image_path),
+        filename: "test_image.png",
+        content_type: "image/png"
+      )
+      # Access focal point to trigger auto-build, then save to persist
+      post_record.header_image_focal_point
+      post_record.save!
+
+      get railspress.image_editor_admin_post_path(post_record, attachment: :header_image)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("rp-image-section__editor")
+      expect(response.body).to include("turbo-frame")
+    end
+
+    it "returns compact partial when compact=true" do
+      post_record = railspress_posts(:hello_world)
+      post_record.header_image.attach(
+        io: File.open(image_path),
+        filename: "test_image.png",
+        content_type: "image/png"
+      )
+      # Access focal point to trigger auto-build, then save to persist
+      post_record.header_image_focal_point
+      post_record.save!
+
+      get railspress.image_editor_admin_post_path(post_record, attachment: :header_image, compact: "true")
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("rp-image-section__compact")
+      expect(response.body).not_to include("rp-image-section--editing")
     end
   end
 end

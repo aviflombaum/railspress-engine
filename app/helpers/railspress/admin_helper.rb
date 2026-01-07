@@ -2,6 +2,9 @@ module Railspress
   # Helper methods for building consistent admin views.
   # Use these helpers to ensure styling consistency across all entity views.
   module AdminHelper
+    # Include Turbo helpers for turbo_frame_tag support in engine views
+    include Turbo::FramesHelper if defined?(Turbo::FramesHelper)
+
     # ============================================================
     # FIELD RENDERING HELPERS
     # ============================================================
@@ -39,6 +42,8 @@ module Railspress
         rp_attachment_field(form, name, multiple: false, **options)
       when :attachments
         rp_attachment_field(form, name, multiple: true, **options)
+      when :focal_point_image
+        rp_focal_point_image_field(form, name, **options)
       when :select
         rp_select_field(form, name, **options)
       when :list
@@ -323,6 +328,60 @@ module Railspress
         end
 
         output
+      end
+    end
+
+    # Renders a focal point image field with the compact/editor UI.
+    # For persisted records with images, shows the compact view with Edit button.
+    # For new records or no image, shows a dropzone upload.
+    # @param form [ActionView::Helpers::FormBuilder] the form builder
+    # @param name [Symbol] the attachment field name (e.g., :main_image)
+    # @param record [ActiveRecord::Base] the record (defaults to form.object)
+    # @param label [String] custom label text
+    # @return [String] rendered HTML
+    def rp_focal_point_image_field(form, name, record: nil, label: nil, **options)
+      record ||= form.object
+      label ||= name.to_s.humanize
+      attachment = record.public_send(name)
+      has_image = attachment.attached? && attachment.blob&.persisted?
+
+      if record.persisted? && has_image
+        # Persisted record with image - render focal point compact view
+        render partial: "railspress/admin/shared/image_section_compact",
+               locals: {
+                 record: record,
+                 attachment_name: name,
+                 label: label
+               }
+      else
+        # New record or no image - render dropzone
+        content_tag(:div, class: "rp-form-group") do
+          output = content_tag(:label, label, class: "rp-label")
+          if has_image
+            # Image uploaded but record not saved yet - show preview
+            output += content_tag(:div, class: "rp-image-section__compact") do
+              preview = content_tag(:div, class: "rp-image-section__thumb") do
+                image_tag(main_app.url_for(attachment.variant(resize_to_limit: [120, 80])), alt: "")
+              end
+              preview += content_tag(:div, class: "rp-image-section__info") do
+                content_tag(:span, attachment.filename, class: "rp-image-section__filename") +
+                content_tag(:span, number_to_human_size(attachment.byte_size), class: "rp-image-section__meta")
+              end
+              preview += content_tag(:div, class: "rp-image-section__actions") do
+                content_tag(:label, class: "rp-btn rp-btn--outline rp-btn--sm") do
+                  "Change".html_safe + form.file_field(name, accept: "image/*", class: "rp-sr-only", direct_upload: true)
+                end
+              end
+              preview
+            end
+            output += rp_hint("Save to enable focal point editing.")
+          else
+            # No image - show dropzone
+            output += render(partial: "railspress/admin/shared/dropzone",
+                           locals: { form: form, field_name: name, prompt: "Click to upload #{label.downcase}" })
+          end
+          output
+        end
       end
     end
 

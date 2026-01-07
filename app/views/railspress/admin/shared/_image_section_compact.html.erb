@@ -1,0 +1,86 @@
+<%#
+  Image Section Compact View
+  ==========================
+  Shows thumbnail, filename, and Edit button.
+  Clicking Edit loads the editor via Turbo Frame.
+
+  Required locals:
+    record - The record with HasFocalPoint concern
+    attachment_name - Symbol for the attachment (e.g., :header_image)
+
+  Optional locals:
+    label - Section label (default: "Main Image")
+    flash_message - Success message to display
+    contexts - Hash of context configs (for editor URL)
+%>
+
+<% label ||= "Main Image" %>
+<% flash_message ||= nil %>
+<% contexts ||= Railspress.image_contexts %>
+<% attachment = record.send(attachment_name) %>
+<% has_image = attachment.attached? && attachment.blob&.persisted? %>
+<% frame_id = dom_id(record, "image_section_#{attachment_name}") %>
+
+<%# Build editor URL based on record type %>
+<%
+  if record.is_a?(Railspress::Post)
+    editor_url = image_editor_admin_post_path(record, attachment: attachment_name)
+  else
+    # Entity - need entity_type from URL or config
+    entity_type = record.class.railspress_config.route_key
+    editor_url = admin_entity_image_editor_path(entity_type: entity_type, id: record.id, attachment: attachment_name)
+  end
+%>
+
+<%= turbo_frame_tag frame_id do %>
+  <div class="rp-image-section">
+    <div class="rp-image-section__label">
+      <label class="rp-label"><%= label %></label>
+    </div>
+
+    <% if flash_message %>
+      <div class="rp-flash rp-flash--success" style="margin-bottom: var(--rp-space-sm);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        <%= flash_message %>
+      </div>
+    <% end %>
+
+    <% if has_image %>
+      <div class="rp-image-section__details">
+        <div class="rp-image-section__compact">
+          <div class="rp-image-section__preview">
+            <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [800, 450])),
+                  style: record.focal_point_css(attachment_name),
+                  alt: "" %>
+            <div class="rp-image-section__overlay">
+              <%= link_to editor_url, class: "rp-btn", data: { turbo_frame: frame_id } do %>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right: 6px;">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <% if record.has_focal_point?(attachment_name) %>
+          <div class="rp-image-section__footer">
+            <span class="rp-image-section__focal-indicator">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/>
+              </svg>
+              Focal point set
+            </span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="rp-image-section__empty">
+        <p class="rp-hint">No image attached.</p>
+      </div>
+    <% end %>
+  </div>
+<% end %>

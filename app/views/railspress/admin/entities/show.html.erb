@@ -1,5 +1,11 @@
 <% content_for :title, entity_config.singular_label %>
 
+<%
+  # Separate focal point images from other fields for special display
+  focal_point_fields = entity_config.fields.select { |_, f| f[:type] == :focal_point_image }
+  other_fields = entity_config.fields.reject { |_, f| f[:type] == :focal_point_image }
+%>
+
 <div class="rp-page-header">
   <h1 class="rp-page-title"><%= entity_config.singular_label %></h1>
   <div class="rp-page-actions">
@@ -8,9 +14,22 @@
   </div>
 </div>
 
+<%# Display focal point images prominently before the detail card %>
+<% focal_point_fields.each do |name, field| %>
+  <% attachment = @record.public_send(name) %>
+  <% if attachment.attached? %>
+    <div class="rp-card rp-card--padded rp-image-section-card">
+      <%= render "railspress/admin/shared/image_section_compact",
+            record: @record,
+            attachment_name: name,
+            label: name.to_s.humanize %>
+    </div>
+  <% end %>
+<% end %>
+
 <div class="rp-card">
   <dl class="rp-detail-list">
-    <% entity_config.fields.each do |name, field| %>
+    <% other_fields.each do |name, field| %>
       <div class="rp-detail-item">
         <dt class="rp-detail-label"><%= name.to_s.humanize %></dt>
         <dd class="rp-detail-value">

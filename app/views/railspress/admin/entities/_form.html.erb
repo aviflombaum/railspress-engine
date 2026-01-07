@@ -6,7 +6,8 @@
 
   <%
     # Separate fields into main content vs sidebar metadata vs attachments
-    main_types = [:string, :text, :rich_text, :lines]
+    # Focal point images go in main content area (prominent placement)
+    main_types = [:string, :text, :rich_text, :lines, :focal_point_image]
     sidebar_types = [:boolean, :integer, :decimal, :datetime, :date, :list]
     attachment_types = [:attachment, :attachments]
 
@@ -21,7 +22,7 @@
       <% main_fields.each_with_index do |(name, field), index| %>
         <%= rp_render_field(form, name,
               type: field[:type],
-              primary: index == 0,
+              primary: index == 0 && field[:type] == :string,
               required: @record.class.validators_on(name).any? { |v| v.is_a?(ActiveModel::Validations::PresenceValidator) }) %>
       <% end %>
     </div>

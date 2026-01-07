@@ -3,8 +3,8 @@
     <h1><%= @post.title %></h1>
 
     <div class="post-meta">
-      <time datetime="<%= @post.published_at.iso8601 %>">
-        <%= @post.published_at.strftime("%B %d, %Y") %>
+      <time datetime="<%= @post.published_at&.iso8601 %>">
+        <%= @post.published_at&.strftime("%B %d, %Y") %>
       </time>
 
       <% if @post.category %>
@@ -42,7 +42,7 @@
       <% @related_posts.each do |post| %>
         <li>
           <%= link_to post.title, blog_post_path(slug: post.slug) %>
-          <time><%= post.published_at.strftime("%b %d") %></time>
+          <time><%= post.published_at&.strftime("%b %d") %></time>
         </li>
       <% end %>
     </ul>

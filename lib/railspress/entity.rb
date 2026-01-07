@@ -111,6 +111,12 @@ module Railspress
           a.name.to_s == name_str
         end
         if attachment
+          # Check if this attachment has focal point support
+          if attachment.macro == :has_one_attached &&
+             model_class.respond_to?(:focal_point_attachments) &&
+             model_class.focal_point_attachments.include?(name)
+            return :focal_point_image
+          end
           return attachment.macro == :has_many_attached ? :attachments : :attachment
         end
       end

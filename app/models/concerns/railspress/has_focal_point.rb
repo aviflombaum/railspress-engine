@@ -42,6 +42,29 @@ module Railspress::HasFocalPoint
         super() || send(:"build_#{association_name}", attachment_name: attachment_name.to_s)
       end
 
+      # Auto-create focal point when image is attached
+      after_commit :"ensure_#{attachment_name}_focal_point"
+
+      define_method(:"ensure_#{attachment_name}_focal_point") do
+        attachment = send(attachment_name)
+        return unless attachment.attached?
+
+        # Use the raw association to avoid auto-build, check if persisted
+        existing = Railspress::FocalPoint.find_by(
+          record_type: self.class.name,
+          record_id: id,
+          attachment_name: attachment_name.to_s
+        )
+        return if existing
+
+        Railspress::FocalPoint.create!(
+          record: self,
+          attachment_name: attachment_name.to_s,
+          focal_x: 0.5,
+          focal_y: 0.5
+        )
+      end
+
       # Store attachment name for lookup
       @focal_point_attachments ||= []
       @focal_point_attachments << attachment_name

@@ -8,6 +8,9 @@
 #
 # This auto-registers all RailsPress Stimulus controllers.
 
+# Turbo for Turbo Frames support
+pin "@hotwired/turbo-rails", to: "turbo.min.js"
+
 # Main entry point - auto-registers all controllers
 pin "railspress", to: "railspress/index.js"
 

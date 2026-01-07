@@ -16,6 +16,9 @@
  *   register(application)
  */
 
+// Import Turbo for Turbo Frames support
+import "@hotwired/turbo-rails"
+
 import FocalPointController from "railspress/controllers/focal_point_controller"
 import DropzoneController from "railspress/controllers/dropzone_controller"
 import CropController from "railspress/controllers/crop_controller"

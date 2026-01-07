@@ -11,8 +11,8 @@
         </h2>
 
         <div class="post-meta">
-          <time datetime="<%= post.published_at.iso8601 %>">
-            <%= post.published_at.strftime("%B %d, %Y") %>
+          <time datetime="<%= post.published_at&.iso8601 %>">
+            <%= post.published_at&.strftime("%B %d, %Y") %>
           </time>
 
           <% if post.category %>

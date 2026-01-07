@@ -59,22 +59,13 @@
   <% end %>
 </div>
 
-<% if post_images_enabled? %>
-  <% if @post.header_image.attached? %>
-    <% focal = @post.header_image_focal_point %>
-    <%= render "railspress/admin/shared/image_section_v2",
-          has_image: true,
-          image_url: main_app.url_for(@post.header_image),
-          filename: @post.header_image.filename.to_s,
-          filesize: number_to_human_size(@post.header_image.byte_size),
-          focal_point: { x: focal&.focal_x || 0.5, y: focal&.focal_y || 0.5 },
-          contexts: Railspress.image_contexts,
+<% if post_images_enabled? && @post.header_image.attached? %>
+  <div class="rp-image-section-card">
+    <%= render "railspress/admin/shared/image_section_compact",
+          record: @post,
+          attachment_name: :header_image,
           label: "Main Image" %>
-  <% else %>
-    <%= render "railspress/admin/shared/image_section_v2",
-          has_image: false,
-          label: "Main Image" %>
-  <% end %>
+  </div>
 <% end %>
 
 <article class="rp-card rp-card--padded rp-prose">

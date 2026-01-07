@@ -33,18 +33,43 @@
       <% if post_images_enabled? %>
         <% attachment = @post.header_image %>
         <% has_image = attachment.attached? && attachment.blob&.persisted? %>
-        <% focal = @post.header_image_focal_point %>
-        <%= render "railspress/admin/shared/image_section_v2",
-              has_image: has_image,
-              image_url: has_image ? main_app.url_for(attachment) : nil,
-              filename: has_image ? attachment.filename.to_s : nil,
-              filesize: has_image ? number_to_human_size(attachment.byte_size) : nil,
-              focal_point: { x: focal&.focal_x || 0.5, y: focal&.focal_y || 0.5 },
-              contexts: Railspress.image_contexts,
-              form: form,
-              record: @post,
-              attachment_name: :header_image,
-              label: "Main Image" %>
+
+        <% if @post.persisted? && has_image %>
+          <%# Existing post with image - use turbo frame for focal point editing %>
+          <%= render "railspress/admin/shared/image_section_compact",
+                record: @post,
+                attachment_name: :header_image,
+                label: "Main Image" %>
+        <% else %>
+          <%# New post or no image - show upload dropzone in form context %>
+          <div class="rp-form-group">
+            <label class="rp-label">Main Image</label>
+            <% if has_image %>
+              <%# Image uploaded but not saved yet - show preview %>
+              <div class="rp-image-section__compact">
+                <div class="rp-image-section__thumb">
+                  <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [120, 80])), alt: "" %>
+                </div>
+                <div class="rp-image-section__info">
+                  <span class="rp-image-section__filename"><%= attachment.filename %></span>
+                  <span class="rp-image-section__meta"><%= number_to_human_size(attachment.byte_size) %></span>
+                </div>
+                <div class="rp-image-section__actions">
+                  <label class="rp-btn rp-btn--outline rp-btn--sm">
+                    Change
+                    <%= form.file_field :header_image, accept: "image/*", class: "rp-sr-only", direct_upload: true %>
+                  </label>
+                </div>
+              </div>
+              <p class="rp-hint">Save the post to enable focal point editing.</p>
+            <% else %>
+              <%= render "railspress/admin/shared/dropzone",
+                    form: form,
+                    field_name: :header_image,
+                    prompt: "Click to upload main image" %>
+            <% end %>
+          </div>
+        <% end %>
       <% end %>
 
       <div class="rp-form-group" data-markdown-mode>

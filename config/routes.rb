@@ -4,7 +4,14 @@ Railspress::Engine.routes.draw do
     root "dashboard#index"
     resources :categories, except: [ :show ]
     resources :tags, except: [ :show ]
-    resources :posts
+    resources :posts do
+      member do
+        get "image_editor/:attachment", action: :image_editor, as: :image_editor
+      end
+    end
+
+    # Standalone focal point updates (works outside parent form)
+    resources :focal_points, only: [:update]
     resources :imports, only: [:create] do
       collection do
         get ":type", action: :show, as: :typed
@@ -34,6 +41,7 @@ Railspress::Engine.routes.draw do
         post "/", to: "entities#create"
         get "/:id", to: "entities#show", as: :entity
         get "/:id/edit", to: "entities#edit", as: :edit_entity
+        get "/:id/image_editor/:attachment", to: "entities#image_editor", as: :entity_image_editor
         patch "/:id", to: "entities#update"
         put "/:id", to: "entities#update"
         delete "/:id", to: "entities#destroy"

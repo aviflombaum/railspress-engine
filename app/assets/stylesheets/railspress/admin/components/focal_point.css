@@ -28,6 +28,17 @@
   margin-bottom: var(--rp-space-lg);
 }
 
+/* When inside a card wrapper, remove margin and let card provide styling */
+.rp-image-section-card .rp-image-section {
+  margin-bottom: 0;
+}
+
+.rp-image-section-card .rp-image-section__details {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
 .rp-image-section__label {
   margin-bottom: var(--rp-space-sm);
 }
@@ -36,34 +47,71 @@
   margin-bottom: 0;
 }
 
-/* Compact view (summary of details) */
+/* Compact view - card with full-width image preview */
 .rp-image-section__details {
-  border: 1px solid var(--rp-border);
+  background: var(--rp-bg-elevated);
   border-radius: var(--rp-radius);
-  background: var(--rp-bg);
+  box-shadow: var(--rp-shadow-md);
+  overflow: hidden;
 }
 
 .rp-image-section__compact {
-  display: flex;
-  gap: var(--rp-space-md);
-  padding: var(--rp-space-md);
+  position: relative;
+  display: block;
   cursor: pointer;
-  transition: border-color 0.15s ease;
-  list-style: none;
 }
 
-.rp-image-section__compact::-webkit-details-marker {
-  display: none;
+/* Full-width image preview */
+.rp-image-section__preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #1a1a1a;
 }
 
-.rp-image-section__compact:hover {
+.rp-image-section__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hover overlay with Edit button */
+.rp-image-section__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.rp-image-section__compact:hover .rp-image-section__overlay {
+  opacity: 1;
+}
+
+.rp-image-section__overlay .rp-btn {
+  background: white;
+  color: var(--rp-text);
+  border: none;
+}
+
+.rp-image-section__overlay .rp-btn:hover {
   background: var(--rp-bg-hover);
 }
 
-.rp-image-section__details[open] .rp-image-section__compact {
-  border-bottom: 1px solid var(--rp-border);
+/* Focal point indicator below image */
+.rp-image-section__footer {
+  padding: var(--rp-space-sm) var(--rp-space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--rp-border);
 }
 
+/* Legacy styles - kept for compatibility */
 .rp-image-section__thumb {
   width: 120px;
   height: 80px;
@@ -528,6 +576,29 @@
 .rp-checkbox-inline input[type="checkbox"] {
   width: auto;
   margin: 0;
+}
+
+/* =================================
+   Inline Form (for Change button)
+   ================================= */
+
+.rp-inline-form {
+  display: inline;
+}
+
+/* =================================
+   Danger Button Variant (Outline)
+   ================================= */
+
+.rp-btn--outline.rp-btn--danger {
+  color: var(--rp-danger, #dc2626);
+  border-color: var(--rp-danger, #dc2626);
+  background: transparent;
+}
+
+.rp-btn--outline.rp-btn--danger:hover {
+  background: var(--rp-danger, #dc2626);
+  color: white;
 }
 
 /* =================================

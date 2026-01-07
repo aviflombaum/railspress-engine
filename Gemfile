@@ -7,6 +7,7 @@ gem "puma"
 gem "sqlite3"
 gem "propshaft"
 gem "importmap-rails"
+gem "turbo-rails"
 
 # Image processing for ActiveStorage variants
 gem "image_processing", "~> 1.2"

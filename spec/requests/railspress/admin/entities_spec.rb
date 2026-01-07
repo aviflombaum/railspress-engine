@@ -142,4 +142,48 @@ RSpec.describe "Railspress::Admin::Entities", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "GET /admin/entities/projects/:id/image_editor/:attachment (Entity image editor)" do
+    let(:image_path) { Rails.root.join("../../spec/fixtures/files/test_image.png") }
+    let(:project_with_image) do
+      project.main_image.attach(
+        io: File.open(image_path),
+        filename: "test_image.png",
+        content_type: "image/png"
+      )
+      # Access focal point to trigger auto-build, then save to persist
+      project.main_image_focal_point
+      project.save!
+      project.reload
+    end
+
+    it "returns turbo-frame wrapped editor content" do
+      project_with_image # ensure image is attached
+
+      get railspress.admin_entity_image_editor_path(
+        entity_type: "projects",
+        id: project.id,
+        attachment: :main_image
+      )
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("<turbo-frame")
+      expect(response.body).to include("image_section_main_image")
+    end
+
+    it "returns turbo-frame wrapped compact view when compact=true" do
+      project_with_image # ensure image is attached
+
+      get railspress.admin_entity_image_editor_path(
+        entity_type: "projects",
+        id: project.id,
+        attachment: :main_image,
+        compact: true
+      )
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("<turbo-frame")
+      expect(response.body).to include("image_section_main_image")
+    end
+  end
 end

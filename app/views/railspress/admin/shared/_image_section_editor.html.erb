@@ -1,0 +1,169 @@
+<%#
+  Image Section Editor
+  ====================
+  Expanded focal point editor with its own form.
+  Loads via Turbo Frame, saves independently of parent form.
+
+  All actions (Change, Remove, Save) submit to the focal_points controller
+  to avoid nested form issues.
+
+  Required locals:
+    record - The record with HasFocalPoint concern
+    attachment_name - Symbol for the attachment (e.g., :header_image)
+
+  Optional locals:
+    label - Section label (default: "Main Image")
+    contexts - Hash of context configs for previews
+    error_message - Error message to display
+%>
+
+<% label ||= "Main Image" %>
+<% contexts ||= Railspress.image_contexts %>
+<% error_message ||= nil %>
+<% attachment = record.send(attachment_name) %>
+<% focal_point = record.focal_point(attachment_name) %>
+<% focal_point_record = record.send("#{attachment_name}_focal_point") %>
+<% frame_id = dom_id(record, "image_section_#{attachment_name}") %>
+
+<%# Build cancel URL based on record type %>
+<%
+  if record.is_a?(Railspress::Post)
+    cancel_url = image_editor_admin_post_path(record, attachment: attachment_name, compact: true)
+  else
+    entity_type = record.class.railspress_config.route_key
+    cancel_url = admin_entity_image_editor_path(entity_type: entity_type, id: record.id, attachment: attachment_name, compact: true)
+  end
+%>
+
+<%= turbo_frame_tag frame_id do %>
+  <div class="rp-image-section">
+    <div class="rp-image-section__label">
+      <label class="rp-label"><%= label %></label>
+    </div>
+
+    <% if error_message %>
+      <div class="rp-flash rp-flash--error" style="margin-bottom: var(--rp-space-sm);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <%= error_message %>
+      </div>
+    <% end %>
+
+    <div class="rp-image-section__details">
+      <%# Single form for all actions - submits to focal_points controller %>
+      <%= form_with model: focal_point_record,
+                    url: admin_focal_point_path(focal_point_record),
+                    method: :patch,
+                    multipart: true,
+                    data: {
+                      controller: "railspress--focal-point",
+                      railspress__focal_point_x_value: focal_point[:x],
+                      railspress__focal_point_y_value: focal_point[:y]
+                    },
+                    class: "rp-image-section__editor" do |form| %>
+
+        <div class="rp-image-section__editor-header">
+          <span class="rp-image-section__editor-title"><%= label %> Settings</span>
+          <div class="rp-image-section__editor-actions">
+            <%# Change image - file input that auto-submits %>
+            <label class="rp-btn rp-btn--outline rp-btn--sm">
+              Change
+              <%= file_field_tag :image, accept: "image/*", class: "rp-sr-only", onchange: "this.form.submit()" %>
+            </label>
+
+            <%# Remove image - button that sets hidden field and submits %>
+            <button type="button"
+                    class="rp-btn rp-btn--outline rp-btn--sm rp-btn--danger"
+                    onclick="if(confirm('Remove this image?')) { this.form.querySelector('[name=remove_image]').value = '1'; this.form.submit(); }">
+              Remove
+            </button>
+            <%= hidden_field_tag :remove_image, "0" %>
+
+            <%= link_to "Cancel", cancel_url,
+                  class: "rp-btn rp-btn--outline rp-btn--sm",
+                  data: { turbo_frame: frame_id } %>
+            <%= form.submit "Save",
+                  class: "rp-btn rp-btn--primary rp-btn--sm" %>
+          </div>
+        </div>
+
+        <div class="rp-image-section__editor-body">
+          <div class="rp-focal-editor__layout">
+            <%# Source image with crosshair %>
+            <div class="rp-focal-editor__source">
+              <div class="rp-focal-editor__image-wrap"
+                   data-action="click->railspress--focal-point#pick
+                                touchstart->railspress--focal-point#touch
+                                keydown->railspress--focal-point#keydown"
+                   tabindex="0">
+                <% if attachment.attached? %>
+                  <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [1200, 800])),
+                        data: { railspress__focal_point_target: "image" },
+                        class: "rp-focal-editor__image",
+                        alt: "Source image for focal point selection" %>
+                <% end %>
+                <div data-railspress--focal-point-target="crosshair"
+                     class="rp-focal-editor__crosshair"
+                     style="left: <%= focal_point[:x] * 100 %>%; top: <%= focal_point[:y] * 100 %>%;"></div>
+              </div>
+
+              <div class="rp-focal-editor__hint">
+                <span>Click to set focal point</span>
+                <span class="rp-focal-editor__coords" data-railspress--focal-point-target="coordsDisplay">
+                  <%= "#{(focal_point[:x] * 100).round}%, #{(focal_point[:y] * 100).round}%" %>
+                </span>
+              </div>
+
+              <div class="rp-focal-editor__actions">
+                <button type="button"
+                        class="rp-btn rp-btn--outline rp-btn--sm"
+                        data-action="railspress--focal-point#reset">
+                  Reset to Center
+                </button>
+              </div>
+            </div>
+
+            <%# Live previews %>
+            <% if contexts.any? %>
+              <div class="rp-focal-editor__previews">
+                <span class="rp-focal-editor__previews-title">Live Preview</span>
+
+                <% contexts.each do |name, config| %>
+                  <% aspect = config[:aspect] %>
+                  <% aspect_ratio = aspect.is_a?(Array) ? "#{aspect[0]} / #{aspect[1]}" : aspect %>
+                  <% ratio_label = aspect.is_a?(Array) ? "#{aspect[0]}:#{aspect[1]}" : aspect.to_s %>
+
+                  <div class="rp-focal-editor__preview">
+                    <div class="rp-focal-editor__preview-image" style="aspect-ratio: <%= aspect_ratio %>;">
+                      <% if attachment.attached? %>
+                        <%= image_tag main_app.url_for(attachment.variant(resize_to_limit: [400, 300])),
+                              data: { railspress__focal_point_target: "preview" },
+                              style: record.image_css_for(name, attachment_name),
+                              alt: "#{name.to_s.titleize} preview" %>
+                      <% end %>
+                    </div>
+                    <div class="rp-focal-editor__preview-label">
+                      <span class="rp-focal-editor__preview-name"><%= name.to_s.titleize %></span>
+                      <span class="rp-focal-editor__preview-ratio"><%= ratio_label %></span>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <%# Hidden inputs for focal point values %>
+          <%= form.hidden_field :focal_x,
+                value: focal_point[:x],
+                data: { railspress__focal_point_target: "xInput" } %>
+          <%= form.hidden_field :focal_y,
+                value: focal_point[:y],
+                data: { railspress__focal_point_target: "yInput" } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

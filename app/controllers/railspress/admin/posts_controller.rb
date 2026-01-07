@@ -1,7 +1,7 @@
 module Railspress
   module Admin
     class PostsController < BaseController
-      before_action :set_post, only: [:show, :edit, :update, :destroy]
+      before_action :set_post, only: [:show, :edit, :update, :destroy, :image_editor]
       before_action :load_categories, only: [:new, :create, :edit, :update]
 
       def index
@@ -53,6 +53,33 @@ module Railspress
       def destroy
         @post.destroy
         redirect_to admin_posts_path, notice: "Post deleted."
+      end
+
+      # GET /admin/posts/:id/image_editor/:attachment
+      # Returns the expanded image editor in a Turbo Frame
+      # Pass ?compact=true to get the compact view (for Cancel)
+      def image_editor
+        @attachment_name = params[:attachment].to_sym
+
+        if params[:compact] == "true"
+          render partial: "railspress/admin/shared/image_section_compact",
+                 locals: {
+                   record: @post,
+                   attachment_name: @attachment_name,
+                   label: "Main Image"
+                 }
+        else
+          # Ensure focal point is persisted before editing
+          focal_point = @post.send("#{@attachment_name}_focal_point")
+          focal_point.save! if focal_point.new_record?
+
+          render partial: "railspress/admin/shared/image_section_editor",
+                 locals: {
+                   record: @post,
+                   attachment_name: @attachment_name,
+                   contexts: Railspress.image_contexts
+                 }
+        end
       end
 
       private

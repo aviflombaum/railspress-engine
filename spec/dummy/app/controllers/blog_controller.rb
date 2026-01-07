@@ -3,17 +3,22 @@
 class BlogController < ApplicationController
   def index
     @posts = Railspress::Post.published
+                             .with_rich_text_content
                              .includes(:category, :tags)
                              .ordered
   end
 
   def show
     @post = Railspress::Post.published.find_by!(slug: params[:slug])
-    @related_posts = @post.category&.posts
-                          &.published
-                          &.where.not(id: @post.id)
-                          &.ordered
-                          &.limit(3) || []
+    @related_posts = if @post.category
+      @post.category.posts
+           .published
+           .where.not(id: @post.id)
+           .ordered
+           .limit(3)
+    else
+      []
+    end
   end
 
   def category

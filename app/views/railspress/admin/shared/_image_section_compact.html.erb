@@ -32,7 +32,7 @@
   end
 %>
 
-<%= turbo_frame_tag frame_id do %>
+<%= content_tag "turbo-frame", id: frame_id do %>
   <div class="rp-image-section">
     <div class="rp-image-section__label">
       <label class="rp-label"><%= label %></label>

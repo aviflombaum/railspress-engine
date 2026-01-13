@@ -5,7 +5,7 @@ PATH
       lexxy (~> 0.1.24.beta)
       rails (>= 8.1)
       redcarpet (~> 3.6)
-      rubyzip (~> 2.3)
+      rubyzip (>= 2.3, < 4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -307,7 +307,7 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
-    rubyzip (2.4.1)
+    rubyzip (3.2.2)
     securerandom (0.4.1)
     sqlite3 (2.8.1-aarch64-linux-gnu)
     sqlite3 (2.8.1-aarch64-linux-musl)

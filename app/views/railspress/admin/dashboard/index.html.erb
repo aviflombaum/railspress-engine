@@ -34,7 +34,7 @@
         <% @recent_posts.each do |post| %>
           <li class="rp-list-item">
             <%= link_to post.title, admin_post_path(post), class: "rp-link" %>
-            <span class="rp-badge rp-badge--<%= post.status %>"><%= post.status.titleize %></span>
+            <span class="rp-badge rp-badge--<%= post.display_status %>"><%= post.display_status.titleize %></span>
           </li>
         <% end %>
       </ul>

@@ -1,6 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Railspress::Post, type: :model do
+  include ActiveSupport::Testing::TimeHelpers
   fixtures "railspress/posts", "railspress/categories", "railspress/tags", "railspress/taggings"
 
   describe "validations" do
@@ -132,6 +133,76 @@ RSpec.describe Railspress::Post, type: :model do
     it "returns false when published_at is in the future" do
       post = Railspress::Post.new(published_at: 1.day.from_now)
       expect(post.live?).to be false
+    end
+  end
+
+  describe "#display_status" do
+    it "returns 'scheduled' for published posts with future published_at" do
+      post = railspress_posts(:scheduled_post)
+      expect(post.display_status).to eq("scheduled")
+    end
+
+    it "returns 'published' for published posts with past published_at" do
+      post = railspress_posts(:hello_world)
+      expect(post.display_status).to eq("published")
+    end
+
+    it "returns 'draft' for drafts regardless of published_at" do
+      post = railspress_posts(:draft_post)
+      post.published_at = 1.day.from_now
+      expect(post.display_status).to eq("draft")
+    end
+  end
+
+  describe ".published scope" do
+    it "excludes posts with future published_at" do
+      freeze_time do
+        expect(Railspress::Post.published).to include(railspress_posts(:hello_world))
+        expect(Railspress::Post.published).not_to include(railspress_posts(:scheduled_post))
+      end
+    end
+
+    it "excludes draft posts" do
+      expect(Railspress::Post.published).not_to include(railspress_posts(:draft_post))
+    end
+  end
+
+  describe ".scheduled scope" do
+    it "returns only published posts with future published_at" do
+      freeze_time do
+        expect(Railspress::Post.scheduled).to include(railspress_posts(:scheduled_post))
+        expect(Railspress::Post.scheduled).not_to include(railspress_posts(:hello_world))
+        expect(Railspress::Post.scheduled).not_to include(railspress_posts(:draft_post))
+      end
+    end
+  end
+
+  describe ".by_status scope" do
+    it "handles 'scheduled' filter" do
+      freeze_time do
+        results = Railspress::Post.by_status("scheduled")
+        expect(results).to include(railspress_posts(:scheduled_post))
+        expect(results).not_to include(railspress_posts(:hello_world))
+      end
+    end
+
+    it "handles 'published' filter and excludes scheduled" do
+      freeze_time do
+        results = Railspress::Post.by_status("published")
+        expect(results).to include(railspress_posts(:hello_world))
+        expect(results).not_to include(railspress_posts(:scheduled_post))
+      end
+    end
+
+    it "handles 'draft' filter" do
+      results = Railspress::Post.by_status("draft")
+      expect(results).to include(railspress_posts(:draft_post))
+      expect(results).not_to include(railspress_posts(:hello_world))
+    end
+
+    it "returns all posts when filter is blank" do
+      results = Railspress::Post.by_status("")
+      expect(results.count).to eq(Railspress::Post.count)
     end
   end
 

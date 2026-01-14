@@ -60,6 +60,12 @@ module Railspress
       published_at.present? && published_at <= Time.current
     end
 
+    # Returns the status to display in UI (accounts for scheduled state)
+    def display_status
+      return "scheduled" if published? && scheduled?
+      status
+    end
+
     validates :title, presence: true
     validates :slug, presence: true, uniqueness: true
 
@@ -69,14 +75,21 @@ module Railspress
 
     # Generic scopes (ordered, recent) and pagination (page) provided by Entity concern
     # Post-specific scopes below:
-    scope :published, -> { where(status: :published).where.not(published_at: nil) }
+    scope :published, -> { where(status: :published).where(published_at: ..Time.current) }
     scope :drafts, -> { where(status: :draft) }
-    scope :scheduled, -> { where("published_at > ?", Time.current) }
-    scope :live, -> { where("published_at <= ?", Time.current) }
+    scope :scheduled, -> { where(status: :published).where("published_at > ?", Time.current) }
+    scope :live, -> { published }  # Alias for semantic clarity
     scope :by_author, ->(author) { where(author_id: author.id) }
     scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
     scope :by_category, ->(category_id) { where(category_id: category_id) if category_id.present? }
-    scope :by_status, ->(status) { where(status: status) if status.present? }
+    scope :by_status, ->(status) {
+      case status.to_s
+      when "scheduled" then scheduled
+      when "published" then published
+      when "draft" then drafts
+      else all
+      end
+    }
     scope :sorted_by, ->(column, direction) {
       direction = direction.to_s.downcase == "desc" ? :desc : :asc
       dir_sql = direction == :desc ? "DESC" : "ASC"

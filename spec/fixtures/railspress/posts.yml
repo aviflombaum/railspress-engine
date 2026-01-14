@@ -17,3 +17,10 @@ post_with_focal_point:
   category: technology
   status: 1
   published_at: <%= Time.current %>
+
+scheduled_post:
+  title: Coming Soon
+  slug: coming-soon
+  category: technology
+  status: 1
+  published_at: <%= 1.day.from_now.to_fs(:db) %>

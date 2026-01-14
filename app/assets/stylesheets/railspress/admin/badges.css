@@ -26,6 +26,11 @@
   color: var(--rp-success);
 }
 
+.rp-badge--scheduled {
+  background: var(--rp-info-light, #e8f4fd);
+  color: var(--rp-primary, #1e88e5);
+}
+
 .rp-badge--pending {
   background: var(--rp-info-light);
   color: var(--rp-primary);

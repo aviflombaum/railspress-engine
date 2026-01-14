@@ -18,7 +18,7 @@
           include_blank: "All Categories",
           class: "rp-select" %>
       <%= select_tag :status,
-          options_for_select([["All Statuses", ""], ["Draft", "draft"], ["Published", "published"]], params[:status]),
+          options_for_select([["All Statuses", ""], ["Draft", "draft"], ["Published", "published"], ["Scheduled", "scheduled"]], params[:status]),
           class: "rp-select" %>
       <%= submit_tag "Filter", class: "rp-btn rp-btn--secondary" %>
       <% if params[:q].present? || params[:category_id].present? || params[:status].present? %>

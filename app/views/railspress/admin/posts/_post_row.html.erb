@@ -14,8 +14,8 @@
     <td><%= post.author&.public_send(Railspress.author_display_method) || "—" %></td>
   <% end %>
   <td>
-    <span class="rp-badge rp-badge--<%= post.status %>">
-      <%= post.status.titleize %>
+    <span class="rp-badge rp-badge--<%= post.display_status %>">
+      <%= post.display_status.titleize %>
     </span>
   </td>
   <td class="rp-table-secondary" title="<%= post.published_at&.strftime("%B %-d, %Y at %-I:%M %p") %>">

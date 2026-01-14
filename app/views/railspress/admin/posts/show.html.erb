@@ -6,7 +6,7 @@
     <% end %>
   </div>
   <div class="rp-page-actions">
-    <% if @post.published? %>
+    <% if @post.live? %>
       <%= link_to "View", "#{Railspress.blog_path}/#{@post.slug}", class: "rp-btn rp-btn--secondary", target: "_blank" %>
     <% end %>
     <%= link_to "Edit", edit_admin_post_path(@post), class: "rp-btn rp-btn--primary" %>
@@ -17,7 +17,7 @@
 <div class="rp-post-meta-card">
   <div class="rp-meta-item">
     <span class="rp-meta-label">Status</span>
-    <span class="rp-badge rp-badge--<%= @post.status %>"><%= @post.status.titleize %></span>
+    <span class="rp-badge rp-badge--<%= @post.display_status %>"><%= @post.display_status.titleize %></span>
   </div>
   <% if @post.published_at %>
     <div class="rp-meta-item">

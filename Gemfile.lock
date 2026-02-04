@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     railspress-engine (0.1.2)
-      lexxy (~> 0.1.24.beta)
+      lexxy (>= 0.1.24, < 0.8.0)
       rails (>= 8.1)
       redcarpet (~> 3.6)
       rubyzip (~> 2.3)
@@ -145,7 +145,7 @@ GEM
       reline (>= 0.4.2)
     json (2.18.1)
     language_server-protocol (3.17.0.5)
-    lexxy (0.1.26.beta)
+    lexxy (0.7.4.beta)
       rails (>= 8.0.2)
     lint_roller (1.1.0)
     logger (1.7.0)

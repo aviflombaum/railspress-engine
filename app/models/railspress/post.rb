@@ -38,8 +38,9 @@ module Railspress
     has_one_attached :header_image do |attachable|
       # Apply configured variants from host app's initializer
       # e.g., config.post_image_variants = { hero: { resize_to_fill: [1920, 1080] } }
+      # WebP format is automatically applied for web optimization
       Railspress.post_image_variants.each do |name, options|
-        attachable.variant name, **options
+        attachable.variant name, **options.merge(format: :webp)
       end
     end
     has_focal_point :header_image

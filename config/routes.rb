@@ -4,6 +4,16 @@ Railspress::Engine.routes.draw do
     root "dashboard#index"
     resources :categories, except: [ :show ]
     resources :tags, except: [ :show ]
+
+    # Content Element CMS
+    resources :content_groups
+    resources :content_elements do
+      member do
+        get :inline
+      end
+    end
+    resources :content_element_versions, only: [:show]
+
     resources :posts do
       member do
         get "image_editor/:attachment", action: :image_editor, as: :image_editor

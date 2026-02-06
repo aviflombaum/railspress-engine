@@ -1,0 +1,18 @@
+headers:
+  name: Headers
+  description: Site header content elements
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+footers:
+  name: Footers
+  description: Site footer content elements
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+deleted_group:
+  name: Deleted Group
+  description: A soft-deleted group
+  deleted_at: <%= Time.current %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

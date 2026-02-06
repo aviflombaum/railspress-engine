@@ -79,7 +79,7 @@
               <td class="rp-table-secondary"><%= rp_truncated_text(version.text_content, length: 60) %></td>
               <td class="rp-table-secondary"><%= version.created_at.strftime("%b %d, %Y %l:%M %p") %></td>
               <td class="rp-table-actions">
-                <%= link_to "View", admin_content_element_version_path(version), class: "rp-icon-btn", title: "View version" do %>
+                <%= link_to admin_content_element_version_path(version), class: "rp-icon-btn", title: "View version" do %>
                   <%= rp_icon(:search) %>
                 <% end %>
               </td>

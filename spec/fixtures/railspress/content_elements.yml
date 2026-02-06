@@ -1,0 +1,35 @@
+homepage_h1:
+  name: Homepage H1
+  content_type: 0
+  text_content: Welcome to Our Site
+  content_group: headers
+  position: 1
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+tagline:
+  name: Tagline
+  content_type: 0
+  text_content: Building the future
+  content_group: headers
+  position: 2
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+footer_text:
+  name: Footer Text
+  content_type: 0
+  text_content: Copyright 2026
+  content_group: footers
+  position: 1
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+deleted_element:
+  name: Deleted Element
+  content_type: 0
+  text_content: Old content
+  content_group: headers
+  deleted_at: <%= Time.current %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

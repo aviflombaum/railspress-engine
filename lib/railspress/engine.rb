@@ -13,6 +13,20 @@ module Railspress
       end
     end
 
+    # Make CMS helper available to host application views
+    initializer "railspress.cms_helper" do
+      ActiveSupport.on_load(:action_view) do
+        include Railspress::CmsHelper
+      end
+    end
+
+    # Clear CMS cache on each request in development
+    initializer "railspress.cms_cache" do |app|
+      app.config.to_prepare do
+        Railspress::CmsHelper.clear_cache
+      end
+    end
+
     # Configure importmap for Stimulus controllers
     initializer "railspress.importmap", before: "importmap" do |app|
       if app.respond_to?(:importmap)

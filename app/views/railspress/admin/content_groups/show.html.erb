@@ -1,0 +1,82 @@
+<% content_for :title, @content_group.name %>
+
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title"><%= @content_group.name %></h1>
+    <% if @content_group.description.present? %>
+      <p class="rp-byline"><%= @content_group.description %></p>
+    <% end %>
+  </div>
+  <div class="rp-page-actions">
+    <%= link_to "New Element", new_admin_content_element_path(content_group_id: @content_group.id), class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Edit", edit_admin_content_group_path(@content_group), class: "rp-btn rp-btn--secondary" %>
+    <%= link_to "Back", admin_content_groups_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<div class="rp-post-meta-card">
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Elements</span>
+    <span class="rp-meta-value"><%= @content_group.element_count %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Created</span>
+    <span class="rp-meta-value"><%= @content_group.created_at.strftime("%b %d, %Y") %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Updated</span>
+    <span class="rp-meta-value"><%= @content_group.updated_at.strftime("%b %d, %Y") %></span>
+  </div>
+</div>
+
+<div class="rp-card">
+  <% if @content_elements.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Type") %></th>
+            <th><%= rp_table_header("Content") %></th>
+            <th><%= rp_table_header("Position") %></th>
+            <th><%= rp_table_header("Updated") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @content_elements.each do |element| %>
+            <tr>
+              <td class="rp-table-primary">
+                <%= link_to element.name, admin_content_element_path(element), class: "rp-link" %>
+              </td>
+              <td><%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %></td>
+              <td class="rp-table-secondary"><%= rp_truncated_text(element.text_content, length: 50) %></td>
+              <td><%= element.position || "—" %></td>
+              <td class="rp-table-secondary"><%= element.updated_at.strftime("%b %d, %Y") %></td>
+              <td class="rp-table-actions">
+                <%= rp_table_action_icons(
+                      edit_path: edit_admin_content_element_path(element),
+                      delete_path: admin_content_element_path(element),
+                      confirm: "Delete this content element?"
+                    ) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= rp_empty_state "No content elements in this group yet.", link_text: "Create your first element", link_path: new_admin_content_element_path(content_group_id: @content_group.id) %>
+  <% end %>
+</div>
+
+<% if @content_group.element_count > 0 %>
+  <div class="rp-card rp-card--padded" style="margin-top: 1.5rem;">
+    <h3 class="rp-sidebar-title">API Usage</h3>
+    <pre class="rp-code-block"><code># Load a specific element value
+Railspress::CMS.find("<%= @content_group.name %>").load("element_name").value
+
+# In views
+&lt;%= cms_value("<%= @content_group.name %>", "element_name") %&gt;</code></pre>
+  </div>
+<% end %>

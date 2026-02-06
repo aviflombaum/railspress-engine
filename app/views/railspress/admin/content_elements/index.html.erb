@@ -1,0 +1,64 @@
+<% content_for :title, "Content Elements" %>
+
+<%= rp_page_header "Content Elements", "New Element" => new_admin_content_element_path %>
+
+<% if @content_groups.any? %>
+  <div class="rp-filter-bar">
+    <%= form_with url: admin_content_elements_path, method: :get, class: "rp-filter-form" do |f| %>
+      <div class="rp-form-group rp-form-group--inline">
+        <%= f.label :content_group_id, "Filter by group:", class: "rp-label" %>
+        <%= f.select :content_group_id,
+              options_from_collection_for_select(@content_groups, :id, :name, params[:content_group_id]),
+              { include_blank: "All Groups" },
+              { class: "rp-select", onchange: "this.form.requestSubmit()" } %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="rp-card">
+  <% if @content_elements.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Group") %></th>
+            <th><%= rp_table_header("Type") %></th>
+            <th><%= rp_table_header("Content") %></th>
+            <th><%= rp_table_header("Updated") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @content_elements.each do |element| %>
+            <tr>
+              <td class="rp-table-primary">
+                <%= link_to element.name, admin_content_element_path(element), class: "rp-link" %>
+              </td>
+              <td>
+                <% if element.content_group %>
+                  <%= link_to element.content_group.name, admin_content_group_path(element.content_group), class: "rp-link" %>
+                <% else %>
+                  <span class="rp-table-secondary">—</span>
+                <% end %>
+              </td>
+              <td><%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %></td>
+              <td class="rp-table-secondary"><%= rp_truncated_text(element.text_content, length: 40) %></td>
+              <td class="rp-table-secondary"><%= element.updated_at.strftime("%b %d, %Y") %></td>
+              <td class="rp-table-actions">
+                <%= rp_table_action_icons(
+                      edit_path: edit_admin_content_element_path(element),
+                      delete_path: admin_content_element_path(element),
+                      confirm: "Delete this content element?"
+                    ) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= rp_empty_state "No content elements yet.", link_text: "Create your first content element", link_path: new_admin_content_element_path %>
+  <% end %>
+</div>

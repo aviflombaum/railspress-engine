@@ -1,0 +1,9 @@
+<%= form_with model: [:admin, @content_group], class: "rp-form rp-form--narrow" do |form| %>
+  <%= rp_form_errors(@content_group) %>
+
+  <%= rp_string_field(form, :name, primary: true, placeholder: "e.g., Homepage, Footer, About Page", required: true) %>
+
+  <%= rp_text_field(form, :description, rows: 3, placeholder: "Brief description of this content group (optional)") %>
+
+  <%= rp_form_actions(form, admin_content_groups_path) %>
+<% end %>

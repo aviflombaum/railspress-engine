@@ -1,0 +1,42 @@
+<% content_for :title, "Content Groups" %>
+
+<%= rp_page_header "Content Groups", "New Group" => new_admin_content_group_path %>
+
+<div class="rp-card">
+  <% if @content_groups.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Description") %></th>
+            <th><%= rp_table_header("Elements") %></th>
+            <th><%= rp_table_header("Created") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @content_groups.each do |group| %>
+            <tr>
+              <td class="rp-table-primary">
+                <%= link_to group.name, admin_content_group_path(group), class: "rp-link" %>
+              </td>
+              <td class="rp-table-secondary"><%= rp_truncated_text(group.description, length: 60) %></td>
+              <td><%= rp_badge(group.element_count.to_s, status: group.element_count > 0 ? :published : :draft) %></td>
+              <td class="rp-table-secondary"><%= group.created_at.strftime("%b %d, %Y") %></td>
+              <td class="rp-table-actions">
+                <%= rp_table_action_icons(
+                      edit_path: edit_admin_content_group_path(group),
+                      delete_path: admin_content_group_path(group),
+                      confirm: "Delete this content group and all its elements?"
+                    ) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= rp_empty_state "No content groups yet.", link_text: "Create your first content group", link_path: new_admin_content_group_path %>
+  <% end %>
+</div>

@@ -144,6 +144,18 @@
   padding: 0;
 }
 
+/* Content preview */
+.rp-content-preview {
+  padding: var(--rp-space-md);
+  background: var(--rp-bg-secondary);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+
 /* Text utilities */
 .rp-text-danger {
   color: var(--rp-danger);

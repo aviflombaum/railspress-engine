@@ -1,0 +1,42 @@
+<% content_for :title, "Version ##{@version.version_number}" %>
+
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title">Version #<%= @version.version_number %></h1>
+    <p class="rp-byline">
+      of <%= link_to @content_element.name, admin_content_element_path(@content_element), class: "rp-link" %>
+      in <%= link_to @content_element.content_group.name, admin_content_group_path(@content_element.content_group), class: "rp-link" %>
+    </p>
+  </div>
+  <div class="rp-page-actions">
+    <%= link_to "Back to Element", admin_content_element_path(@content_element), class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<div class="rp-post-meta-card">
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Version</span>
+    <span class="rp-meta-value">#<%= @version.version_number %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Created</span>
+    <span class="rp-meta-value"><%= @version.created_at.strftime("%b %d, %Y at %l:%M %p") %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Element</span>
+    <span class="rp-meta-value"><%= @content_element.name %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Content Type</span>
+    <span class="rp-meta-value"><%= @content_element.content_type.titleize %></span>
+  </div>
+</div>
+
+<div class="rp-card rp-card--padded">
+  <h3 class="rp-sidebar-title">Version Content</h3>
+  <% if @version.text_content.present? %>
+    <div class="rp-content-preview"><%= @version.text_content %></div>
+  <% else %>
+    <p class="rp-empty-state">No text content for this version.</p>
+  <% end %>
+</div>

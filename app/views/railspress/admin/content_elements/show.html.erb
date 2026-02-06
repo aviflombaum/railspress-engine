@@ -1,0 +1,107 @@
+<% content_for :title, @content_element.name %>
+
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title"><%= @content_element.name %></h1>
+    <p class="rp-byline">
+      in <%= link_to @content_element.content_group.name, admin_content_group_path(@content_element.content_group), class: "rp-link" %>
+    </p>
+  </div>
+  <div class="rp-page-actions">
+    <%= link_to "Edit", edit_admin_content_element_path(@content_element), class: "rp-btn rp-btn--primary" %>
+    <%= link_to "Back", admin_content_elements_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<div class="rp-post-meta-card">
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Type</span>
+    <%= rp_badge(@content_element.content_type.titleize, status: @content_element.text? ? :published : :info) %>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Group</span>
+    <span class="rp-meta-value"><%= @content_element.content_group.name %></span>
+  </div>
+  <% if @content_element.position.present? %>
+    <div class="rp-meta-item">
+      <span class="rp-meta-label">Position</span>
+      <span class="rp-meta-value"><%= @content_element.position %></span>
+    </div>
+  <% end %>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Versions</span>
+    <span class="rp-meta-value"><%= @content_element.version_count %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Created</span>
+    <span class="rp-meta-value"><%= @content_element.created_at.strftime("%b %d, %Y at %l:%M %p") %></span>
+  </div>
+  <div class="rp-meta-item">
+    <span class="rp-meta-label">Updated</span>
+    <span class="rp-meta-value"><%= @content_element.updated_at.strftime("%b %d, %Y at %l:%M %p") %></span>
+  </div>
+</div>
+
+<%# Current Content Preview %>
+<div class="rp-card rp-card--padded">
+  <h3 class="rp-sidebar-title">Current Content</h3>
+  <% if @content_element.text? && @content_element.text_content.present? %>
+    <div class="rp-content-preview"><%= @content_element.text_content %></div>
+  <% elsif @content_element.image? && @content_element.image.attached? %>
+    <div class="rp-content-preview">
+      <%= image_tag main_app.url_for(@content_element.image), style: "max-width: 100%; height: auto; border-radius: 4px;" %>
+    </div>
+  <% else %>
+    <p class="rp-empty-state">No content set.</p>
+  <% end %>
+</div>
+
+<%# Version History %>
+<% if @versions.any? %>
+  <div class="rp-card" style="margin-top: 1.5rem;">
+    <div class="rp-card__header">
+      <h3 class="rp-sidebar-title" style="padding: 1rem 1.25rem; margin: 0;">Version History</h3>
+    </div>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th><%= rp_table_header("Version") %></th>
+            <th><%= rp_table_header("Content") %></th>
+            <th><%= rp_table_header("Created") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @versions.each do |version| %>
+            <tr>
+              <td class="rp-table-primary">#<%= version.version_number %></td>
+              <td class="rp-table-secondary"><%= rp_truncated_text(version.text_content, length: 60) %></td>
+              <td class="rp-table-secondary"><%= version.created_at.strftime("%b %d, %Y %l:%M %p") %></td>
+              <td class="rp-table-actions">
+                <%= link_to "View", admin_content_element_version_path(version), class: "rp-icon-btn", title: "View version" do %>
+                  <%= rp_icon(:search) %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
+
+<%# API Usage %>
+<div class="rp-card rp-card--padded" style="margin-top: 1.5rem;">
+  <h3 class="rp-sidebar-title">API Usage</h3>
+  <pre class="rp-code-block"><code># Get the value
+Railspress::CMS.find("<%= @content_element.content_group.name %>").load("<%= @content_element.name %>").value
+
+# In views
+&lt;%= cms_value("<%= @content_element.content_group.name %>", "<%= @content_element.name %>") %&gt;
+
+# With custom rendering
+&lt;%= cms_element(group: "<%= @content_element.content_group.name %>", name: "<%= @content_element.name %>") do |value| %&gt;
+  &lt;h1&gt;&lt;%= value %&gt;&lt;/h1&gt;
+&lt;% end %&gt;</code></pre>
+</div>

@@ -44,11 +44,22 @@ module Railspress
           Railspress::CmsHelper.clear_cache if defined?(Railspress::CmsHelper)
 
           if request.headers["Turbo-Frame"].present?
-            render turbo_stream: turbo_stream.replace(
-              "cms_inline_editor_form_#{@content_element.id}",
+            form_frame_id = params[:form_frame_id].presence || "cms_inline_editor_form_#{@content_element.id}"
+            display_frame_id = params[:display_frame_id].presence
+
+            streams = []
+            streams << turbo_stream.replace(
+              form_frame_id,
               partial: "railspress/admin/content_elements/inline_form_frame",
-              locals: { content_element: @content_element }
+              locals: { content_element: @content_element, form_frame_id: form_frame_id, display_frame_id: display_frame_id }
             )
+            if display_frame_id
+              streams << turbo_stream.replace(
+                display_frame_id,
+                helpers.cms_element_display_frame(@content_element, display_frame_id)
+              )
+            end
+            render turbo_stream: streams
           else
             redirect_to admin_content_element_path(@content_element), notice: "Content element '#{@content_element.name}' updated."
           end
@@ -56,10 +67,13 @@ module Railspress
           @content_groups = ContentGroup.active.order(:name)
 
           if request.headers["Turbo-Frame"].present?
+            form_frame_id = params[:form_frame_id].presence || "cms_inline_editor_form_#{@content_element.id}"
+            display_frame_id = params[:display_frame_id].presence
+
             render turbo_stream: turbo_stream.replace(
-              "cms_inline_editor_form_#{@content_element.id}",
+              form_frame_id,
               partial: "railspress/admin/content_elements/inline_form_frame",
-              locals: { content_element: @content_element }
+              locals: { content_element: @content_element, form_frame_id: form_frame_id, display_frame_id: display_frame_id }
             ), status: :unprocessable_entity
           else
             render :edit, status: :unprocessable_entity
@@ -75,7 +89,11 @@ module Railspress
       def inline
         if request.headers["Turbo-Frame"].present?
           render partial: "railspress/admin/content_elements/inline_form_frame",
-                 locals: { content_element: @content_element }
+                 locals: {
+                   content_element: @content_element,
+                   form_frame_id: params[:form_frame_id],
+                   display_frame_id: params[:display_frame_id]
+                 }
         else
           redirect_to edit_admin_content_element_path(@content_element)
         end

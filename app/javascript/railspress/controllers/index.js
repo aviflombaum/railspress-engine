@@ -22,9 +22,10 @@ import FocalPointController from "./focal_point_controller"
 import DropzoneController from "./dropzone_controller"
 import CropController from "./crop_controller"
 import ImageSectionController from "./image_section_controller"
+import CmsInlineEditorController from "./cms_inline_editor_controller"
 
 // Export individual controllers
-export { FocalPointController, DropzoneController, CropController, ImageSectionController }
+export { FocalPointController, DropzoneController, CropController, ImageSectionController, CmsInlineEditorController }
 
 // Export registration function for convenience
 export function registerRailspressControllers(application) {
@@ -32,4 +33,5 @@ export function registerRailspressControllers(application) {
   application.register("railspress--dropzone", DropzoneController)
   application.register("railspress--crop", CropController)
   application.register("rp-image-section", ImageSectionController)
+  application.register("rp--cms-inline-editor", CmsInlineEditorController)
 }

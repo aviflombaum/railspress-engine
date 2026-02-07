@@ -1,0 +1,32 @@
+<div class="rp-inline-meta">
+  <span class="rp-inline-meta__group"><%= content_element.content_group.name %></span>
+  <span class="rp-inline-meta__name"><%= content_element.name %></span>
+  <span class="rp-inline-meta__version">v<%= content_element.version_count %></span>
+</div>
+
+<% if content_element.errors.any? %>
+  <div class="rp-inline-errors">
+    <% content_element.errors.full_messages.each do |msg| %>
+      <p><%= msg %></p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= form_with(
+  model: content_element,
+  url: railspress.admin_content_element_path(content_element),
+  method: :patch,
+  class: "rp-inline-form"
+) do |f| %>
+  <%= hidden_field_tag :display_frame_id, local_assigns[:display_frame_id] %>
+  <%= hidden_field_tag :form_frame_id, local_assigns[:form_frame_id] %>
+  <%= f.text_area :text_content, rows: 4, class: "rp-inline-form__textarea" %>
+  <div class="rp-inline-actions">
+    <%= f.submit "Save", class: "rp-inline-actions__save" %>
+    <button type="button" class="rp-inline-actions__cancel"
+            data-action="rp--cms-inline-editor#close">Cancel</button>
+    <%= link_to "Open in admin",
+        railspress.edit_admin_content_element_path(content_element),
+        target: "_blank", class: "rp-inline-actions__admin-link" %>
+  </div>
+<% end %>

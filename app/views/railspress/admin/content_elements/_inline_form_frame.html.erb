@@ -1,0 +1,6 @@
+<%= turbo_frame_tag(local_assigns[:form_frame_id] || "cms_inline_editor_form_#{content_element.id}") do %>
+  <%= render "railspress/admin/content_elements/inline_form",
+             content_element: content_element,
+             display_frame_id: local_assigns[:display_frame_id],
+             form_frame_id: local_assigns[:form_frame_id] %>
+<% end %>

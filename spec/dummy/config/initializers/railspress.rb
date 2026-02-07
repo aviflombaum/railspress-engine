@@ -5,4 +5,7 @@ Railspress.configure do |config|
 
   # Register entities using string or symbol (reloader-friendly)
   config.register_entity :project
+
+  # Enable inline CMS editing (always on for demo — no auth in dummy app)
+  config.inline_editing_check = ->(_context) { true }
 end

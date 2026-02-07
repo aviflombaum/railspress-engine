@@ -141,6 +141,7 @@
         .post-content pre, .trix-content pre { padding: var(--spacing-md); font-size: 0.8125rem; border-radius: 0; margin-left: calc(-1 * var(--spacing-xl)); margin-right: calc(-1 * var(--spacing-xl)); }
       }
     </style>
+    <%= yield :head %>
     <%= javascript_importmap_tags %>
   </head>
   <body>

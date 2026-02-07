@@ -23,13 +23,15 @@ import FocalPointController from "railspress/controllers/focal_point_controller"
 import DropzoneController from "railspress/controllers/dropzone_controller"
 import CropController from "railspress/controllers/crop_controller"
 import ImageSectionController from "railspress/controllers/image_section_controller"
+import CmsInlineEditorController from "railspress/controllers/cms_inline_editor_controller"
 
 // Controller definitions with their identifiers
 const controllers = {
   "railspress--focal-point": FocalPointController,
   "railspress--dropzone": DropzoneController,
   "railspress--crop": CropController,
-  "railspress--image-section": ImageSectionController
+  "railspress--image-section": ImageSectionController,
+  "rp--cms-inline-editor": CmsInlineEditorController
 }
 
 /**
@@ -49,7 +51,7 @@ if (typeof window !== "undefined" && window.Stimulus) {
 }
 
 // Export individual controllers for advanced use cases
-export { FocalPointController, DropzoneController, CropController, ImageSectionController }
+export { FocalPointController, DropzoneController, CropController, ImageSectionController, CmsInlineEditorController }
 
 // Re-export the legacy function for backwards compatibility
 export { register as registerRailspressControllers }

@@ -13,7 +13,8 @@ module Railspress
                   :words_per_minute,
                   :blog_path,
                   :default_index_columns,
-                  :post_image_variants
+                  :post_image_variants,
+                  :inline_editing_check
 
     attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :image_contexts
 
@@ -23,6 +24,7 @@ module Railspress
       @focal_points_enabled = false
       @image_contexts = default_image_contexts
       @post_image_variants = {}
+      @inline_editing_check = nil
       @author_class_name = "User"
       @current_author_method = :current_user
       @current_author_proc = nil
@@ -229,6 +231,10 @@ module Railspress
 
     def post_image_variants
       configuration.post_image_variants
+    end
+
+    def inline_editing_check
+      configuration.inline_editing_check
     end
 
     # Entity registry convenience accessors

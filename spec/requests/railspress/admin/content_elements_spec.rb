@@ -202,4 +202,72 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
       expect(response).to redirect_to(railspress.admin_content_elements_path)
     end
   end
+
+  describe "GET /railspress/admin/content_elements/:id/inline" do
+    it "renders inline form frame with Turbo-Frame header" do
+      get railspress.inline_admin_content_element_path(homepage_h1),
+          headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" },
+          params: { form_frame_id: "cms_form_#{homepage_h1.id}_abc123", display_frame_id: "cms_display_#{homepage_h1.id}_abc123" }
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("turbo-frame")
+      expect(response.body).to include("text_content")
+    end
+
+    it "redirects without Turbo-Frame header" do
+      get railspress.inline_admin_content_element_path(homepage_h1)
+      expect(response).to redirect_to(railspress.edit_admin_content_element_path(homepage_h1))
+    end
+
+    it "redirects for deleted elements" do
+      get railspress.inline_admin_content_element_path(deleted_element),
+          headers: { "Turbo-Frame" => "cms_form_#{deleted_element.id}_abc123" }
+      expect(response).to redirect_to(railspress.admin_content_elements_path)
+    end
+  end
+
+  describe "PATCH /railspress/admin/content_elements/:id (inline)" do
+    it "returns turbo stream for inline update" do
+      patch railspress.admin_content_element_path(homepage_h1),
+            params: {
+              content_element: { text_content: "Inline Updated" },
+              form_frame_id: "cms_form_#{homepage_h1.id}_abc123",
+              display_frame_id: "cms_display_#{homepage_h1.id}_abc123"
+            },
+            headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" }
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      expect(response.body).to include("cms_form_#{homepage_h1.id}_abc123")
+      expect(response.body).to include("cms_display_#{homepage_h1.id}_abc123")
+    end
+
+    it "updates the element text content" do
+      patch railspress.admin_content_element_path(homepage_h1),
+            params: {
+              content_element: { text_content: "Inline Updated" },
+              form_frame_id: "cms_form_#{homepage_h1.id}_abc123"
+            },
+            headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" }
+      expect(homepage_h1.reload.text_content).to eq("Inline Updated")
+    end
+
+    it "creates a version on inline update" do
+      expect {
+        patch railspress.admin_content_element_path(homepage_h1),
+              params: {
+                content_element: { text_content: "Inline Version Test" },
+                form_frame_id: "cms_form_#{homepage_h1.id}_abc123"
+              },
+              headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" }
+      }.to change { homepage_h1.content_element_versions.count }.by(1)
+    end
+
+    it "returns turbo stream with errors for invalid inline update" do
+      patch railspress.admin_content_element_path(homepage_h1),
+            params: {
+              content_element: { name: "" },
+              form_frame_id: "cms_form_#{homepage_h1.id}_abc123"
+            },
+            headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" }
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
 end

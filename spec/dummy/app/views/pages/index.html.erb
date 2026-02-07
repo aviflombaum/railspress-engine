@@ -1,143 +1,203 @@
-<div class="blog">
-  <h1>CMS Content Demo</h1>
-  <p style="color: var(--color-text-muted); margin-bottom: var(--spacing-2xl);">
-    This page demonstrates the <strong>Railspress CMS Helper API</strong> rendering content from the database.
-    Edit content at <a href="/railspress/admin/content_elements">/railspress/admin/content_elements</a>.
-  </p>
-
-  <%# ============================================================ %>
-  <%# 1. Simple value output %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>cms_value — Direct Value</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_value("Headers", "Homepage H1") %&gt;</code></pre>
-    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
-      <strong>Output:</strong>
-      <%= cms_value("Headers", "Homepage H1") || content_tag(:em, "No content found — create a 'Headers' group with 'Homepage H1' element", style: "color: var(--color-text-muted);") %>
-    </div>
+<%# ============================================================ %>
+<%# Hero Section — Headers group: "Homepage H1" + "Tagline" %>
+<%# ============================================================ %>
+<section style="text-align: center; padding: 5rem 2rem 4rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+  <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
+    <h1 style="font-size: 3rem; font-weight: 700; margin: 0 0 1rem; color: white; letter-spacing: -0.02em;"><%= value %></h1>
+  <% end %>
+  <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+    <p style="font-size: 1.35rem; margin: 0 auto; max-width: 600px; opacity: 0.9; line-height: 1.6;"><%= value %></p>
+  <% end %>
+  <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+    <a href="/railspress/admin/content_groups" style="display: inline-block; padding: 0.75rem 1.5rem; background: white; color: #667eea; border-radius: 6px; font-weight: 600; text-decoration: none;">Manage Content</a>
+    <a href="#how-it-works" style="display: inline-block; padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.15); color: white; border-radius: 6px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.3);">How It Works</a>
   </div>
+</section>
 
-  <%# ============================================================ %>
-  <%# 2. Block rendering %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>cms_element — Block Rendering</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_element(group: "Headers", name: "Homepage H1") do |value| %&gt;
-  &lt;h1 style="font-size: 2.5rem;"&gt;&lt;%= value %&gt;&lt;/h1&gt;
-&lt;% end %&gt;</code></pre>
-    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
-      <strong>Output:</strong><br>
-      <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
-        <h1 style="font-size: 2.5rem; margin: var(--spacing-sm) 0 0;"><%= value %></h1>
-      <% end %>
-    </div>
-  </div>
-
-  <%# ============================================================ %>
-  <%# 3. Tagline example %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>cms_element — Tagline</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_element(group: "Headers", name: "Tagline") do |value| %&gt;
-  &lt;p style="font-size: 1.25rem; color: #6b7280;"&gt;&lt;%= value %&gt;&lt;/p&gt;
-&lt;% end %&gt;</code></pre>
-    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
-      <strong>Output:</strong><br>
-      <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
-        <p style="font-size: 1.25rem; color: #6b7280; margin: var(--spacing-sm) 0 0;"><%= value %></p>
-      <% end %>
-    </div>
-  </div>
-
-  <%# ============================================================ %>
-  <%# 4. Footer example %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>cms_value — Footer</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_value("Footers", "Footer Text") %&gt;</code></pre>
-    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
-      <strong>Output:</strong>
-      <%= cms_value("Footers", "Footer Text") || content_tag(:em, "No content found", style: "color: var(--color-text-muted);") %>
-    </div>
-  </div>
-
-  <%# ============================================================ %>
-  <%# 5. Chainable API in controller %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>Railspress::CMS — Chainable API</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code># In controllers, services, etc.
-Railspress::CMS.find("Headers").load("Homepage H1").value
-Railspress::CMS.find("Headers").load("Homepage H1").element</code></pre>
-    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
-      <strong>Value:</strong> <%= Railspress::CMS.find("Headers").load("Homepage H1").value || "nil" %><br>
-      <strong>Element:</strong> <%= Railspress::CMS.find("Headers").load("Homepage H1").element&.inspect || "nil" %>
-    </div>
-  </div>
-
-  <%# ============================================================ %>
-  <%# 6. Real-world mock: hero section %>
-  <%# ============================================================ %>
-  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
-    <h2>Real-World Example: Hero Section</h2>
-    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;section style="text-align: center; padding: 4rem 2rem;"&gt;
-  &lt;%= cms_element(group: "Headers", name: "Homepage H1") do |value| %&gt;
-    &lt;h1&gt;&lt;%= value %&gt;&lt;/h1&gt;
-  &lt;% end %&gt;
-  &lt;%= cms_element(group: "Headers", name: "Tagline") do |value| %&gt;
-    &lt;p&gt;&lt;%= value %&gt;&lt;/p&gt;
-  &lt;% end %&gt;
-&lt;/section&gt;</code></pre>
-    <div style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
-      <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
-        <h1 style="font-size: 2.5rem; margin: 0 0 0.5rem; color: white;"><%= value %></h1>
-      <% end %>
-      <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
-        <p style="font-size: 1.25rem; margin: 0; opacity: 0.9;"><%= value %></p>
-      <% end %>
-    </div>
-  </div>
-
-  <%# ============================================================ %>
-  <%# 7. All content groups & elements %>
-  <%# ============================================================ %>
-  <div class="post-card">
-    <h2>All Content Groups & Elements</h2>
-    <% if @groups.any? %>
-      <% @groups.each do |group| %>
-        <h3 style="margin-top: var(--spacing-lg);"><%= group.name %></h3>
-        <p style="color: var(--color-text-muted); font-size: 0.875rem;"><%= group.description %></p>
-        <% elements = group.content_elements.active %>
-        <% if elements.any? %>
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: var(--spacing-sm);">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Element</th>
-                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Type</th>
-                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% elements.ordered.each do |el| %>
-                <tr>
-                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><%= el.name %></td>
-                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><span class="tag"><%= el.content_type %></span></td>
-                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><code><%= truncate(el.value.to_s, length: 80) %></code></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        <% else %>
-          <p style="color: var(--color-text-muted); font-style: italic;">No elements in this group.</p>
+<%# ============================================================ %>
+<%# About Section — Homepage group: "hero" + "about" %>
+<%# ============================================================ %>
+<div style="max-width: 900px; margin: 0 auto; padding: 0 2rem;">
+  <section style="padding: 4rem 0;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+      <div>
+        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #e0e7ff; color: #3730a3; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">CMS-Powered</span>
+        <%= cms_element(group: "Homepage", name: "hero") do |value| %>
+          <h2 style="font-size: 2rem; font-weight: 700; margin: 0 0 1rem; color: #111827; line-height: 1.2;"><%= value %></h2>
         <% end %>
-      <% end %>
-    <% else %>
-      <p style="color: var(--color-text-muted);">No content groups yet. <a href="/railspress/admin/content_groups/new">Create one</a>.</p>
-    <% end %>
-  </div>
+        <%= cms_element(group: "Homepage", name: "about") do |value| %>
+          <p style="font-size: 1.1rem; color: #6b7280; line-height: 1.7; margin: 0;"><%= value %></p>
+        <% end %>
+      </div>
+      <div style="background: #f9fafb; border-radius: 12px; padding: 2rem; border: 1px solid #e5e7eb;">
+        <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 1rem;">Usage in your views</p>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 1.25rem; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; margin: 0; overflow-x: auto;"><code><span style="color: #94a3b8;"><%# Direct value %></span>
+&lt;%= cms_value("Homepage", "hero") %&gt;
 
-  <footer style="margin-top: var(--spacing-2xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-text-muted); font-size: 0.875rem;">
-    <p><%= cms_value("Footers", "Footer Text") %></p>
-    <p><a href="/railspress/admin">← Back to Admin</a></p>
-  </footer>
+<span style="color: #94a3b8;"><%# With block %></span>
+&lt;%= cms_element(
+  group: "Homepage",
+  name: "about"
+) do |value| %&gt;
+  &lt;p&gt;&lt;%= value %&gt;&lt;/p&gt;
+&lt;% end %&gt;
+
+<span style="color: #94a3b8;"><%# Chainable API %></span>
+Railspress::CMS
+  .find("Homepage")
+  .load("hero")
+  .value</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <%# ============================================================ %>
+  <%# Feature Cards — show how each API style works %>
+  <%# ============================================================ %>
+  <section id="how-it-works" style="padding: 0 0 4rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 700; text-align: center; margin: 0 0 0.5rem; color: #111827;">Three Ways to Load Content</h2>
+    <p style="text-align: center; color: #6b7280; margin: 0 0 2.5rem;">Every element below is pulled live from the database via the CMS API.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+      <%# Card 1: cms_value %>
+      <div style="padding: 1.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 10px;">
+        <div style="width: 40px; height: 40px; background: #dbeafe; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <span style="font-size: 1.25rem;">⚡</span>
+        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem; color: #111827;">cms_value</h3>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem;">Drop a value inline — perfect for headings, labels, and simple text.</p>
+        <div style="padding: 0.75rem; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 0.25rem;">Live output</p>
+          <p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: #111827;"><%= cms_value("Headers", "Homepage H1") %></p>
+        </div>
+      </div>
+
+      <%# Card 2: cms_element with block %>
+      <div style="padding: 1.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 10px;">
+        <div style="width: 40px; height: 40px; background: #fce7f3; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <span style="font-size: 1.25rem;">🎨</span>
+        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem; color: #111827;">cms_element</h3>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem;">Wrap content in custom HTML with a block — full control over rendering.</p>
+        <div style="padding: 0.75rem; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 0.25rem;">Live output</p>
+          <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+            <p style="margin: 0; font-size: 0.95rem; font-style: italic; color: #6b7280;"><%= value %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Card 3: Chainable API %>
+      <div style="padding: 1.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 10px;">
+        <div style="width: 40px; height: 40px; background: #d1fae5; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <span style="font-size: 1.25rem;">🔗</span>
+        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem; color: #111827;">Railspress::CMS</h3>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem;">Chainable API for controllers, services, and anywhere outside views.</p>
+        <div style="padding: 0.75rem; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 0.25rem;">Live output</p>
+          <p style="margin: 0; font-size: 0.95rem; color: #111827;"><%= Railspress::CMS.find("Homepage").load("hero").value %></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# ============================================================ %>
+  <%# Mock page section using all Homepage content %>
+  <%# ============================================================ %>
+  <section style="padding: 0 0 4rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 700; text-align: center; margin: 0 0 0.5rem; color: #111827;">Full Page Mock</h2>
+    <p style="text-align: center; color: #6b7280; margin: 0 0 2.5rem;">A realistic page layout where every piece of text comes from the CMS.</p>
+
+    <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+      <%# Mock nav bar %>
+      <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: white; border-bottom: 1px solid #e5e7eb;">
+        <strong style="font-size: 1.1rem; color: #111827;">RailsPress</strong>
+        <div style="display: flex; gap: 1.5rem; font-size: 0.875rem;">
+          <a href="#" style="color: #6b7280; text-decoration: none;">Home</a>
+          <a href="/blog" style="color: #6b7280; text-decoration: none;">Blog</a>
+          <a href="#" style="color: #6b7280; text-decoration: none;">About</a>
+        </div>
+      </nav>
+
+      <%# Mock hero %>
+      <div style="text-align: center; padding: 4rem 2rem; background: linear-gradient(180deg, #f9fafb 0%, white 100%);">
+        <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
+          <h1 style="font-size: 2.5rem; font-weight: 700; margin: 0 0 0.75rem; color: #111827;"><%= value %></h1>
+        <% end %>
+        <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+          <p style="font-size: 1.15rem; color: #6b7280; margin: 0 0 1.5rem; max-width: 500px; margin-left: auto; margin-right: auto;"><%= value %></p>
+        <% end %>
+        <a href="/railspress/admin" style="display: inline-block; padding: 0.6rem 1.25rem; background: #3b82f6; color: white; border-radius: 6px; font-weight: 500; text-decoration: none; font-size: 0.9rem;">Get Started</a>
+      </div>
+
+      <%# Mock feature section %>
+      <div style="padding: 3rem 2rem; text-align: center;">
+        <%= cms_element(group: "Homepage", name: "hero") do |value| %>
+          <h2 style="font-size: 1.5rem; font-weight: 600; margin: 0 0 0.75rem; color: #111827;"><%= value %></h2>
+        <% end %>
+        <%= cms_element(group: "Homepage", name: "about") do |value| %>
+          <p style="font-size: 1rem; color: #6b7280; margin: 0 auto; max-width: 600px; line-height: 1.7;"><%= value %></p>
+        <% end %>
+      </div>
+
+      <%# Mock footer %>
+      <footer style="padding: 1.5rem 2rem; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="margin: 0; font-size: 0.8rem; color: #9ca3af;"><%= cms_value("Footers", "Footer Text") %></p>
+      </footer>
+    </div>
+  </section>
+
+  <%# ============================================================ %>
+  <%# Content inventory table %>
+  <%# ============================================================ %>
+  <section style="padding: 0 0 4rem;">
+    <h2 style="font-size: 1.75rem; font-weight: 700; text-align: center; margin: 0 0 0.5rem; color: #111827;">Content Inventory</h2>
+    <p style="text-align: center; color: #6b7280; margin: 0 0 2rem;">All content groups and elements currently in the database.</p>
+
+    <% @groups.each do |group| %>
+      <div style="margin-bottom: 1.5rem; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+        <div style="padding: 0.75rem 1.25rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong style="color: #111827;"><%= group.name %></strong>
+            <span style="color: #9ca3af; font-size: 0.8rem; margin-left: 0.5rem;"><%= group.description %></span>
+          </div>
+          <a href="/railspress/admin/content_groups/<%= group.id %>" style="font-size: 0.8rem; color: #3b82f6; text-decoration: none;">Edit →</a>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+          <thead>
+            <tr style="background: white;">
+              <th style="text-align: left; padding: 0.5rem 1.25rem; color: #9ca3af; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Element</th>
+              <th style="text-align: left; padding: 0.5rem 1.25rem; color: #9ca3af; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Type</th>
+              <th style="text-align: left; padding: 0.5rem 1.25rem; color: #9ca3af; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Value</th>
+              <th style="text-align: left; padding: 0.5rem 1.25rem; color: #9ca3af; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">API Call</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% group.content_elements.active.ordered.each do |el| %>
+              <tr style="border-top: 1px solid #f3f4f6;">
+                <td style="padding: 0.6rem 1.25rem; font-weight: 500; color: #111827;"><%= el.name %></td>
+                <td style="padding: 0.6rem 1.25rem;"><span style="display: inline-block; padding: 0.15rem 0.5rem; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-size: 0.75rem; font-weight: 500;"><%= el.content_type %></span></td>
+                <td style="padding: 0.6rem 1.25rem; color: #6b7280;"><%= truncate(el.value.to_s, length: 60) %></td>
+                <td style="padding: 0.6rem 1.25rem;"><code style="font-size: 0.75rem; background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 3px; color: #334155;">cms_value("<%= group.name %>", "<%= el.name %>")</code></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </section>
 </div>
+
+<%# ============================================================ %>
+<%# Site footer — using CMS %>
+<%# ============================================================ %>
+<footer style="padding: 2rem; background: #1e293b; text-align: center;">
+  <p style="margin: 0 0 0.5rem; font-size: 0.875rem; color: #94a3b8;"><%= cms_value("Footers", "Footer Text") %></p>
+  <div style="display: flex; gap: 1.5rem; justify-content: center; font-size: 0.8rem;">
+    <a href="/railspress/admin" style="color: #60a5fa; text-decoration: none;">Admin Dashboard</a>
+    <a href="/railspress/admin/content_groups" style="color: #60a5fa; text-decoration: none;">Content Groups</a>
+    <a href="/railspress/admin/content_elements" style="color: #60a5fa; text-decoration: none;">Content Elements</a>
+    <a href="/blog" style="color: #60a5fa; text-decoration: none;">Blog</a>
+  </div>
+</footer>

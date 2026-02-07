@@ -10,7 +10,8 @@ module Railspress
 
     enum :content_type, { text: 0, image: 1 }
 
-    validates :name, presence: true
+    validates :name, presence: true,
+                     uniqueness: { scope: :content_group_id, conditions: -> { active } }
     validates :content_type, presence: true
     validates :text_content, presence: true, if: :text?
 

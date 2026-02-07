@@ -66,6 +66,15 @@
       <span class="rp-nav-text">Content Elements</span>
     <% end %>
 
+    <%= link_to railspress.admin_cms_transfer_path, class: "rp-nav-link #{controller_name == 'cms_transfers' ? 'rp-nav-link--active' : ''}" do %>
+      <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 3v6m0 0l3-3m-3 3L9 6"/>
+        <path d="M12 21v-6m0 0l3 3m-3-3l-3 3"/>
+        <rect x="3" y="9" width="18" height="6" rx="2"/>
+      </svg>
+      <span class="rp-nav-text">CMS Transfer</span>
+    <% end %>
+
     <% if Railspress.registered_entities.any? %>
       <div class="rp-nav-divider"></div>
 

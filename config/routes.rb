@@ -14,6 +14,12 @@ Railspress::Engine.routes.draw do
     end
     resources :content_element_versions, only: [:show]
 
+    # CMS Content Transfer (export/import)
+    resource :cms_transfer, only: [:show] do
+      post :export, on: :member
+      post :import, on: :member
+    end
+
     resources :posts do
       member do
         get "image_editor/:attachment", action: :image_editor, as: :image_editor

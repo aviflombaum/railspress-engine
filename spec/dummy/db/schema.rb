@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_06_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_07_000001) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -93,6 +93,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_000003) do
     t.text "text_content"
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_railspress_content_elements_on_author_id"
+    t.index ["content_group_id", "name"], name: "idx_content_elements_unique_name_per_group", unique: true, where: "deleted_at IS NULL"
     t.index ["content_group_id"], name: "index_railspress_content_elements_on_content_group_id"
     t.index ["content_type"], name: "index_railspress_content_elements_on_content_type"
     t.index ["deleted_at"], name: "index_railspress_content_elements_on_deleted_at"

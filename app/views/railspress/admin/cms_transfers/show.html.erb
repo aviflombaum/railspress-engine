@@ -1,0 +1,167 @@
+<div class="rp-page-header">
+  <h1 class="rp-page-title">CMS Transfer</h1>
+  <div class="rp-page-actions">
+    <%= link_to "Content Groups", admin_content_groups_path, class: "rp-btn rp-btn--secondary" %>
+    <%= link_to "Content Elements", admin_content_elements_path, class: "rp-btn rp-btn--secondary" %>
+  </div>
+</div>
+
+<% if @result %>
+  <div class="rp-card rp-card--padded" style="margin-bottom: var(--rp-space-lg);">
+    <h2 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 600;">Import Results</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <% if @result.created > 0 %>
+        <span class="rp-badge rp-badge--completed">Created: <%= @result.created %></span>
+      <% end %>
+      <% if @result.updated > 0 %>
+        <span class="rp-badge rp-badge--processing">Updated: <%= @result.updated %></span>
+      <% end %>
+      <% if @result.restored > 0 %>
+        <span class="rp-badge rp-badge--pending">Restored: <%= @result.restored %></span>
+      <% end %>
+      <% if @result.errors.any? %>
+        <span class="rp-badge rp-badge--failed">Errors: <%= @result.errors.size %></span>
+      <% end %>
+    </div>
+    <p style="margin: 0; font-size: 0.875rem; color: var(--rp-text-secondary);">
+      Total processed: <%= @result.total_processed %> items
+    </p>
+    <% if @result.errors.any? %>
+      <details style="margin-top: 1rem;">
+        <summary style="cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--rp-danger);">
+          Show error details (<%= @result.errors.size %>)
+        </summary>
+        <ul style="margin: 0.5rem 0 0; padding-left: 1.5rem; font-size: 0.8rem; color: var(--rp-text-secondary);">
+          <% @result.errors.each do |error| %>
+            <li><%= error %></li>
+          <% end %>
+        </ul>
+      </details>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="rp-card rp-card--padded">
+  <h2 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 600;">Export Content</h2>
+  <p style="margin: 0 0 1rem; font-size: 0.875rem; color: var(--rp-text-secondary);">
+    Download all CMS content as a ZIP file. Includes a JSON manifest with group/element metadata and an images/ directory for any image attachments.
+  </p>
+
+  <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="text-align: center; padding: 1rem 1.5rem; background: var(--rp-bg-secondary); border-radius: 8px;">
+      <div style="font-size: 1.5rem; font-weight: 700; color: var(--rp-text-primary);"><%= @group_count %></div>
+      <div style="font-size: 0.75rem; color: var(--rp-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Groups</div>
+    </div>
+    <div style="text-align: center; padding: 1rem 1.5rem; background: var(--rp-bg-secondary); border-radius: 8px;">
+      <div style="font-size: 1.5rem; font-weight: 700; color: var(--rp-text-primary);"><%= @element_count %></div>
+      <div style="font-size: 0.75rem; color: var(--rp-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Elements</div>
+    </div>
+    <div style="text-align: center; padding: 1rem 1.5rem; background: var(--rp-bg-secondary); border-radius: 8px;">
+      <div style="font-size: 1.5rem; font-weight: 700; color: var(--rp-text-primary);"><%= @image_count %></div>
+      <div style="font-size: 0.75rem; color: var(--rp-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Images</div>
+    </div>
+  </div>
+
+  <% if @groups.any? %>
+    <table class="rp-table" style="margin-bottom: 1.5rem;">
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>Elements</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @groups.each do |group| %>
+          <tr>
+            <td class="rp-table-primary"><%= group.name %></td>
+            <td class="rp-table-secondary"><%= group.content_elements.active.count %></td>
+            <td class="rp-table-secondary"><%= truncate(group.description.to_s, length: 60) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <%= form_with url: export_admin_cms_transfer_path, method: :post do |f| %>
+    <%= f.submit "Export All Content", class: "rp-btn rp-btn--primary", disabled: @element_count == 0 %>
+  <% end %>
+</div>
+
+<div class="rp-card rp-card--padded" style="margin-top: var(--rp-space-lg);">
+  <h2 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 600;">Import Content</h2>
+  <p style="margin: 0 0 1rem; font-size: 0.875rem; color: var(--rp-text-secondary);">
+    Upload a previously exported ZIP file. Existing content is matched by name and updated. Deleted content is restored if present in the import file.
+  </p>
+
+  <%= form_with url: import_admin_cms_transfer_path, method: :post, multipart: true do |f| %>
+    <label for="cms_import_file" class="rp-dropzone" id="cms-dropzone" style="margin-bottom: 1rem;">
+      <div class="rp-dropzone-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="rp-dropzone-text">
+        <strong>Choose a ZIP file or drag it here</strong>
+        <span>Exported CMS content (.zip)</span>
+      </div>
+      <%= file_field_tag :file, id: "cms_import_file", class: "rp-dropzone-input", accept: ".zip" %>
+    </label>
+
+    <div id="cms-file-info" hidden style="margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: var(--rp-bg-secondary); border-radius: 6px; font-size: 0.875rem;"></div>
+
+    <div class="rp-form-actions">
+      <%= f.submit "Import", class: "rp-btn rp-btn--primary", id: "cms-import-btn", disabled: true %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+(function() {
+  var dropzone = document.getElementById('cms-dropzone');
+  var input = document.getElementById('cms_import_file');
+  var fileInfo = document.getElementById('cms-file-info');
+  var submitBtn = document.getElementById('cms-import-btn');
+
+  ['dragenter', 'dragover'].forEach(function(event) {
+    dropzone.addEventListener(event, function(e) {
+      e.preventDefault();
+      dropzone.classList.add('rp-dropzone--active');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(function(event) {
+    dropzone.addEventListener(event, function(e) {
+      e.preventDefault();
+      dropzone.classList.remove('rp-dropzone--active');
+    });
+  });
+
+  dropzone.addEventListener('drop', function(e) {
+    input.files = e.dataTransfer.files;
+    updateFileInfo();
+  });
+
+  input.addEventListener('change', updateFileInfo);
+
+  function updateFileInfo() {
+    if (input.files.length === 0) {
+      fileInfo.hidden = true;
+      submitBtn.disabled = true;
+      return;
+    }
+    var file = input.files[0];
+    fileInfo.textContent = file.name + ' (' + formatSize(file.size) + ')';
+    fileInfo.hidden = false;
+    submitBtn.disabled = false;
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+})();
+</script>

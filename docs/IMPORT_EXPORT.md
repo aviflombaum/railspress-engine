@@ -1,6 +1,201 @@
 # Import & Export
 
-RailsPress provides background-processed import and export for posts, enabling bulk content migration with YAML frontmatter support.
+RailsPress provides two transfer systems:
+
+1. **Post Import/Export** — Background-processed bulk content migration with YAML frontmatter support
+2. **CMS Content Transfer** — Synchronous export/import of content groups and elements between environments
+
+---
+
+## CMS Content Transfer
+
+Transfer CMS content (groups, elements, and images) between environments via ZIP files. Designed for promoting content created in development to production.
+
+### Quick Reference
+
+| Feature | Export | Import |
+|---------|--------|--------|
+| Route | `POST /admin/cms_transfer/export` | `POST /admin/cms_transfer/import` |
+| Format | `.zip` (JSON manifest + images) | `.zip` (same format) |
+| Processing | Synchronous (inline) | Synchronous (inline) |
+| Scope | Active groups + elements only | Creates, updates, or restores |
+| Images | Included in `images/` directory | Attached via Active Storage |
+
+### Admin UI
+
+Navigate to **CMS Transfer** in the admin sidebar. The page shows:
+
+- **Export section** — Content summary (group/element/image counts), group table, and "Export All Content" button
+- **Import section** — Drag-and-drop file upload area with file info display
+
+After an import, a results panel shows badges for created, updated, restored, and error counts, with collapsible error details.
+
+### ZIP Format
+
+```
+cms_content_20260207_143022.zip
+├── content.json
+└── images/
+    ├── headers/
+    │   └── hero-image.png
+    └── footers/
+        └── footer-logo.jpg
+```
+
+### JSON Manifest Schema
+
+```json
+{
+  "version": 1,
+  "exported_at": "2026-02-07T14:30:22-05:00",
+  "source": "RailsPress CMS",
+  "groups": [
+    {
+      "name": "Headers",
+      "description": "Site header content elements",
+      "elements": [
+        {
+          "name": "Homepage H1",
+          "content_type": "text",
+          "position": 1,
+          "text_content": "Welcome to Our Site"
+        },
+        {
+          "name": "Hero Image",
+          "content_type": "image",
+          "position": 2,
+          "text_content": null,
+          "image_path": "images/headers/hero-image.png"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Fields:
+
+- `version` — Schema version (currently `1`), for forward compatibility
+- `exported_at` — ISO 8601 timestamp
+- `source` — Always `"RailsPress CMS"`
+- `groups[].name` — Group name (used as match key on import)
+- `groups[].elements[].name` — Element name (used as match key within group)
+- `groups[].elements[].image_path` — Relative path to image in the ZIP (image elements only)
+- `author_id` is intentionally excluded (meaningless across environments)
+
+### Export
+
+Exports all active (non-deleted) content groups and their active elements.
+
+```ruby
+# Programmatic usage
+result = Railspress::ContentExportService.new.call
+result.zip_data      # => binary ZIP data
+result.filename      # => "cms_content_20260207_143022.zip"
+result.group_count   # => 2
+result.element_count # => 5
+```
+
+ZIP is generated in-memory using `Zip::OutputStream.write_buffer` — no temp files.
+
+Image paths are sanitized: `images/{group-name}/{element-name}.{ext}` with non-alphanumeric characters replaced by hyphens.
+
+### Import
+
+Imports a previously exported ZIP. Content is matched by name:
+
+- **Groups** — matched by `name`
+- **Elements** — matched by `(content_group, name)` pair
+
+Behavior for each record:
+
+| State | Action |
+|-------|--------|
+| Not found | Create new |
+| Found (active) | Update attributes |
+| Found (soft-deleted) | Restore and update |
+
+```ruby
+# Programmatic usage
+result = Railspress::ContentImportService.new(zip_file).call
+result.created   # => 2
+result.updated   # => 3
+result.restored  # => 1
+result.errors    # => ["Group 'X': Name can't be blank"]
+result.success?  # => true (when errors is empty)
+```
+
+Key behaviors:
+
+- **Idempotent** — Re-importing the same ZIP produces no duplicates or unnecessary changes
+- **Auto-versioning** — Text content changes trigger the normal `after_save` versioning callback
+- **Error collection** — Individual record errors are collected; processing continues for remaining items
+- **CMS cache clearing** — `CmsHelper.cache` is cleared after import so templates reflect new content immediately
+
+### Security
+
+- **50 MB** maximum ZIP file size
+- **500** maximum ZIP entries
+- **Path traversal** — Entries containing `..` or starting with `/` are rejected
+- **macOS artifacts** — `__MACOSX` and dotfile entries are skipped
+- **Supported image types** — `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` only
+- Temp extraction directory cleaned up in `ensure` block
+
+### Routes
+
+```ruby
+namespace :admin do
+  resource :cms_transfer, only: [:show] do
+    post :export, on: :member
+    post :import, on: :member
+  end
+end
+```
+
+| Route Helper | Method | Path |
+|--------------|--------|------|
+| `admin_cms_transfer_path` | GET | `/admin/cms_transfer` |
+| `export_admin_cms_transfer_path` | POST | `/admin/cms_transfer/export` |
+| `import_admin_cms_transfer_path` | POST | `/admin/cms_transfer/import` |
+
+### Database Prerequisite
+
+A partial unique index ensures reliable name-based matching on import:
+
+```ruby
+add_index :railspress_content_elements,
+          [:content_group_id, :name],
+          unique: true,
+          where: "deleted_at IS NULL",
+          name: "idx_content_elements_unique_name_per_group"
+```
+
+This prevents duplicate active elements within a group while allowing soft-deleted records to coexist.
+
+### File Reference
+
+| File | Purpose |
+|------|---------|
+| `app/services/railspress/content_export_service.rb` | Builds ZIP with JSON manifest and images |
+| `app/services/railspress/content_import_service.rb` | Processes uploaded ZIP, upserts by name |
+| `app/controllers/railspress/admin/cms_transfers_controller.rb` | Show, export, and import actions |
+| `app/views/railspress/admin/cms_transfers/show.html.erb` | Admin UI with drag-and-drop upload |
+| `db/migrate/20260207000001_add_unique_index_to_content_elements.rb` | Partial unique index |
+
+### Testing
+
+```bash
+# All CMS transfer tests (34 examples)
+bundle exec rspec spec/services/railspress/content_export_service_spec.rb \
+  spec/services/railspress/content_import_service_spec.rb \
+  spec/requests/railspress/admin/cms_transfers_spec.rb
+```
+
+---
+
+## Post Import & Export
+
+Background-processed import and export for posts, enabling bulk content migration with YAML frontmatter support.
 
 ## Quick Reference
 

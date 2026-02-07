@@ -8,5 +8,8 @@ Rails.application.routes.draw do
   get "blog/tag/:slug", to: "blog#tag", as: :blog_tag
   get "blog/:slug", to: "blog#show", as: :blog_post
 
+  # CMS demo page
+  get "pages", to: "pages#index"
+
   root 'railspress/admin/dashboard#index'
 end

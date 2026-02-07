@@ -1,0 +1,143 @@
+<div class="blog">
+  <h1>CMS Content Demo</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: var(--spacing-2xl);">
+    This page demonstrates the <strong>Railspress CMS Helper API</strong> rendering content from the database.
+    Edit content at <a href="/railspress/admin/content_elements">/railspress/admin/content_elements</a>.
+  </p>
+
+  <%# ============================================================ %>
+  <%# 1. Simple value output %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>cms_value — Direct Value</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_value("Headers", "Homepage H1") %&gt;</code></pre>
+    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
+      <strong>Output:</strong>
+      <%= cms_value("Headers", "Homepage H1") || content_tag(:em, "No content found — create a 'Headers' group with 'Homepage H1' element", style: "color: var(--color-text-muted);") %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 2. Block rendering %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>cms_element — Block Rendering</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_element(group: "Headers", name: "Homepage H1") do |value| %&gt;
+  &lt;h1 style="font-size: 2.5rem;"&gt;&lt;%= value %&gt;&lt;/h1&gt;
+&lt;% end %&gt;</code></pre>
+    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
+      <strong>Output:</strong><br>
+      <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
+        <h1 style="font-size: 2.5rem; margin: var(--spacing-sm) 0 0;"><%= value %></h1>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 3. Tagline example %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>cms_element — Tagline</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_element(group: "Headers", name: "Tagline") do |value| %&gt;
+  &lt;p style="font-size: 1.25rem; color: #6b7280;"&gt;&lt;%= value %&gt;&lt;/p&gt;
+&lt;% end %&gt;</code></pre>
+    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
+      <strong>Output:</strong><br>
+      <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+        <p style="font-size: 1.25rem; color: #6b7280; margin: var(--spacing-sm) 0 0;"><%= value %></p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 4. Footer example %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>cms_value — Footer</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;%= cms_value("Footers", "Footer Text") %&gt;</code></pre>
+    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
+      <strong>Output:</strong>
+      <%= cms_value("Footers", "Footer Text") || content_tag(:em, "No content found", style: "color: var(--color-text-muted);") %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 5. Chainable API in controller %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>Railspress::CMS — Chainable API</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code># In controllers, services, etc.
+Railspress::CMS.find("Headers").load("Homepage H1").value
+Railspress::CMS.find("Headers").load("Homepage H1").element</code></pre>
+    <div style="padding: var(--spacing-md); background: var(--color-bg-muted); border-radius: 6px; border: 1px solid var(--color-border);">
+      <strong>Value:</strong> <%= Railspress::CMS.find("Headers").load("Homepage H1").value || "nil" %><br>
+      <strong>Element:</strong> <%= Railspress::CMS.find("Headers").load("Homepage H1").element&.inspect || "nil" %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 6. Real-world mock: hero section %>
+  <%# ============================================================ %>
+  <div class="post-card" style="margin-bottom: var(--spacing-xl);">
+    <h2>Real-World Example: Hero Section</h2>
+    <pre style="background: var(--color-code-bg); color: var(--color-code-text); padding: var(--spacing-md); border-radius: 6px; font-size: 0.875rem; margin-bottom: var(--spacing-md);"><code>&lt;section style="text-align: center; padding: 4rem 2rem;"&gt;
+  &lt;%= cms_element(group: "Headers", name: "Homepage H1") do |value| %&gt;
+    &lt;h1&gt;&lt;%= value %&gt;&lt;/h1&gt;
+  &lt;% end %&gt;
+  &lt;%= cms_element(group: "Headers", name: "Tagline") do |value| %&gt;
+    &lt;p&gt;&lt;%= value %&gt;&lt;/p&gt;
+  &lt;% end %&gt;
+&lt;/section&gt;</code></pre>
+    <div style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+      <%= cms_element(group: "Headers", name: "Homepage H1") do |value| %>
+        <h1 style="font-size: 2.5rem; margin: 0 0 0.5rem; color: white;"><%= value %></h1>
+      <% end %>
+      <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+        <p style="font-size: 1.25rem; margin: 0; opacity: 0.9;"><%= value %></p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# 7. All content groups & elements %>
+  <%# ============================================================ %>
+  <div class="post-card">
+    <h2>All Content Groups & Elements</h2>
+    <% if @groups.any? %>
+      <% @groups.each do |group| %>
+        <h3 style="margin-top: var(--spacing-lg);"><%= group.name %></h3>
+        <p style="color: var(--color-text-muted); font-size: 0.875rem;"><%= group.description %></p>
+        <% elements = group.content_elements.active %>
+        <% if elements.any? %>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: var(--spacing-sm);">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Element</th>
+                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Type</th>
+                <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--color-border); color: var(--color-text-muted);">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% elements.ordered.each do |el| %>
+                <tr>
+                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><%= el.name %></td>
+                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><span class="tag"><%= el.content_type %></span></td>
+                  <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--color-border);"><code><%= truncate(el.value.to_s, length: 80) %></code></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p style="color: var(--color-text-muted); font-style: italic;">No elements in this group.</p>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p style="color: var(--color-text-muted);">No content groups yet. <a href="/railspress/admin/content_groups/new">Create one</a>.</p>
+    <% end %>
+  </div>
+
+  <footer style="margin-top: var(--spacing-2xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--color-border); text-align: center; color: var(--color-text-muted); font-size: 0.875rem;">
+    <p><%= cms_value("Footers", "Footer Text") %></p>
+    <p><a href="/railspress/admin">← Back to Admin</a></p>
+  </footer>
+</div>

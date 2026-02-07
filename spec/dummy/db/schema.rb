@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_03_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_06_000003) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -70,6 +70,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_010000) do
     t.index ["slug"], name: "index_railspress_categories_on_slug", unique: true
   end
 
+  create_table "railspress_content_element_versions", force: :cascade do |t|
+    t.bigint "author_id"
+    t.integer "content_element_id", null: false
+    t.datetime "created_at", null: false
+    t.text "text_content"
+    t.datetime "updated_at", null: false
+    t.integer "version_number", null: false
+    t.index ["author_id"], name: "index_railspress_content_element_versions_on_author_id"
+    t.index ["content_element_id", "version_number"], name: "idx_content_element_versions_unique", unique: true
+    t.index ["content_element_id"], name: "idx_on_content_element_id_c4c667c695"
+  end
+
+  create_table "railspress_content_elements", force: :cascade do |t|
+    t.bigint "author_id"
+    t.integer "content_group_id", null: false
+    t.integer "content_type", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.string "name", null: false
+    t.integer "position"
+    t.text "text_content"
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_railspress_content_elements_on_author_id"
+    t.index ["content_group_id"], name: "index_railspress_content_elements_on_content_group_id"
+    t.index ["content_type"], name: "index_railspress_content_elements_on_content_type"
+    t.index ["deleted_at"], name: "index_railspress_content_elements_on_deleted_at"
+  end
+
+  create_table "railspress_content_groups", force: :cascade do |t|
+    t.bigint "author_id"
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_railspress_content_groups_on_author_id"
+    t.index ["deleted_at"], name: "index_railspress_content_groups_on_deleted_at"
+    t.index ["name"], name: "index_railspress_content_groups_on_name", unique: true
+  end
+
   create_table "railspress_exports", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "error_count", default: 0
@@ -119,6 +159,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_010000) do
     t.bigint "author_id"
     t.integer "category_id"
     t.datetime "created_at", null: false
+    t.decimal "header_image_focal_x", precision: 5, scale: 4, default: "0.5", null: false
+    t.decimal "header_image_focal_y", precision: 5, scale: 4, default: "0.5", null: false
+    t.json "header_image_overrides", default: {}
     t.text "meta_description"
     t.string "meta_title"
     t.datetime "published_at"
@@ -165,6 +208,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_010000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "railspress_content_element_versions", "railspress_content_elements", column: "content_element_id"
+  add_foreign_key "railspress_content_elements", "railspress_content_groups", column: "content_group_id"
   add_foreign_key "railspress_posts", "railspress_categories", column: "category_id"
   add_foreign_key "railspress_taggings", "railspress_tags", column: "tag_id"
 end

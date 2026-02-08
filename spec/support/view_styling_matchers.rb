@@ -89,13 +89,14 @@ module ViewStylingMatchers
   # Matcher to verify delete actions use proper styling
   RSpec::Matchers.define :have_rp_delete_styling do
     match do |page|
-      page.has_css?(".rp-link.rp-link--danger") ||
+      page.has_css?(".rp-icon-btn.rp-icon-btn--danger") ||
+        page.has_css?(".rp-link.rp-link--danger") ||
         page.has_css?("button.rp-link.rp-link--danger") ||
         page.has_css?("input.rp-link.rp-link--danger")
     end
 
     failure_message do
-      "expected page to have properly styled delete action (.rp-link.rp-link--danger)"
+      "expected page to have properly styled delete action (.rp-icon-btn.rp-icon-btn--danger or .rp-link.rp-link--danger)"
     end
   end
 

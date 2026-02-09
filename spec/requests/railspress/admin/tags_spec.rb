@@ -44,7 +44,7 @@ RSpec.describe "Railspress::Admin::Tags", type: :request do
       post railspress.admin_tags_path, params: {
         tag: { name: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -71,7 +71,7 @@ RSpec.describe "Railspress::Admin::Tags", type: :request do
       patch railspress.admin_tag_path(tag), params: {
         tag: { name: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

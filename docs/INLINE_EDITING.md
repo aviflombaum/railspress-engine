@@ -2,9 +2,34 @@
 
 Right-click any CMS-powered text on a live page to edit it in place. Changes save instantly via Turbo Streams, and auto-versioning captures every edit.
 
+## Prerequisites
+
+CMS must be enabled in your initializer before configuring inline editing:
+
+```ruby
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.enable_cms  # Required for inline editing
+end
+```
+
+See [CONFIGURING.md](CONFIGURING.md) for details on CMS setup.
+
 ## Quick Start
 
-### 1. Configure the Admin Check
+### 1. Import RailsPress JavaScript
+
+Add this line to your host app's `app/javascript/application.js`:
+
+```js
+import "railspress"
+```
+
+This auto-registers all RailsPress Stimulus controllers (including the inline editor). The engine automatically configures the importmap pins — no manual pin configuration needed.
+
+> **Note:** If you already import `"railspress"` for other features (focal point, image cropping, etc.), you're all set — skip this step.
+
+### 2. Configure the Admin Check
 
 In your host app initializer, set a proc that determines whether the current request should see inline editing controls:
 
@@ -22,7 +47,7 @@ The proc receives the helper context, so you can check authentication, roles, fe
 
 Set to `nil` (the default) to disable inline editing entirely.
 
-### 2. Add `yield :head` to Your Layout
+### 3. Add `yield :head` to Your Layout
 
 The inline editor CSS is injected as a `<style>` tag via `content_for :head`. Add this to your application layout if you don't have it already:
 
@@ -35,7 +60,7 @@ The inline editor CSS is injected as a `<style>` tag via `content_for :head`. Ad
 </head>
 ```
 
-### 3. Use `cms_element` in Your Views
+### 4. Use `cms_element` in Your Views
 
 Only `cms_element` gets inline editing. `cms_value` remains a raw string helper with no wrapper.
 
@@ -49,7 +74,7 @@ Only `cms_element` gets inline editing. `cms_value` remains a raw string helper 
 <h1><%= cms_value("Headers", "Homepage H1") %></h1>
 ```
 
-That's it. No extra JavaScript imports, no stylesheets to include, no Stimulus controller registration needed in the host app.
+That's it. No extra stylesheets to include and no manual Stimulus controller registration needed in the host app.
 
 ## How It Works
 

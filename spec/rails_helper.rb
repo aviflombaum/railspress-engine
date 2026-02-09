@@ -24,4 +24,14 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
+
+  # Enable CMS for all specs by default (preserves existing behavior).
+  # Blog-only specs explicitly call Railspress.reset_configuration!.
+  config.before(:each) do
+    Railspress.configuration.enable_cms
+  end
+
+  config.after(:each) do
+    Railspress.reset_configuration!
+  end
 end

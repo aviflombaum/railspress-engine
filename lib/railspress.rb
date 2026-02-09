@@ -4,6 +4,8 @@ require "railspress/entity"
 require "lexxy"
 
 module Railspress
+  class ConfigurationError < StandardError; end
+
   class Configuration
     attr_accessor :author_class_name,
                   :current_author_method,
@@ -16,12 +18,13 @@ module Railspress
                   :post_image_variants,
                   :inline_editing_check
 
-    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :image_contexts
+    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :image_contexts
 
     def initialize
       @authors_enabled = false
       @post_images_enabled = false
       @focal_points_enabled = false
+      @cms_enabled = false
       @image_contexts = default_image_contexts
       @post_image_variants = {}
       @inline_editing_check = nil
@@ -48,6 +51,20 @@ module Railspress
     # Declarative setter: config.enable_focal_points
     def enable_focal_points
       @focal_points_enabled = true
+    end
+
+    # Declarative setter: config.enable_cms
+    def enable_cms
+      @cms_enabled = true
+    end
+
+    # Validate configuration after the configure block completes.
+    # This keeps the configure block order-independent.
+    def validate!
+      if @inline_editing_check && !@cms_enabled
+        raise Railspress::ConfigurationError,
+          "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
+      end
     end
 
     # Set custom image contexts
@@ -167,6 +184,7 @@ module Railspress
 
     def configure
       yield(configuration)
+      configuration.validate!
     end
 
     def reset_configuration!
@@ -184,6 +202,10 @@ module Railspress
 
     def focal_points_enabled?
       configuration.focal_points_enabled
+    end
+
+    def cms_enabled?
+      configuration.cms_enabled
     end
 
     def image_contexts

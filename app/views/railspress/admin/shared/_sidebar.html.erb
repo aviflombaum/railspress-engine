@@ -47,32 +47,34 @@
       <span class="rp-nav-text">Tags</span>
     <% end %>
 
-    <div class="rp-nav-divider"></div>
+    <% if Railspress.cms_enabled? %>
+      <div class="rp-nav-divider"></div>
 
-    <%= link_to railspress.admin_content_groups_path, class: "rp-nav-link #{controller_name == 'content_groups' ? 'rp-nav-link--active' : ''}" do %>
-      <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-      </svg>
-      <span class="rp-nav-text">Content Groups</span>
-    <% end %>
+      <%= link_to railspress.admin_content_groups_path, class: "rp-nav-link #{controller_name == 'content_groups' ? 'rp-nav-link--active' : ''}" do %>
+        <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        </svg>
+        <span class="rp-nav-text">Content Groups</span>
+      <% end %>
 
-    <%= link_to railspress.admin_content_elements_path, class: "rp-nav-link #{controller_name == 'content_elements' ? 'rp-nav-link--active' : ''}" do %>
-      <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="4 7 4 4 20 4 20 7"/>
-        <line x1="9" y1="20" x2="15" y2="20"/>
-        <line x1="12" y1="4" x2="12" y2="20"/>
-      </svg>
-      <span class="rp-nav-text">Content Elements</span>
-    <% end %>
+      <%= link_to railspress.admin_content_elements_path, class: "rp-nav-link #{controller_name == 'content_elements' ? 'rp-nav-link--active' : ''}" do %>
+        <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4 7 4 4 20 4 20 7"/>
+          <line x1="9" y1="20" x2="15" y2="20"/>
+          <line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+        <span class="rp-nav-text">Content Elements</span>
+      <% end %>
 
-    <%= link_to railspress.admin_cms_transfer_path, class: "rp-nav-link #{controller_name == 'cms_transfers' ? 'rp-nav-link--active' : ''}" do %>
-      <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 3v6m0 0l3-3m-3 3L9 6"/>
-        <path d="M12 21v-6m0 0l3 3m-3-3l-3 3"/>
-        <rect x="3" y="9" width="18" height="6" rx="2"/>
-      </svg>
-      <span class="rp-nav-text">CMS Transfer</span>
+      <%= link_to railspress.admin_cms_transfer_path, class: "rp-nav-link #{controller_name == 'cms_transfers' ? 'rp-nav-link--active' : ''}" do %>
+        <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3v6m0 0l3-3m-3 3L9 6"/>
+          <path d="M12 21v-6m0 0l3 3m-3-3l-3 3"/>
+          <rect x="3" y="9" width="18" height="6" rx="2"/>
+        </svg>
+        <span class="rp-nav-text">CMS Transfer</span>
+      <% end %>
     <% end %>
 
     <% if Railspress.registered_entities.any? %>

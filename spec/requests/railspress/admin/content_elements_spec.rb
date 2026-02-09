@@ -121,9 +121,9 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
         }.not_to change(Railspress::ContentElement, :count)
       end
 
-      it "returns unprocessable_entity status" do
+      it "returns unprocessable_content status" do
         post railspress.admin_content_elements_path, params: invalid_params
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -177,10 +177,10 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
     end
 
     context "with invalid params" do
-      it "returns unprocessable_entity status" do
+      it "returns unprocessable_content status" do
         patch railspress.admin_content_element_path(homepage_h1),
               params: { content_element: { name: "" } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end
@@ -267,7 +267,7 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
               form_frame_id: "cms_form_#{homepage_h1.id}_abc123"
             },
             headers: { "Turbo-Frame" => "cms_form_#{homepage_h1.id}_abc123" }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 end

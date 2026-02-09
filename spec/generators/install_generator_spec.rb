@@ -187,59 +187,32 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
     end
   end
 
-  describe "#configure_javascript" do
-    let(:application_js) { Rails.root.join("app", "javascript", "application.js") }
+  describe "#generate_initializer" do
+    let(:initializer_path) { Rails.root.join("config", "initializers", "railspress.rb") }
 
-    context "when importmap is not available" do
-      it "does nothing" do
-        allow(generator).to receive(:importmap_available?).and_return(false)
-        allow(generator).to receive(:append_to_file)
-
-        generator.configure_javascript
-
-        expect(generator).not_to have_received(:append_to_file)
-      end
-    end
-
-    context "when application.js does not exist" do
-      it "does nothing" do
-        allow(generator).to receive(:importmap_available?).and_return(true)
-        allow(File).to receive(:exist?).with(application_js).and_return(false)
-        allow(generator).to receive(:append_to_file)
-
-        generator.configure_javascript
-
-        expect(generator).not_to have_received(:append_to_file)
-      end
-    end
-
-    context "when lexxy is not imported" do
-      it "adds lexxy import to application.js" do
-        allow(generator).to receive(:importmap_available?).and_return(true)
-        allow(File).to receive(:exist?).with(application_js).and_return(true)
-        allow(File).to receive(:read).with(application_js).and_return('import "@hotwired/turbo-rails"')
-        allow(generator).to receive(:append_to_file)
+    context "when initializer already exists" do
+      it "skips creating" do
+        allow(File).to receive(:exist?).with(initializer_path).and_return(true)
         allow(generator).to receive(:say_status)
+        allow(generator).to receive(:template)
 
-        generator.configure_javascript
+        generator.generate_initializer
 
-        expect(generator).to have_received(:append_to_file).with(application_js, /import "lexxy"/)
-        expect(generator).to have_received(:say_status).with(:added, "Lexxy import to application.js", :green)
+        expect(generator).to have_received(:say_status).with(:skip, "config/initializers/railspress.rb already exists", :yellow)
+        expect(generator).not_to have_received(:template)
       end
     end
 
-    context "when lexxy is already imported" do
-      it "skips importing" do
-        allow(generator).to receive(:importmap_available?).and_return(true)
-        allow(File).to receive(:exist?).with(application_js).and_return(true)
-        allow(File).to receive(:read).with(application_js).and_return('import "lexxy"')
-        allow(generator).to receive(:append_to_file)
+    context "when initializer does not exist" do
+      it "creates initializer from template" do
+        allow(File).to receive(:exist?).with(initializer_path).and_return(false)
         allow(generator).to receive(:say_status)
+        allow(generator).to receive(:template)
 
-        generator.configure_javascript
+        generator.generate_initializer
 
-        expect(generator).to have_received(:say_status).with(:skip, "Lexxy already imported in application.js", :yellow)
-        expect(generator).not_to have_received(:append_to_file)
+        expect(generator).to have_received(:template).with("initializer.rb", initializer_path)
+        expect(generator).to have_received(:say_status).with(:created, "config/initializers/railspress.rb", :green)
       end
     end
   end

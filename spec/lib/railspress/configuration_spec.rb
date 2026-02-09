@@ -164,11 +164,65 @@ RSpec.describe Railspress::Configuration do
     end
   end
 
+  describe "#enable_cms" do
+    it "enables CMS" do
+      expect(Railspress.cms_enabled?).to be false
+
+      Railspress.configuration.enable_cms
+
+      expect(Railspress.cms_enabled?).to be true
+    end
+  end
+
+  describe "#validate!" do
+    it "raises when inline_editing_check set without enable_cms" do
+      expect {
+        Railspress.configure do |config|
+          config.inline_editing_check = ->(_ctx) { true }
+        end
+      }.to raise_error(Railspress::ConfigurationError, /enable_cms/)
+    end
+
+    it "allows inline_editing_check with enable_cms regardless of order" do
+      expect {
+        Railspress.configure do |config|
+          config.inline_editing_check = ->(_ctx) { true }
+          config.enable_cms
+        end
+      }.not_to raise_error
+    end
+
+    it "allows enable_cms before inline_editing_check" do
+      expect {
+        Railspress.configure do |config|
+          config.enable_cms
+          config.inline_editing_check = ->(_ctx) { true }
+        end
+      }.not_to raise_error
+    end
+
+    it "allows enable_cms without inline_editing_check" do
+      expect {
+        Railspress.configure do |config|
+          config.enable_cms
+        end
+      }.not_to raise_error
+    end
+
+    it "allows empty configuration" do
+      expect {
+        Railspress.configure do |_config|
+        end
+      }.not_to raise_error
+    end
+  end
+
   describe ".reset_configuration!" do
     it "resets to defaults" do
       Railspress.configure do |config|
         config.enable_authors
         config.enable_post_images
+        config.enable_cms
         config.author_class_name = "Admin"
       end
 
@@ -176,6 +230,7 @@ RSpec.describe Railspress::Configuration do
 
       expect(Railspress.authors_enabled?).to be false
       expect(Railspress.post_images_enabled?).to be false
+      expect(Railspress.cms_enabled?).to be false
       expect(Railspress.configuration.author_class_name).to eq("User")
     end
   end

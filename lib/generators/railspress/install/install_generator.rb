@@ -72,23 +72,14 @@ module Railspress
         end
       end
 
-      def configure_javascript
-        return unless importmap_available?
+      def generate_initializer
+        initializer_path = Rails.root.join("config", "initializers", "railspress.rb")
 
-        application_js = Rails.root.join("app", "javascript", "application.js")
-        return unless File.exist?(application_js)
-
-        js_content = File.read(application_js)
-
-        if js_content.include?('import "lexxy"')
-          say_status :skip, "Lexxy already imported in application.js", :yellow
+        if File.exist?(initializer_path)
+          say_status :skip, "config/initializers/railspress.rb already exists", :yellow
         else
-          append_to_file application_js, <<~JS
-
-            // RailsPress rich text editor
-            import "lexxy"
-          JS
-          say_status :added, "Lexxy import to application.js", :green
+          template "initializer.rb", initializer_path
+          say_status :created, "config/initializers/railspress.rb", :green
         end
       end
 
@@ -109,11 +100,11 @@ module Railspress
         say "  3. (Optional) Change the mount path in config/routes.rb:"
         say "     mount Railspress::Engine => \"/blog\"", :cyan
         say ""
-        say "JavaScript setup:", :yellow
-        say "  The installer added Lexxy (rich text editor) to your importmap"
-        say "  and application.js. If you use a custom JS entry point, add:"
-        say ""
-        say "     import \"lexxy\"", :cyan
+        say "Optional features:", :yellow
+        say "  Edit config/initializers/railspress.rb to enable:"
+        say "    - CMS content elements (config.enable_cms)"
+        say "    - Inline CMS editing (config.inline_editing_check)"
+        say "  See docs/CONFIGURING.md and docs/INLINE_EDITING.md for details."
         say ""
         say "=" * 60, :green
       end

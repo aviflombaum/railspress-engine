@@ -69,7 +69,7 @@ RSpec.describe "Railspress::Admin::Entities", type: :request do
 
     it "fails with invalid params" do
       post railspress.admin_entity_index_path(entity_type: "projects"), params: invalid_params
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -118,7 +118,7 @@ RSpec.describe "Railspress::Admin::Entities", type: :request do
       patch railspress.admin_entity_path(entity_type: "projects", id: project.id),
             params: { project: { title: "" } }
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

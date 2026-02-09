@@ -37,7 +37,7 @@ RSpec.describe "Railspress::Admin::Categories", type: :request do
       post railspress.admin_categories_path, params: {
         category: { name: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -64,7 +64,7 @@ RSpec.describe "Railspress::Admin::Categories", type: :request do
       patch railspress.admin_category_path(category), params: {
         category: { name: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

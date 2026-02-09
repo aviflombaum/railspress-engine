@@ -93,9 +93,9 @@ RSpec.describe "Railspress::Admin::ContentGroups", type: :request do
         }.not_to change(Railspress::ContentGroup, :count)
       end
 
-      it "returns unprocessable_entity status" do
+      it "returns unprocessable_content status" do
         post railspress.admin_content_groups_path, params: invalid_params
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -135,10 +135,10 @@ RSpec.describe "Railspress::Admin::ContentGroups", type: :request do
     end
 
     context "with invalid params" do
-      it "returns unprocessable_entity status" do
+      it "returns unprocessable_content status" do
         patch railspress.admin_content_group_path(headers_group),
               params: { content_group: { name: "" } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end

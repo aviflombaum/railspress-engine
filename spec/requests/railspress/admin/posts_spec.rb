@@ -70,7 +70,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       post railspress.admin_posts_path, params: {
         post: { title: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -105,7 +105,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       patch railspress.admin_post_path(post_record), params: {
         post: { title: "" }
       }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -193,7 +193,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       }
 
       # Should re-render form with validation errors, not crash
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("has already been taken")
     end
 
@@ -210,7 +210,7 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       }
 
       # Should re-render form with validation errors, not crash
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("has already been taken")
     end
   end

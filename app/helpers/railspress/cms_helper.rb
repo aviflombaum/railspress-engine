@@ -15,6 +15,20 @@ module Railspress
   #   Railspress::CMS.find("Homepage").load("Hero H1").element
   #
   module CmsHelper
+    # Stub module included when CMS is disabled.
+    # Raises a descriptive error instead of NoMethodError.
+    module DisabledStub
+      def cms_element(*)
+        raise Railspress::ConfigurationError,
+          "CMS is not enabled. Add `config.enable_cms` to your Railspress initializer."
+      end
+
+      def cms_value(*)
+        raise Railspress::ConfigurationError,
+          "CMS is not enabled. Add `config.enable_cms` to your Railspress initializer."
+      end
+    end
+
     # Request-level cache to avoid repeated queries
     def self.cache
       @cache ||= {}
@@ -307,6 +321,10 @@ module Railspress
   # Usage: Railspress::CMS.find("group").load("element").value
   module CMS
     def self.find(group_name)
+      unless Railspress.cms_enabled?
+        raise Railspress::ConfigurationError,
+          "CMS is not enabled. Add `config.enable_cms` to your Railspress initializer."
+      end
       CmsHelper::CMSQuery.new.find(group_name)
     end
   end

@@ -5,19 +5,21 @@ Railspress::Engine.routes.draw do
     resources :categories, except: [ :show ]
     resources :tags, except: [ :show ]
 
-    # Content Element CMS
-    resources :content_groups
-    resources :content_elements do
-      member do
-        get :inline
+    # Content Element CMS (opt-in via config.enable_cms)
+    if Railspress.cms_enabled?
+      resources :content_groups
+      resources :content_elements do
+        member do
+          get :inline
+        end
       end
-    end
-    resources :content_element_versions, only: [:show]
+      resources :content_element_versions, only: [:show]
 
-    # CMS Content Transfer (export/import)
-    resource :cms_transfer, only: [:show] do
-      post :export, on: :member
-      post :import, on: :member
+      # CMS Content Transfer (export/import)
+      resource :cms_transfer, only: [:show] do
+        post :export, on: :member
+        post :import, on: :member
+      end
     end
 
     resources :posts do

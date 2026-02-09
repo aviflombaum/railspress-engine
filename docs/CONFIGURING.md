@@ -78,6 +78,28 @@ end
 
 See [Image Focal Point System](image-focal-point-system.md) for full documentation including image contexts, per-context overrides, and view helpers.
 
+#### `enable_cms`
+
+Enables the CMS content elements system. When enabled, you get:
+
+- **Content Groups and Content Elements** — manage structured text and image content in the admin panel
+- **Admin UI** — sidebar links for Content Groups, Content Elements, and CMS Transfer appear in the admin
+- **Dashboard stats** — Content Groups and Content Elements counts on the admin dashboard
+- **View helpers** — `cms_element` and `cms_value` become available in your host app views
+- **Chainable API** — `Railspress::CMS.find("Group").load("Element").value` for use in controllers and services
+
+```ruby
+Railspress.configure do |config|
+  config.enable_cms
+end
+```
+
+**Default:** Disabled
+
+When CMS is disabled, calling `cms_element` or `cms_value` in a view raises `Railspress::ConfigurationError` with a helpful message. CMS routes are not mounted and CMS links do not appear in the admin sidebar.
+
+**Inline editing** builds on top of CMS. See [Inline Editing](INLINE_EDITING.md) for how to enable right-click editing of CMS content on public pages.
+
 ### Author Configuration
 
 These options are only relevant when `enable_authors` is called.
@@ -252,6 +274,7 @@ You can check configuration values programmatically:
 Railspress.authors_enabled?        # => true/false
 Railspress.post_images_enabled?    # => true/false
 Railspress.focal_points_enabled?   # => true/false
+Railspress.cms_enabled?            # => true/false
 Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name
@@ -428,3 +451,53 @@ Override the post form to add custom fields or change layout:
 ```
 
 See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
+
+## Dependencies
+
+### Lexxy (Rich Text Editor)
+
+RailsPress uses [Lexxy](https://github.com/basecamp/lexxy), Basecamp's rich text editor built on Meta's Lexical framework. It replaces the default Trix editor that ships with ActionText.
+
+The gemspec pins `lexxy ~> 0.1.24.beta`. To update to the latest version:
+
+```bash
+bundle update lexxy
+```
+
+Lexxy is loaded in two places:
+
+- **Admin layout** — The admin interface loads Lexxy's stylesheet and JavaScript automatically. No host app configuration needed.
+- **Host app importmap** — The installer pins `lexxy` in your `config/importmap.rb` so the admin editor works with importmap-based asset delivery.
+
+**Note:** Lexxy is only needed in the admin interface. It is not loaded on public-facing pages unless you explicitly import it.
+
+#### Keeping Lexxy Updated
+
+Check for new versions:
+
+```bash
+gem search lexxy --remote
+```
+
+Lexxy is under active development at Basecamp. New versions may include editor improvements, bug fixes, and Ruby compatibility updates. Update periodically:
+
+```bash
+bundle update lexxy
+bundle exec rspec  # Verify nothing broke
+```
+
+If a Lexxy update introduces breaking changes to the editor, you can pin to a specific version in your host app's Gemfile:
+
+```ruby
+# Gemfile
+gem "lexxy", "0.1.26.beta"  # Pin to known-good version
+```
+
+### Other Dependencies
+
+| Gem | Purpose |
+|-----|---------|
+| `rails >= 8.1` | Framework (includes ActionText, Active Storage, Turbo) |
+| `lexxy ~> 0.7.4.beta` | Rich text editor (replaces Trix) |
+| `rubyzip ~> 2.3` | ZIP file handling for CMS import/export |
+| `redcarpet ~> 3.6` | Markdown parsing for post import |

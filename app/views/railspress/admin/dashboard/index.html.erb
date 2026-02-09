@@ -21,14 +21,16 @@
     <div class="rp-stat-value"><%= @tags_count %></div>
     <div class="rp-stat-label">Tags</div>
   </div>
-  <div class="rp-stat-card">
-    <div class="rp-stat-value"><%= @content_groups_count %></div>
-    <div class="rp-stat-label">Content Groups</div>
-  </div>
-  <div class="rp-stat-card">
-    <div class="rp-stat-value"><%= @content_elements_count %></div>
-    <div class="rp-stat-label">Content Elements</div>
-  </div>
+  <% if Railspress.cms_enabled? %>
+    <div class="rp-stat-card">
+      <div class="rp-stat-value"><%= @content_groups_count %></div>
+      <div class="rp-stat-label">Content Groups</div>
+    </div>
+    <div class="rp-stat-card">
+      <div class="rp-stat-value"><%= @content_elements_count %></div>
+      <div class="rp-stat-label">Content Elements</div>
+    </div>
+  <% end %>
 </div>
 
 <!-- Recent Posts -->
@@ -52,25 +54,27 @@
   </div>
 </div>
 
-<!-- Recent Content Elements -->
-<div class="rp-section">
-  <div class="rp-section-header">
-    <h2 class="rp-section-title">Recent Content</h2>
-    <%= link_to "View All", admin_content_elements_path, class: "rp-link" %>
+<% if Railspress.cms_enabled? %>
+  <!-- Recent Content Elements -->
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h2 class="rp-section-title">Recent Content</h2>
+      <%= link_to "View All", admin_content_elements_path, class: "rp-link" %>
+    </div>
+    <div class="rp-card">
+      <% if @recent_content_elements.any? %>
+        <ul class="rp-list">
+          <% @recent_content_elements.each do |element| %>
+            <li class="rp-list-item">
+              <%= link_to element.name, admin_content_element_path(element), class: "rp-link" %>
+              <span class="rp-table-secondary">in <%= element.content_group.name %></span>
+              <%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="rp-empty-state">No content elements yet. <%= link_to "Create your first content group", new_admin_content_group_path, class: "rp-link" %>.</p>
+      <% end %>
+    </div>
   </div>
-  <div class="rp-card">
-    <% if @recent_content_elements.any? %>
-      <ul class="rp-list">
-        <% @recent_content_elements.each do |element| %>
-          <li class="rp-list-item">
-            <%= link_to element.name, admin_content_element_path(element), class: "rp-link" %>
-            <span class="rp-table-secondary">in <%= element.content_group.name %></span>
-            <%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="rp-empty-state">No content elements yet. <%= link_to "Create your first content group", new_admin_content_group_path, class: "rp-link" %>.</p>
-    <% end %>
-  </div>
-</div>
+<% end %>

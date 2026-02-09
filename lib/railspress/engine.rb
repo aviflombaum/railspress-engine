@@ -13,17 +13,31 @@ module Railspress
       end
     end
 
-    # Make CMS helper available to host application views
+    # Make CMS helper available to host application views (or stub when disabled)
     initializer "railspress.cms_helper" do
       ActiveSupport.on_load(:action_view) do
-        include Railspress::CmsHelper
+        if Railspress.cms_enabled?
+          include Railspress::CmsHelper
+        else
+          include Railspress::CmsHelper::DisabledStub
+        end
       end
     end
 
     # Clear CMS cache on each request in development
     initializer "railspress.cms_cache" do |app|
-      app.config.to_prepare do
-        Railspress::CmsHelper.clear_cache
+      if Railspress.cms_enabled?
+        app.config.to_prepare do
+          Railspress::CmsHelper.clear_cache
+        end
+      end
+    end
+
+    # Validate configuration after all initializers have run
+    initializer "railspress.validate_config" do
+      if Railspress.inline_editing_check && !Railspress.cms_enabled?
+        raise Railspress::ConfigurationError,
+          "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
       end
     end
 

@@ -49,7 +49,7 @@ module Railspress
     attr_accessor :remove_header_image
     before_save :purge_header_image, if: -> { remove_header_image == "1" }
 
-    enum :status, { draft: 0, published: 1 }, default: :draft
+    enum :status, { draft: 0, published: 1 }, default: :draft, scopes: false
 
     # Predicate: post is scheduled for future publication
     def scheduled?

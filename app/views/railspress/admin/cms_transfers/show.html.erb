@@ -83,7 +83,7 @@
     </table>
   <% end %>
 
-  <%= form_with url: export_admin_cms_transfer_path, method: :post do |f| %>
+  <%= form_with url: export_admin_cms_transfer_path, method: :post, data: { turbo: false } do |f| %>
     <%= f.submit "Export All Content", class: "rp-btn rp-btn--primary", disabled: @element_count == 0 %>
   <% end %>
 </div>

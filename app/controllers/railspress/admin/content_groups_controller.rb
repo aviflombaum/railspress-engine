@@ -44,8 +44,13 @@ module Railspress
       end
 
       def destroy
-        @content_group.soft_delete
-        redirect_to admin_content_groups_path, notice: "Content group '#{@content_group.name}' deleted."
+        if @content_group.soft_delete
+          redirect_to admin_content_groups_path,
+            notice: "Content group '#{@content_group.name}' deleted."
+        else
+          redirect_to admin_content_group_path(@content_group),
+            alert: "Cannot delete '#{@content_group.name}' — it contains required content elements."
+        end
       end
 
       private

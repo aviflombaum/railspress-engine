@@ -99,7 +99,14 @@ module Railspress
       element_value = content_element&.value
 
       if content_element&.image? && content_element&.image&.attached?
-        return image_tag(main_app.url_for(content_element.image), html_options)
+        img_options = html_options.dup
+        if content_element.has_focal_point?(:image)
+          focal_css = content_element.focal_point_css(:image)
+          existing_style = img_options[:style].to_s
+          img_options[:style] = [existing_style, focal_css].reject(&:blank?).join("; ")
+        end
+        img_options[:alt] ||= content_element.name
+        return image_tag(main_app.url_for(content_element.image), img_options)
       end
 
       rendered = if block_given?

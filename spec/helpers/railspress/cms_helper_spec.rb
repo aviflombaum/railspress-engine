@@ -51,6 +51,56 @@ RSpec.describe Railspress::CmsHelper, type: :helper do
     end
   end
 
+  describe "#cms_element with image elements" do
+    let(:image_element) do
+      el = Railspress::ContentElement.create!(
+        name: "Hero Image",
+        content_type: :image,
+        content_group: railspress_content_groups(:headers)
+      )
+      el.image.attach(
+        io: StringIO.new("fake image data"),
+        filename: "hero.png",
+        content_type: "image/png"
+      )
+      el
+    end
+
+    it "returns nil for image with no attachment" do
+      el = Railspress::ContentElement.create!(
+        name: "No Image",
+        content_type: :image,
+        content_group: railspress_content_groups(:headers)
+      )
+      result = helper.cms_element(group: "Headers", name: "No Image")
+      expect(result).to be_nil
+    end
+
+    it "renders img tag for image elements with attachment" do
+      image_element # ensure element is created
+      result = helper.cms_element(group: "Headers", name: "Hero Image")
+      expect(result).to include("<img")
+      expect(result).to include("Hero Image") # alt text
+    end
+
+    it "includes focal point CSS when focal point is set" do
+      # Set a non-center focal point
+      fp = image_element.image_focal_point
+      fp.update!(focal_x: 0.25, focal_y: 0.75)
+
+      result = helper.cms_element(group: "Headers", name: "Hero Image")
+      expect(result).to include("object-position")
+    end
+
+    it "does not include object-position when focal point is centered" do
+      # Default focal point is 0.5, 0.5 (center) — ensure element is created
+      image_element
+      result = helper.cms_element(group: "Headers", name: "Hero Image")
+      # has_focal_point? returns false when at center, so no object-position added
+      expect(result).not_to include("object-position")
+    end
+  end
+
   describe "#cms_element with inline editing" do
     before do
       allow(helper).to receive(:inline_editor_enabled?).and_return(true)

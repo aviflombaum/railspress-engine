@@ -29,6 +29,8 @@
 <%
   if record.is_a?(Railspress::Post)
     cancel_url = image_editor_admin_post_path(record, attachment: attachment_name, compact: true)
+  elsif record.is_a?(Railspress::ContentElement)
+    cancel_url = image_editor_admin_content_element_path(record, compact: true)
   else
     entity_type = record.class.railspress_config.route_key
     cancel_url = admin_entity_image_editor_path(entity_type: entity_type, id: record.id, attachment: attachment_name, compact: true)

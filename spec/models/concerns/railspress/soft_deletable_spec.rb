@@ -4,9 +4,10 @@ require "rails_helper"
 
 RSpec.describe Railspress::SoftDeletable, type: :model do
   # Test using ContentGroup which includes SoftDeletable
+  # Use footers group (not headers, which has required elements that block soft_delete)
   fixtures "railspress/content_groups"
 
-  let(:group) { railspress_content_groups(:headers) }
+  let(:group) { railspress_content_groups(:footers) }
   let(:deleted_group) { railspress_content_groups(:deleted_group) }
 
   describe "#deleted?" do

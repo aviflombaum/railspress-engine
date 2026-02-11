@@ -25,9 +25,14 @@ module Railspress
     end
 
     def soft_delete
-      transaction do
-        content_elements.each(&:soft_delete)
-        update!(deleted_at: Time.current)
+      if content_elements.active.where(required: true).exists?
+        errors.add(:base, "Cannot delete group containing required content elements")
+        false
+      else
+        transaction do
+          content_elements.each(&:soft_delete)
+          update!(deleted_at: Time.current)
+        end
       end
     end
   end

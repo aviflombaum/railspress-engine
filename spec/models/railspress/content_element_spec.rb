@@ -10,6 +10,7 @@ RSpec.describe Railspress::ContentElement, type: :model do
   let(:tagline) { railspress_content_elements(:tagline) }
   let(:footer_text) { railspress_content_elements(:footer_text) }
   let(:deleted_element) { railspress_content_elements(:deleted_element) }
+  let(:required_element) { railspress_content_elements(:required_element) }
 
   describe "validations" do
     it "is valid with valid attributes" do
@@ -80,6 +81,14 @@ RSpec.describe Railspress::ContentElement, type: :model do
       it "orders by position asc, then created_at desc" do
         ordered = Railspress::ContentElement.ordered
         expect(ordered.to_sql).to include("position")
+      end
+    end
+
+    describe ".required" do
+      it "returns only required elements" do
+        required = Railspress::ContentElement.required
+        expect(required).to include(required_element)
+        expect(required).not_to include(homepage_h1, tagline, footer_text)
       end
     end
 
@@ -155,6 +164,76 @@ RSpec.describe Railspress::ContentElement, type: :model do
       # The version stores nil or the new content depending on implementation
       # The key thing is it doesn't error
       expect(element.persisted?).to be true
+    end
+  end
+
+  describe "required flag" do
+    it "defaults to false" do
+      element = Railspress::ContentElement.new(
+        name: "Test",
+        content_type: :text,
+        text_content: "Hello",
+        content_group: headers
+      )
+      expect(element.required).to be false
+    end
+  end
+
+  describe "#soft_delete" do
+    it "returns false and adds error when required" do
+      result = required_element.soft_delete
+      expect(result).to be false
+      expect(required_element.errors[:base]).to include("Cannot delete a required content element")
+      expect(required_element.reload.deleted?).to be false
+    end
+
+    it "works normally when not required" do
+      result = homepage_h1.soft_delete
+      expect(result).to be_truthy
+      expect(homepage_h1.reload.deleted?).to be true
+    end
+  end
+
+  describe "content_type immutability" do
+    it "cannot change content_type after creation" do
+      homepage_h1.content_type = :image
+      expect(homepage_h1).not_to be_valid
+      expect(homepage_h1.errors[:content_type]).to include("cannot be changed after creation")
+    end
+
+    it "allows setting content_type on create" do
+      element = Railspress::ContentElement.new(
+        name: "New Image",
+        content_type: :image,
+        content_group: headers
+      )
+      expect(element).to be_valid
+    end
+  end
+
+  describe "HasFocalPoint" do
+    it "responds to image_focal_point" do
+      expect(homepage_h1).to respond_to(:image_focal_point)
+    end
+
+    it "responds to focal_point_css" do
+      expect(homepage_h1).to respond_to(:focal_point_css)
+    end
+
+    it "responds to has_focal_point?" do
+      expect(homepage_h1).to respond_to(:has_focal_point?)
+    end
+  end
+
+  describe "image_hint" do
+    it "persists image_hint" do
+      element = Railspress::ContentElement.create!(
+        name: "Hint Test",
+        content_type: :image,
+        content_group: headers,
+        image_hint: "1920x600, 16:9 landscape"
+      )
+      expect(element.reload.image_hint).to eq("1920x600, 16:9 landscape")
     end
   end
 

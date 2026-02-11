@@ -11,6 +11,7 @@ Railspress::Engine.routes.draw do
       resources :content_elements do
         member do
           get :inline
+          get :image_editor
         end
       end
       resources :content_element_versions, only: [:show]

@@ -1,4 +1,5 @@
-<%= form_with model: [:admin, @content_element], class: "rp-form rp-form--narrow" do |form| %>
+<%= form_with model: [:admin, @content_element], class: "rp-form rp-form--narrow",
+    data: @content_element.new_record? ? { controller: "railspress--content-element-form" } : {} do |form| %>
   <%= rp_form_errors(@content_element) %>
 
   <%= rp_string_field(form, :name, primary: true, placeholder: "e.g., Hero H1, Tagline, Footer Text", required: true) %>
@@ -9,14 +10,62 @@
         label: "Content Group",
         hint: "Which group does this element belong to?") %>
 
-  <%= rp_select_field(form, :content_type,
-        choices: Railspress::ContentElement.content_types.keys.map { |t| [t.titleize, t] },
-        label: "Content Type",
-        hint: "Text for editable text content, Image for uploaded images") %>
+  <% if @content_element.new_record? %>
+    <%# New form: content_type is selectable, Stimulus toggles fields %>
+    <%= rp_select_field(form, :content_type,
+          choices: Railspress::ContentElement.content_types.keys.map { |t| [t.titleize, t] },
+          label: "Content Type",
+          hint: "Text for editable text content, Image for uploaded images",
+          data: { railspress__content_element_form_target: "typeSelect",
+                  action: "railspress--content-element-form#toggle" }) %>
 
-  <%= rp_text_field(form, :text_content, rows: 5, placeholder: "Enter the content value...", label: "Text Content", hint: "The text value that will be loaded in views") %>
+    <%# Text fields (shown when type=text) %>
+    <div data-railspress--content-element-form-target="textFields">
+      <%= rp_text_field(form, :text_content, rows: 5, placeholder: "Enter the content value...",
+            label: "Text Content", hint: "The text value that will be loaded in views") %>
+    </div>
+
+    <%# Image fields (shown when type=image) %>
+    <div data-railspress--content-element-form-target="imageFields" style="display: none;">
+      <%= rp_string_field(form, :image_hint, label: "Image Hint",
+            placeholder: "e.g., Recommended: 1920x600, 16:9 landscape",
+            hint: "Guidance for admins about recommended image dimensions") %>
+      <%= render "railspress/admin/shared/dropzone", form: form, field_name: :image,
+            hint: "PNG, JPG, WebP up to 10MB" %>
+    </div>
+  <% else %>
+    <%# Edit form: content_type is locked %>
+    <div class="rp-form-group">
+      <label class="rp-label">Content Type</label>
+      <%= rp_badge(@content_element.content_type.titleize,
+            status: @content_element.text? ? :published : :info) %>
+      <%= form.hidden_field :content_type %>
+    </div>
+
+    <% if @content_element.text? %>
+      <%= rp_text_field(form, :text_content, rows: 5, placeholder: "Enter the content value...",
+            label: "Text Content", hint: "The text value that will be loaded in views") %>
+    <% else %>
+      <%= rp_string_field(form, :image_hint, label: "Image Hint",
+            placeholder: "e.g., Recommended: 1920x600, 16:9 landscape",
+            hint: "Guidance for admins about recommended image dimensions") %>
+      <% if @content_element.image.attached? && @content_element.image.blob&.persisted? %>
+        <%= render "railspress/admin/shared/image_section_compact",
+              record: @content_element, attachment_name: :image,
+              label: "Element Image",
+              editor_url: image_editor_admin_content_element_path(@content_element) %>
+      <% else %>
+        <%= render "railspress/admin/shared/dropzone", form: form, field_name: :image,
+              prompt: @content_element.image_hint.presence || "Drag image here or click to browse",
+              hint: "PNG, JPG, WebP up to 10MB" %>
+      <% end %>
+    <% end %>
+  <% end %>
 
   <%= rp_integer_field(form, :position, label: "Position", hint: "Order within the group (lower numbers first)") %>
+
+  <%= rp_boolean_field(form, :required, label: "Required element",
+        hint: "Required elements cannot be deleted. Use for elements your application code depends on.") %>
 
   <%= rp_form_actions(form, admin_content_elements_path) %>
 <% end %>

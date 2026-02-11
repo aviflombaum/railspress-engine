@@ -3,10 +3,12 @@
 module Railspress
   class ContentElement < ApplicationRecord
     include Railspress::SoftDeletable
+    include Railspress::HasFocalPoint
 
     belongs_to :content_group
     has_many :content_element_versions, dependent: :destroy
     has_one_attached :image
+    has_focal_point :image
 
     enum :content_type, { text: 0, image: 1 }
 
@@ -14,10 +16,12 @@ module Railspress
                      uniqueness: { scope: :content_group_id, conditions: -> { active } }
     validates :content_type, presence: true
     validates :text_content, presence: true, if: :text?
+    validate :content_type_unchanged, on: :update
 
     after_save :create_version, if: :should_create_version?
 
     scope :ordered, -> { order(position: :asc, created_at: :desc) }
+    scope :required, -> { where(required: true) }
     scope :recent, -> { order(updated_at: :desc) }
     scope :by_group, ->(content_group) { where(content_group: content_group) }
     scope :by_content_type, ->(type) { where(content_type: type) }
@@ -55,6 +59,15 @@ module Railspress
       content_element_versions.count
     end
 
+    def soft_delete
+      if required?
+        errors.add(:base, "Cannot delete a required content element")
+        false
+      else
+        super
+      end
+    end
+
     def restore_to_version(version_number)
       version = content_element_versions.find_by(version_number: version_number)
       return false unless version
@@ -63,6 +76,12 @@ module Railspress
     end
 
     private
+
+    def content_type_unchanged
+      if content_type_changed?
+        errors.add(:content_type, "cannot be changed after creation")
+      end
+    end
 
     def should_create_version?
       return false unless persisted?

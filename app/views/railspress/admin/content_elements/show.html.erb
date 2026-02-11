@@ -19,6 +19,16 @@
     <%= rp_badge(@content_element.content_type.titleize, status: @content_element.text? ? :published : :info) %>
   </div>
   <div class="rp-meta-item">
+    <span class="rp-meta-label">Required</span>
+    <%= rp_boolean_badge(@content_element.required) %>
+  </div>
+  <% if @content_element.image? && @content_element.image_hint.present? %>
+    <div class="rp-meta-item">
+      <span class="rp-meta-label">Image Hint</span>
+      <span class="rp-meta-value"><%= @content_element.image_hint %></span>
+    </div>
+  <% end %>
+  <div class="rp-meta-item">
     <span class="rp-meta-label">Group</span>
     <span class="rp-meta-value"><%= @content_element.content_group.name %></span>
   </div>
@@ -41,6 +51,13 @@
     <span class="rp-meta-value"><%= @content_element.updated_at.strftime("%b %d, %Y at %l:%M %p") %></span>
   </div>
 </div>
+
+<% if @content_element.image? && @content_element.image.attached? %>
+  <%= render "railspress/admin/shared/image_section_compact",
+        record: @content_element, attachment_name: :image,
+        label: "Element Image",
+        editor_url: image_editor_admin_content_element_path(@content_element) %>
+<% end %>
 
 <%# Current Content Preview %>
 <div class="rp-card rp-card--padded">

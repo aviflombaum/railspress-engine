@@ -3,7 +3,7 @@
 module Railspress
   module Admin
     class ContentElementsController < BaseController
-      before_action :set_content_element, only: [:show, :edit, :update, :destroy, :inline]
+      before_action :set_content_element, only: [:show, :edit, :update, :destroy, :inline, :image_editor]
 
       def index
         scope = ContentElement.active
@@ -82,8 +82,13 @@ module Railspress
       end
 
       def destroy
-        @content_element.soft_delete
-        redirect_to admin_content_elements_path, notice: "Content element '#{@content_element.name}' deleted."
+        if @content_element.soft_delete
+          redirect_to admin_content_elements_path,
+            notice: "Content element '#{@content_element.name}' deleted."
+        else
+          redirect_to admin_content_elements_path,
+            alert: "Cannot delete '#{@content_element.name}' — it is a required element. To delete it, first unmark it as required."
+        end
       end
 
       def inline
@@ -99,6 +104,28 @@ module Railspress
         end
       end
 
+      def image_editor
+        if params[:compact] == "true"
+          render partial: "railspress/admin/shared/image_section_compact",
+                 locals: {
+                   record: @content_element,
+                   attachment_name: :image,
+                   label: "Element Image",
+                   editor_url: image_editor_admin_content_element_path(@content_element)
+                 }
+        else
+          focal_point = @content_element.image_focal_point
+          focal_point.save! if focal_point.new_record?
+
+          render partial: "railspress/admin/shared/image_section_editor",
+                 locals: {
+                   record: @content_element,
+                   attachment_name: :image,
+                   contexts: Railspress.image_contexts
+                 }
+        end
+      end
+
       private
 
       def set_content_element
@@ -108,7 +135,8 @@ module Railspress
       end
 
       def content_element_params
-        params.require(:content_element).permit(:name, :content_group_id, :content_type, :position, :text_content, :image)
+        params.require(:content_element).permit(:name, :content_group_id, :content_type, :position, :text_content, :image, :required, :image_hint,
+                                               image_focal_point_attributes: [:id, :focal_x, :focal_y])
       end
     end
   end

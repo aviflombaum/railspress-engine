@@ -11,6 +11,7 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
   let(:tagline) { railspress_content_elements(:tagline) }
   let(:footer_text) { railspress_content_elements(:footer_text) }
   let(:deleted_element) { railspress_content_elements(:deleted_element) }
+  let(:required_element) { railspress_content_elements(:required_element) }
 
   describe "GET /railspress/admin/content_elements" do
     it "returns a successful response" do
@@ -101,6 +102,20 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
         post railspress.admin_content_elements_path, params: valid_params
         expect(flash[:notice]).to include("New Hero Text")
       end
+
+      it "creates a required element when required is true" do
+        post railspress.admin_content_elements_path, params: {
+          content_element: {
+            name: "Required Hero",
+            content_group_id: headers_group.id,
+            content_type: "text",
+            text_content: "Must exist",
+            required: true
+          }
+        }
+        element = Railspress::ContentElement.find_by(name: "Required Hero")
+        expect(element.required).to be true
+      end
     end
 
     context "with invalid params" do
@@ -168,6 +183,12 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
         expect(response).to redirect_to(railspress.admin_content_element_path(homepage_h1))
       end
 
+      it "updates the required flag" do
+        patch railspress.admin_content_element_path(homepage_h1),
+              params: { content_element: { required: true } }
+        expect(homepage_h1.reload.required).to be true
+      end
+
       it "creates a version when text_content changes" do
         expect {
           patch railspress.admin_content_element_path(homepage_h1),
@@ -201,6 +222,19 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
       delete railspress.admin_content_element_path(homepage_h1)
       expect(response).to redirect_to(railspress.admin_content_elements_path)
     end
+
+    context "when element is required" do
+      it "does not delete the element" do
+        delete railspress.admin_content_element_path(required_element)
+        expect(required_element.reload.deleted?).to be false
+      end
+
+      it "redirects with alert" do
+        delete railspress.admin_content_element_path(required_element)
+        expect(response).to redirect_to(railspress.admin_content_elements_path)
+        expect(flash[:alert]).to include("required element")
+      end
+    end
   end
 
   describe "GET /railspress/admin/content_elements/:id/inline" do
@@ -222,6 +256,68 @@ RSpec.describe "Railspress::Admin::ContentElements", type: :request do
       get railspress.inline_admin_content_element_path(deleted_element),
           headers: { "Turbo-Frame" => "cms_form_#{deleted_element.id}_abc123" }
       expect(response).to redirect_to(railspress.admin_content_elements_path)
+    end
+  end
+
+  describe "GET /railspress/admin/content_elements/:id/image_editor" do
+    it "renders image editor for image elements" do
+      image_element = Railspress::ContentElement.create!(
+        name: "Test Image",
+        content_type: :image,
+        content_group: headers_group
+      )
+      # Attach a test image
+      image_element.image.attach(
+        io: StringIO.new("fake image data"),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+
+      get railspress.image_editor_admin_content_element_path(image_element)
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "renders compact view when compact=true" do
+      image_element = Railspress::ContentElement.create!(
+        name: "Test Image Compact",
+        content_type: :image,
+        content_group: headers_group
+      )
+      image_element.image.attach(
+        io: StringIO.new("fake image data"),
+        filename: "test.png",
+        content_type: "image/png"
+      )
+
+      get railspress.image_editor_admin_content_element_path(image_element, compact: true)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Element Image")
+    end
+  end
+
+  describe "PATCH /railspress/admin/content_elements/:id (content_type change rejected)" do
+    it "rejects content_type change" do
+      patch railspress.admin_content_element_path(homepage_h1),
+            params: { content_element: { content_type: "image" } }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(homepage_h1.reload.content_type).to eq("text")
+    end
+  end
+
+  describe "POST /railspress/admin/content_elements (image type)" do
+    it "creates an image element with image_hint" do
+      post railspress.admin_content_elements_path, params: {
+        content_element: {
+          name: "Hero Image",
+          content_group_id: headers_group.id,
+          content_type: "image",
+          image_hint: "1920x600, 16:9 landscape"
+        }
+      }
+      element = Railspress::ContentElement.find_by(name: "Hero Image")
+      expect(element).to be_present
+      expect(element.image?).to be true
+      expect(element.image_hint).to eq("1920x600, 16:9 landscape")
     end
   end
 

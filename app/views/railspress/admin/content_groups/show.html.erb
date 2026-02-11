@@ -47,7 +47,9 @@
           <% @content_elements.each do |element| %>
             <tr>
               <td class="rp-table-primary">
-                <%= link_to element.name, admin_content_element_path(element), class: "rp-link" %>
+                <%= link_to admin_content_element_path(element), class: "rp-link" do %>
+                  <% if element.required? %><strong><%= element.name %></strong><% else %><%= element.name %><% end %>
+                <% end %>
               </td>
               <td><%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %></td>
               <td class="rp-table-secondary"><%= rp_truncated_text(element.text_content, length: 50) %></td>
@@ -57,7 +59,9 @@
                 <%= rp_table_action_icons(
                       edit_path: edit_admin_content_element_path(element),
                       delete_path: admin_content_element_path(element),
-                      confirm: "Delete this content element?"
+                      confirm: "Delete this content element?",
+                      delete_disabled: element.required?,
+                      disabled_title: "Required Element"
                     ) %>
               </td>
             </tr>

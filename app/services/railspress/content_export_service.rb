@@ -57,11 +57,20 @@ module Railspress
         "name" => element.name,
         "content_type" => element.content_type,
         "position" => element.position,
-        "text_content" => element.text_content
+        "text_content" => element.text_content,
+        "required" => element.required,
+        "image_hint" => element.image_hint
       }
 
       if element.image? && element.image.attached?
         data["image_path"] = image_path_for(group, element)
+      end
+
+      if element.image? && element.respond_to?(:image_focal_point)
+        fp = element.image_focal_point
+        if fp&.persisted? && fp.offset_from_center?
+          data["focal_point"] = { "x" => fp.focal_x, "y" => fp.focal_y }
+        end
       end
 
       data

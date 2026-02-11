@@ -98,6 +98,8 @@ end
 
 When CMS is disabled, calling `cms_element` or `cms_value` in a view raises `Railspress::ConfigurationError` with a helpful message. CMS routes are not mounted and CMS links do not appear in the admin sidebar.
 
+**Image content elements** support drag-and-drop uploads via the dropzone UI, per-element focal points (when `enable_focal_points` is also active), and an `image_hint` field for documenting recommended dimensions. Content type is locked after creation. In views, `cms_element` automatically outputs an `<img>` tag with `object-position` CSS derived from the focal point.
+
 **Inline editing** builds on top of CMS. See [Inline Editing](INLINE_EDITING.md) for how to enable right-click editing of CMS content on public pages.
 
 ### Author Configuration

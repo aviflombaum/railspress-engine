@@ -12,7 +12,7 @@ RSpec.describe Railspress::ContentExportService do
       expect(result.zip_data).to be_present
       expect(result.filename).to match(/\Acms_content_\d{8}_\d{6}\.zip\z/)
       expect(result.group_count).to eq(2) # headers + footers (not deleted_group)
-      expect(result.element_count).to eq(3) # homepage_h1 + tagline + footer_text (not deleted_element)
+      expect(result.element_count).to eq(4) # homepage_h1 + tagline + required_element + footer_text (not deleted_element)
     end
 
     it "produces a valid ZIP containing content.json" do
@@ -68,6 +68,27 @@ RSpec.describe Railspress::ContentExportService do
 
       headers_group = manifest["groups"].find { |g| g["name"] == "Headers" }
       expect(headers_group["description"]).to eq("Site header content elements")
+    end
+
+    it "includes required flag for elements" do
+      result = described_class.new.call
+      manifest = extract_manifest(result.zip_data)
+
+      headers_group = manifest["groups"].find { |g| g["name"] == "Headers" }
+      required = headers_group["elements"].find { |e| e["name"] == "Site Title" }
+      non_required = headers_group["elements"].find { |e| e["name"] == "Homepage H1" }
+
+      expect(required["required"]).to be true
+      expect(non_required["required"]).to be false
+    end
+
+    it "includes image_hint for elements" do
+      result = described_class.new.call
+      manifest = extract_manifest(result.zip_data)
+
+      headers_group = manifest["groups"].find { |g| g["name"] == "Headers" }
+      h1 = headers_group["elements"].find { |e| e["name"] == "Homepage H1" }
+      expect(h1).to have_key("image_hint")
     end
 
     it "does not include author_id in export" do

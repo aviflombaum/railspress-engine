@@ -12,6 +12,8 @@ Railspress.configure do |config|
   # === CMS Content Elements (opt-in) ===
   # Adds content groups, content elements, and the cms_element/cms_value
   # view helpers for managing structured content on your site.
+  # Image elements support dropzone upload and focal points when
+  # enable_focal_points is also active.
   # See docs/CONFIGURING.md for details.
   # Uncomment to enable:
   # config.enable_cms

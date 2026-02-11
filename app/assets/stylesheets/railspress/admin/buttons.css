@@ -133,3 +133,8 @@
   color: var(--rp-danger);
   border-color: var(--rp-danger-light);
 }
+
+.rp-icon-btn--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

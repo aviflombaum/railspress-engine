@@ -21,14 +21,18 @@
 <% has_image = attachment.attached? && attachment.blob&.persisted? %>
 <% frame_id = dom_id(record, "image_section_#{attachment_name}") %>
 
-<%# Build editor URL based on record type %>
+<%# Build editor URL based on record type (can be overridden via editor_url local) %>
 <%
-  if record.is_a?(Railspress::Post)
-    editor_url = image_editor_admin_post_path(record, attachment: attachment_name)
-  else
-    # Entity - need entity_type from URL or config
-    entity_type = record.class.railspress_config.route_key
-    editor_url = admin_entity_image_editor_path(entity_type: entity_type, id: record.id, attachment: attachment_name)
+  editor_url ||= nil
+  unless editor_url
+    if record.is_a?(Railspress::Post)
+      editor_url = image_editor_admin_post_path(record, attachment: attachment_name)
+    elsif record.is_a?(Railspress::ContentElement)
+      editor_url = image_editor_admin_content_element_path(record)
+    else
+      entity_type = record.class.railspress_config.route_key
+      editor_url = admin_entity_image_editor_path(entity_type: entity_type, id: record.id, attachment: attachment_name)
+    end
   end
 %>
 

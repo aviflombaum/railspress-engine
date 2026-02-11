@@ -68,6 +68,8 @@ module Railspress
       def redirect_to_record(notice: nil)
         path = if @record.is_a?(Railspress::Post)
           edit_admin_post_path(@record)
+        elsif @record.is_a?(Railspress::ContentElement)
+          edit_admin_content_element_path(@record)
         else
           entity_type = @record.class.railspress_config.route_key
           admin_edit_entity_path(entity_type: entity_type, id: @record.id)

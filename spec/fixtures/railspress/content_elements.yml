@@ -25,6 +25,16 @@ footer_text:
   created_at: <%= Time.current %>
   updated_at: <%= Time.current %>
 
+required_element:
+  name: Site Title
+  content_type: 0
+  text_content: "My Site"
+  content_group: headers
+  required: true
+  position: 0
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
 deleted_element:
   name: Deleted Element
   content_type: 0

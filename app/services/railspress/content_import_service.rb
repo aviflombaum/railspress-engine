@@ -144,7 +144,9 @@ module Railspress
       attrs = {
         content_type: element_data["content_type"],
         position: element_data["position"],
-        text_content: element_data["text_content"]
+        text_content: element_data["text_content"],
+        required: element_data.fetch("required", false),
+        image_hint: element_data["image_hint"]
       }.compact
 
       if element
@@ -163,6 +165,7 @@ module Railspress
       end
 
       attach_image(element, element_data["image_path"], group) if element_data["image_path"].present?
+      restore_focal_point(element, element_data["focal_point"]) if element_data["focal_point"].is_a?(Hash)
     rescue => e
       @errors << "Element '#{element_data['name']}' in '#{group.name}': #{e.message}"
     end
@@ -197,6 +200,18 @@ module Railspress
         filename: File.basename(full_path),
         content_type: content_type
       )
+    end
+
+    def restore_focal_point(element, focal_data)
+      return unless element.respond_to?(:image_focal_point)
+
+      fp = element.image_focal_point
+      fp.update!(
+        focal_x: focal_data["x"],
+        focal_y: focal_data["y"]
+      )
+    rescue => e
+      @errors << "Focal point for '#{element.name}': #{e.message}"
     end
 
     def safe_entry_name?(name)

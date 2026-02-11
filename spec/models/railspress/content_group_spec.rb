@@ -61,22 +61,29 @@ RSpec.describe Railspress::ContentGroup, type: :model do
 
   describe "#soft_delete" do
     it "soft deletes the group" do
-      headers.soft_delete
-      expect(headers.reload.deleted?).to be true
+      footers.soft_delete
+      expect(footers.reload.deleted?).to be true
     end
 
     it "cascades soft delete to content elements" do
-      headers.soft_delete
-      headers.content_elements.reload.each do |element|
+      footers.soft_delete
+      footers.content_elements.reload.each do |element|
         expect(element.deleted?).to be true
       end
+    end
+
+    it "is blocked when group has required elements" do
+      result = headers.soft_delete
+      expect(result).to be false
+      expect(headers.errors[:base]).to include("Cannot delete group containing required content elements")
+      expect(headers.reload.deleted?).to be false
     end
 
     it "wraps in a transaction" do
       # If one element fails to soft delete, the group should not be deleted either
       allow_any_instance_of(Railspress::ContentElement).to receive(:soft_delete).and_raise(ActiveRecord::RecordInvalid)
-      expect { headers.soft_delete }.to raise_error(ActiveRecord::RecordInvalid)
-      expect(headers.reload.deleted?).to be false
+      expect { footers.soft_delete }.to raise_error(ActiveRecord::RecordInvalid)
+      expect(footers.reload.deleted?).to be false
     end
   end
 end

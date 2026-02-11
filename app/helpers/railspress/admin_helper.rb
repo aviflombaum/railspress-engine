@@ -115,13 +115,14 @@ module Railspress
     # @param name [Symbol] the field name
     # @param label [String] custom label text
     # @return [String] rendered HTML
-    def rp_boolean_field(form, name, label: nil, **options)
+    def rp_boolean_field(form, name, label: nil, hint: nil, **options)
       label_text = label || name.to_s.humanize
 
       content_tag(:div, class: "rp-form-group") do
         content_tag(:label, class: "rp-checkbox-label") do
           form.check_box(name, options) + " ".html_safe + label_text
-        end
+        end +
+        (hint ? content_tag(:span, hint, class: "rp-hint") : "".html_safe)
       end
     end
 
@@ -402,11 +403,18 @@ module Railspress
     # @param confirm [String] confirmation message
     # @param title [String] tooltip text
     # @return [String] rendered HTML
-    def rp_delete_icon(path, confirm: "Delete this item?", title: "Delete")
-      button_to path, method: :delete,
-        data: { turbo_confirm: confirm },
-        class: "rp-icon-btn rp-icon-btn--danger", title: title do
-        rp_icon(:trash)
+    def rp_delete_icon(path, confirm: "Delete this item?", title: "Delete", disabled: false, disabled_title: nil)
+      if disabled
+        content_tag(:span, class: "rp-icon-btn rp-icon-btn--danger rp-icon-btn--disabled",
+                           title: disabled_title || title) do
+          rp_icon(:trash)
+        end
+      else
+        button_to path, method: :delete,
+          data: { turbo_confirm: confirm },
+          class: "rp-icon-btn rp-icon-btn--danger", title: title do
+          rp_icon(:trash)
+        end
       end
     end
 
@@ -418,8 +426,11 @@ module Railspress
     #
     # @example Usage
     #   rp_table_actions(edit_admin_category_path(category), admin_category_path(category), confirm: "Delete this category?")
-    def rp_table_action_icons(edit_path:, delete_path:, confirm: "Delete this item?")
-      rp_edit_icon(edit_path) + rp_delete_icon(delete_path, confirm: confirm)
+    def rp_table_action_icons(edit_path:, delete_path:, confirm: "Delete this item?",
+                              delete_disabled: false, disabled_title: nil)
+      rp_edit_icon(edit_path) +
+        rp_delete_icon(delete_path, confirm: confirm,
+                       disabled: delete_disabled, disabled_title: disabled_title)
     end
 
     # Renders an SVG icon.

@@ -145,25 +145,42 @@ RSpec.describe "Railspress::Admin::ContentGroups", type: :request do
 
   describe "DELETE /railspress/admin/content_groups/:id" do
     it "soft deletes the content group" do
-      delete railspress.admin_content_group_path(headers_group)
-      expect(headers_group.reload.deleted?).to be true
+      delete railspress.admin_content_group_path(footers_group)
+      expect(footers_group.reload.deleted?).to be true
     end
 
     it "does not permanently destroy the record" do
       expect {
-        delete railspress.admin_content_group_path(headers_group)
+        delete railspress.admin_content_group_path(footers_group)
       }.not_to change(Railspress::ContentGroup, :count)
     end
 
     it "redirects to the index" do
-      delete railspress.admin_content_group_path(headers_group)
+      delete railspress.admin_content_group_path(footers_group)
       expect(response).to redirect_to(railspress.admin_content_groups_path)
     end
 
     it "cascades soft delete to content elements" do
-      delete railspress.admin_content_group_path(headers_group)
-      headers_group.content_elements.reload.each do |element|
+      delete railspress.admin_content_group_path(footers_group)
+      footers_group.content_elements.reload.each do |element|
         expect(element.deleted?).to be true
+      end
+    end
+
+    context "when group has required elements" do
+      before do
+        headers_group.content_elements.active.first.update!(required: true)
+      end
+
+      it "does not delete the group" do
+        delete railspress.admin_content_group_path(headers_group)
+        expect(headers_group.reload.deleted?).to be false
+      end
+
+      it "redirects with alert" do
+        delete railspress.admin_content_group_path(headers_group)
+        expect(response).to redirect_to(railspress.admin_content_group_path(headers_group))
+        expect(flash[:alert]).to include("required content elements")
       end
     end
   end

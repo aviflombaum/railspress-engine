@@ -114,6 +114,52 @@ RSpec.describe Railspress::ContentImportService do
       end
     end
 
+    context "required flag" do
+      it "restores required flag on create" do
+        manifest = build_manifest(groups: [
+          { "name" => "New Group", "description" => "Test", "elements" => [
+            { "name" => "Important", "content_type" => "text", "position" => 1, "text_content" => "Must exist", "required" => true }
+          ] }
+        ])
+        zip = build_zip(manifest)
+
+        described_class.new(zip).call
+
+        element = Railspress::ContentElement.find_by(name: "Important")
+        expect(element.required).to be true
+      end
+
+      it "defaults to false when required is absent" do
+        manifest = build_manifest(groups: [
+          { "name" => "New Group", "description" => "Test", "elements" => [
+            { "name" => "Optional", "content_type" => "text", "position" => 1, "text_content" => "Not required" }
+          ] }
+        ])
+        zip = build_zip(manifest)
+
+        described_class.new(zip).call
+
+        element = Railspress::ContentElement.find_by(name: "Optional")
+        expect(element.required).to be false
+      end
+    end
+
+    context "image_hint" do
+      it "restores image_hint on create" do
+        manifest = build_manifest(groups: [
+          { "name" => "New Group", "description" => "Test", "elements" => [
+            { "name" => "Banner", "content_type" => "image", "position" => 1, "image_hint" => "1920x600, 16:9" }
+          ] }
+        ])
+        zip = build_zip(manifest)
+
+        described_class.new(zip).call
+
+        element = Railspress::ContentElement.find_by(name: "Banner")
+        expect(element.image_hint).to eq("1920x600, 16:9")
+      end
+    end
+
     context "idempotency" do
       it "re-importing same ZIP produces no duplicates" do
         manifest = build_manifest(groups: [

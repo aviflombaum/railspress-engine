@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RailsPress is a mountable Rails engine that provides blog and CMS functionality for Rails 8+ applications. Includes post management (categories, tags, rich text), a content element CMS with inline editing, image uploads with focal point cropping, and content export/import.
+RailsPress is a mountable Rails engine that provides a complete CMS for Rails 8+ applications. It manages three kinds of content:
+
+1. **Posts** — A blog. Chronological content with rich text, categories, tags, draft/published workflow, SEO metadata, and header images.
+2. **Entities** — Structured content with custom schemas. Any ActiveRecord model can become an admin-managed entity (portfolios, case studies, resources, etc.) by including `Railspress::Entity`. Full CRUD, search, pagination, image uploads, and tagging — no scaffolding required.
+3. **Blocks** — The copy and images on your site itself. Small pieces of content (homepage hero headline, footer tagline, CTA text) organized into groups, referenced in views via helpers, and editable inline by admins. Internally these are `ContentGroup` and `ContentElement` models.
+
+Also includes image uploads with focal point cropping, content export/import, and a full admin interface.
 
 ## Development Commands
 
@@ -75,10 +81,20 @@ app/
 
 ### Key Model Relationships
 
+**Posts (blog):**
 - `Post` belongs_to `:category` (optional), has_many `:tags` through `:post_tags`
 - `Post` uses ActionText (`has_rich_text :content`)
 - `Tag.from_csv(string)` creates/finds tags from comma-separated input
 - Posts have `draft`/`published` status enum, auto-set `published_at`
+
+**Entities (structured content):**
+- Any ActiveRecord model with `include Railspress::Entity` gets admin CRUD
+- Fields defined via `railspress_fields` DSL or auto-detected from schema
+- Supports string, text, rich_text, boolean, datetime, attachment, array fields
+- Registration: `Railspress.configure { |c| c.entities = [Project, CaseStudy] }`
+- Entity routes: `/railspress/admin/entities/:entity_type`
+
+**Blocks (site copy and images — `ContentGroup` / `ContentElement` models):**
 - `ContentGroup` has_many `:content_elements`, with `element_count` counter cache
 - `ContentElement` belongs_to `:content_group`, enum `content_type: { text: 0, image: 1 }`
 - `ContentElement` has `required` flag (prevents deletion), `image_hint` for admin guidance

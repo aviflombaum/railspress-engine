@@ -2,12 +2,29 @@
 
 Detailed model attributes, route helpers, and API reference. For installation and overview, see the [main README](../README.md).
 
+## Posts, Entities, and Blocks
+
+RailsPress manages three kinds of content. Most sites need all three:
+
+| | What it is | When to use it | Guide |
+|--|-----------|----------------|-------|
+| **Posts** | A blog — chronological content with categories and tags | Articles, news, announcements — content published serially over time | [Blogging](BLOGGING.md) |
+| **Entities** | Structured content with custom schemas | Portfolios, case studies, resources — content with its own fields that isn't a blog post | [Entities](ENTITIES.md) |
+| **Blocks** | The copy and images on your site itself | Homepage hero headline, footer tagline, "About Us" blurb — content that editors change without a developer | [Blocks & Inline Editing](INLINE_EDITING.md) |
+
+**How to choose:**
+- Is it published over time in a feed? → **Post**
+- Does it have its own schema with multiple fields? → **Entity**
+- Is it a piece of text or image baked into a page? → **Block**
+
+Blocks are implemented as `ContentGroup` and `ContentElement` models internally.
+
 ## Guides
 
-- **[ENTITIES.md](ENTITIES.md)** - Manage any ActiveRecord model through the admin interface with the Entity system.
-- **[BLOGGING.md](BLOGGING.md)** - Complete guide to building a blog frontend with RailsPress, including recent posts, categories, tags, search, RSS feeds, and SEO optimization.
+- **[BLOGGING.md](BLOGGING.md)** - Building a blog frontend: controllers, views, RSS feeds, SEO.
+- **[ENTITIES.md](ENTITIES.md)** - Managing structured content (portfolios, case studies, etc.) through the admin.
+- **[INLINE_EDITING.md](INLINE_EDITING.md)** - Blocks and inline editing: editable site copy and images.
 - **[CONFIGURING.md](CONFIGURING.md)** - Configuration options for authors, header images, view overrides, and other features.
-- **[INLINE_EDITING.md](INLINE_EDITING.md)** - Inline CMS content editing via right-click in the frontend.
 - **[IMPORT_EXPORT.md](IMPORT_EXPORT.md)** - Bulk import/export for posts (markdown) and CMS content (ZIP).
 - **[image-focal-point-system.md](image-focal-point-system.md)** - Focal point image cropping for posts and content elements.
 - **[THEMING.md](THEMING.md)** - CSS variables and theming customization for the admin interface.

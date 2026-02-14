@@ -349,19 +349,14 @@
 
 .rp-dropzone {
   position: relative;
+  background: transparent;
 }
 
 .rp-dropzone__area {
-  border: 2px dashed var(--rp-border);
-  border-radius: var(--rp-radius);
-  padding: var(--rp-space-xl);
   text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.rp-dropzone__area:hover,
-.rp-dropzone--dragging .rp-dropzone__area {
+.rp-dropzone--dragging {
   border-color: var(--rp-primary);
   background: var(--rp-primary-light);
 }
@@ -421,10 +416,11 @@
   display: flex;
   align-items: center;
   gap: var(--rp-space-sm);
-  padding: var(--rp-space-md);
-  background: var(--rp-bg);
-  border: 1px solid var(--rp-border);
-  border-radius: var(--rp-radius);
+  padding: var(--rp-space-md) 0 0;
+}
+
+.rp-dropzone__progress[hidden] {
+  display: none;
 }
 
 .rp-dropzone__progress-bar {

@@ -46,7 +46,13 @@
                 <% end %>
               </td>
               <td><%= rp_badge(element.content_type.titleize, status: element.text? ? :published : :info) %></td>
-              <td class="rp-table-secondary"><%= rp_truncated_text(element.text_content, length: 40) %></td>
+              <td class="rp-table-secondary">
+                <% if element.image? && element.image.attached? %>
+                  <%= image_tag main_app.rails_blob_path(element.image, only_path: true), style: "max-height: 1.5rem; width: auto; border-radius: 2px; vertical-align: middle;" %>
+                <% else %>
+                  <%= rp_truncated_text(element.text_content, length: 40) %>
+                <% end %>
+              </td>
               <td class="rp-table-secondary"><%= element.updated_at.strftime("%b %d, %Y") %></td>
               <td class="rp-table-actions">
                 <%= rp_table_action_icons(

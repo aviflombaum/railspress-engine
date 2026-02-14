@@ -92,10 +92,10 @@ Engine routes are defined in `config/routes.rb` and mounted by the host app:
 
 ```ruby
 # In host app's config/routes.rb
-mount Railspress::Engine => "/cms", as: :railspress
+mount Railspress::Engine => "/railspress"
 ```
 
-Admin routes: `/cms/admin/posts`, `/cms/admin/categories`, `/cms/admin/tags`, `/cms/admin/content_groups`, `/cms/admin/content_elements`, `/cms/admin/cms_transfers`
+Admin routes: `/railspress/admin/posts`, `/railspress/admin/categories`, `/railspress/admin/tags`, `/railspress/admin/content_groups`, `/railspress/admin/content_elements`, `/railspress/admin/cms_transfers`
 
 ### Testing
 

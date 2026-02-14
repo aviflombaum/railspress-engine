@@ -77,12 +77,12 @@ rails generate railspress:install
 rails db:migrate
 ```
 
-Mount the engine:
+Mount the engine (the install generator does this automatically):
 
 ```ruby
 # config/routes.rb
 Rails.application.routes.draw do
-  mount Railspress::Engine => "/blog", as: :railspress
+  mount Railspress::Engine => "/railspress"
 end
 ```
 
@@ -98,7 +98,7 @@ class ApplicationController < ActionController::Base
   private
 
   def railspress_admin?
-    request.path.start_with?("/blog/admin")
+    request.path.start_with?("/railspress/admin")
   end
 end
 ```
@@ -107,7 +107,7 @@ See [CONFIGURING.md](docs/CONFIGURING.md) for more authentication patterns inclu
 
 ## Quick Start
 
-Access the admin at `/blog/admin`. From there:
+Access the admin at `/railspress/admin`. From there:
 
 - Create posts with rich text, categories, and tags
 - Set up content groups and elements for structured CMS content

@@ -1,11 +1,15 @@
-# RailsPress Documentation
+# RailsPress Reference
+
+Detailed model attributes, route helpers, and API reference. For installation and overview, see the [main README](../README.md).
 
 ## Guides
 
 - **[ENTITIES.md](ENTITIES.md)** - Manage any ActiveRecord model through the admin interface with the Entity system.
 - **[BLOGGING.md](BLOGGING.md)** - Complete guide to building a blog frontend with RailsPress, including recent posts, categories, tags, search, RSS feeds, and SEO optimization.
 - **[CONFIGURING.md](CONFIGURING.md)** - Configuration options for authors, header images, view overrides, and other features.
-- **[IMPORT_EXPORT.md](IMPORT_EXPORT.md)** - Bulk import and export posts with markdown and YAML frontmatter.
+- **[INLINE_EDITING.md](INLINE_EDITING.md)** - Inline CMS content editing via right-click in the frontend.
+- **[IMPORT_EXPORT.md](IMPORT_EXPORT.md)** - Bulk import/export for posts (markdown) and CMS content (ZIP).
+- **[image-focal-point-system.md](image-focal-point-system.md)** - Focal point image cropping for posts and content elements.
 - **[THEMING.md](THEMING.md)** - CSS variables and theming customization for the admin interface.
 - **[ADMIN_HELPERS.md](ADMIN_HELPERS.md)** - Reference for admin view helper methods (forms, layouts, display).
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions.
@@ -28,6 +32,9 @@ Access the admin at `/railspress/admin`:
 | `/railspress/admin/posts` | Manage posts |
 | `/railspress/admin/categories` | Manage categories |
 | `/railspress/admin/tags` | Manage tags |
+| `/railspress/admin/content_groups` | Manage CMS content groups |
+| `/railspress/admin/content_elements` | Manage CMS content elements |
+| `/railspress/admin/cms_transfers` | CMS content export/import |
 
 ---
 
@@ -114,6 +121,55 @@ Railspress::Post.sorted_by(:title, :asc)
 **Class Methods:**
 - `from_csv(string)` - Parse CSV and find/create tags
 
+### Railspress::ContentGroup
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `name` | string | Group name (required, unique) |
+| `description` | text | Optional description |
+| `element_count` | integer | Counter cache of elements |
+
+**Associations:**
+- `has_many :content_elements`
+
+### Railspress::ContentElement
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `name` | string | Element name (required, unique within group) |
+| `content_type` | enum | `text` or `image` (locked after creation) |
+| `text_content` | text | Value for text elements |
+| `image` | attachment | ActiveStorage image for image elements |
+| `image_hint` | string | Guidance text for admins (e.g., recommended dimensions) |
+| `position` | integer | Sort order within group |
+| `required` | boolean | Required elements cannot be deleted |
+| `content_group_id` | integer | Parent group |
+
+**Associations:**
+- `belongs_to :content_group`
+- `has_many :content_element_versions`
+- `has_one_attached :image`
+
+**CMS API:**
+```ruby
+# Chainable lookup
+Railspress::CMS.find("Hero Section").load("headline").value
+
+# View helpers
+cms_value("Hero Section", "headline")       # Returns raw value
+cms_element("Hero Section", "headline")     # Returns value with inline editing wrapper
+```
+
+### Railspress::ContentElementVersion
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `changes_from_previous` | text | Previous content before the edit |
+| `author_id` | bigint | Who made the change |
+| `content_element_id` | integer | Parent element |
+
+Auto-created on each content element update, storing the previous value for audit history.
+
 ---
 
 ## Route Helpers
@@ -139,6 +195,21 @@ railspress.admin_category_path(cat)    # => "/blog/admin/categories/123"
 # Tags
 railspress.admin_tags_path             # => "/blog/admin/tags"
 railspress.admin_tag_path(tag)         # => "/blog/admin/tags/123"
+```
+
+### CMS Routes
+
+```ruby
+# Content Groups
+railspress.admin_content_groups_path              # => "/blog/admin/content_groups"
+railspress.admin_content_group_path(group)        # => "/blog/admin/content_groups/123"
+
+# Content Elements
+railspress.admin_content_elements_path            # => "/blog/admin/content_elements"
+railspress.admin_content_element_path(element)    # => "/blog/admin/content_elements/123"
+
+# CMS Transfers (export/import)
+railspress.admin_cms_transfer_path                # => "/blog/admin/cms_transfers"
 ```
 
 ### Entity Routes

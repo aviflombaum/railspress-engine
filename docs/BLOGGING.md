@@ -1,6 +1,8 @@
-# Building a Blog with RailsPress
+# Posts
 
-This guide covers how to use RailsPress to create a fully-featured blog with a recent posts feed, category pages, tag pages, and search functionality.
+Posts are your blog — chronological content with categories and tags. They're one of the three content types RailsPress manages (alongside [Entities](ENTITIES.md) and [Blocks](INLINE_EDITING.md)).
+
+This guide covers how to build a fully-featured blog frontend with a recent posts feed, category pages, tag pages, and search functionality.
 
 ## Table of Contents
 
@@ -166,7 +168,7 @@ RailsPress provides these scopes out of the box:
 
 - `Railspress::Post.published` - Posts with status "published" and a `published_at` date
 - `Railspress::Post.drafts` - Posts with status "draft"
-- `Railspress::Post.ordered` - Posts ordered by `created_at` descending
+- `Railspress::Post.ordered` - Posts ordered by `published_at` descending (then `created_at`)
 - `Railspress::Post.recent` - Last 10 posts (combines `ordered` with `limit(10)`)
 
 ---

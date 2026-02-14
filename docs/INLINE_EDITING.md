@@ -1,6 +1,8 @@
-# Inline CMS Content Editing
+# Blocks & Inline Editing
 
-Right-click any CMS-powered text on a live page to edit it in place. Changes save instantly via Turbo Streams, and auto-versioning captures every edit.
+Blocks are the copy and images on your site itself — headlines, blurbs, CTAs, taglines. They're one of the three content types RailsPress manages (alongside [Posts](BLOGGING.md) and [Entities](ENTITIES.md)).
+
+In code, blocks are `ContentGroup` and `ContentElement` models. You reference them in your views with `cms_value` and `cms_element` helpers. With inline editing enabled, admins can right-click any block on a live page to edit it in place. Changes save instantly via Turbo Streams, and auto-versioning captures every edit.
 
 ## Prerequisites
 

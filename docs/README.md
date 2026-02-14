@@ -49,9 +49,9 @@ Access the admin at `/railspress/admin`:
 | `/railspress/admin/posts` | Manage posts |
 | `/railspress/admin/categories` | Manage categories |
 | `/railspress/admin/tags` | Manage tags |
-| `/railspress/admin/content_groups` | Manage CMS content groups |
-| `/railspress/admin/content_elements` | Manage CMS content elements |
-| `/railspress/admin/cms_transfers` | CMS content export/import |
+| `/railspress/admin/content_groups` | Manage block groups |
+| `/railspress/admin/content_elements` | Manage blocks (content elements) |
+| `/railspress/admin/cms_transfers` | Block export/import |
 
 ---
 
@@ -138,7 +138,9 @@ Railspress::Post.sorted_by(:title, :asc)
 **Class Methods:**
 - `from_csv(string)` - Parse CSV and find/create tags
 
-### Railspress::ContentGroup
+### Railspress::ContentGroup (Block Group)
+
+A group of related blocks (e.g., "Homepage Hero", "Contact Info").
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -149,7 +151,9 @@ Railspress::Post.sorted_by(:title, :asc)
 **Associations:**
 - `has_many :content_elements`
 
-### Railspress::ContentElement
+### Railspress::ContentElement (Block)
+
+An individual block — a piece of text or an image on your site.
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -214,10 +218,10 @@ railspress.admin_tags_path             # => "/blog/admin/tags"
 railspress.admin_tag_path(tag)         # => "/blog/admin/tags/123"
 ```
 
-### CMS Routes
+### Block Routes
 
 ```ruby
-# Content Groups
+# Content Groups (Block Groups)
 railspress.admin_content_groups_path              # => "/blog/admin/content_groups"
 railspress.admin_content_group_path(group)        # => "/blog/admin/content_groups/123"
 

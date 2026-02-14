@@ -1,6 +1,8 @@
-# Entity System
+# Entities
 
-The Entity system allows you to manage any ActiveRecord model through the RailsPress admin interface without writing custom controllers or views. Define which fields should appear in the CMS, and RailsPress handles the rest.
+Entities are structured content with custom schemas — portfolios, case studies, resources, links. They're one of the three content types RailsPress manages (alongside [Posts](BLOGGING.md) and [Blocks](INLINE_EDITING.md)).
+
+The Entity system allows you to manage any ActiveRecord model through the RailsPress admin interface without writing custom controllers or views. Define which fields should appear in the admin, and RailsPress handles the rest.
 
 ## Quick Start
 
@@ -265,8 +267,8 @@ When you add new array field declarations to a model, you must restart your Rail
 Railspress.configure do |config|
   # Symbol registration (preferred)
   config.register_entity :project
-  config.register_entity :testimonial
-  config.register_entity :team_member
+  config.register_entity :case_study
+  config.register_entity :resource
 
   # String registration also works
   config.register_entity "Portfolio"
@@ -418,13 +420,13 @@ railspress_fields :featured        # Detects :boolean
 ### Single attachment
 
 ```ruby
-class Testimonial < ApplicationRecord
+class CaseStudy < ApplicationRecord
   include Railspress::Entity
 
-  has_one_attached :avatar
+  has_one_attached :cover_image
 
-  railspress_fields :name, :quote
-  railspress_fields :avatar, as: :attachment
+  railspress_fields :title, :client, :description
+  railspress_fields :cover_image, as: :attachment
 end
 ```
 
@@ -509,36 +511,36 @@ See [Image Focal Point System](image-focal-point-system.md) for full documentati
 ## Full Example
 
 ```ruby
-# app/models/team_member.rb
-class TeamMember < ApplicationRecord
+# app/models/project.rb
+class Project < ApplicationRecord
   include Railspress::Entity
 
-  has_one_attached :headshot
-  has_rich_text :bio
+  has_one_attached :cover_image
+  has_rich_text :description
 
-  railspress_fields :name, :role, :email
-  railspress_fields :bio
-  railspress_fields :headshot, as: :attachment
+  railspress_fields :title, :client, :url
+  railspress_fields :description
+  railspress_fields :cover_image, as: :attachment
   railspress_fields :featured, :display_order
 
-  railspress_label "Team"
+  railspress_label "Projects"
 
-  validates :name, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
+  validates :title, presence: true
+  validates :url, format: { with: URI::DEFAULT_PARSER.make_regexp }, allow_blank: true
 
   scope :featured, -> { where(featured: true) }
-  scope :ordered, -> { order(display_order: :asc, name: :asc) }
+  scope :ordered, -> { order(display_order: :asc, title: :asc) }
 end
 ```
 
 ```ruby
-# db/migrate/xxx_create_team_members.rb
-class CreateTeamMembers < ActiveRecord::Migration[7.1]
+# db/migrate/xxx_create_projects.rb
+class CreateProjects < ActiveRecord::Migration[8.0]
   def change
-    create_table :team_members do |t|
-      t.string :name, null: false
-      t.string :role
-      t.string :email
+    create_table :projects do |t|
+      t.string :title, null: false
+      t.string :client
+      t.string :url
       t.boolean :featured, default: false
       t.integer :display_order, default: 0
       t.timestamps
@@ -550,11 +552,11 @@ end
 ```ruby
 # config/initializers/railspress.rb
 Railspress.configure do |config|
-  config.register_entity :team_member
+  config.register_entity :project
 end
 ```
 
-Admin available at: `/railspress/admin/entities/team_members`
+Admin available at: `/railspress/admin/entities/projects`
 
 ---
 

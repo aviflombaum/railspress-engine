@@ -67,9 +67,9 @@ app/
 │   ├── category.rb
 │   ├── tag.rb
 │   ├── post_tag.rb
-│   ├── content_group.rb     # Groups of CMS content elements
-│   ├── content_element.rb   # Text or image CMS content (has_one_attached :image)
-│   └── content_element_version.rb  # Auto-versioning audit trail
+│   ├── content_group.rb     # Block groups (e.g., "Homepage Hero")
+│   ├── content_element.rb   # Individual blocks — text or image (has_one_attached :image)
+│   └── content_element_version.rb  # Block auto-versioning audit trail
 ├── helpers/railspress/
 │   ├── admin_helper.rb      # Admin view helpers
 │   └── cms_helper.rb        # cms_value / cms_element view helpers
@@ -142,9 +142,9 @@ When adding new entity types, follow the patterns documented in `.ai/ENTITY_VIEW
 - `.ai/ENTITY_VIEW_STYLE_GUIDE.md` - **View styling patterns and checklists**
 - `lib/railspress/engine.rb` - Engine configuration and initializers
 - `lib/railspress/configuration.rb` - All config options (authors, images, inline editing, etc.)
-- `lib/railspress/cms.rb` - CMS chainable API for loading content elements
+- `lib/railspress/cms.rb` - CMS chainable API for loading blocks
 - `app/helpers/railspress/admin_helper.rb` - Helper methods for consistent admin views
-- `app/helpers/railspress/cms_helper.rb` - `cms_value` and `cms_element` view helpers
+- `app/helpers/railspress/cms_helper.rb` - `cms_value` and `cms_element` block view helpers
 - `app/models/concerns/railspress/has_focal_point.rb` - Focal point image concern
 - `app/models/concerns/railspress/soft_deletable.rb` - Soft deletion for content groups
 

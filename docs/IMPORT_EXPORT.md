@@ -3,7 +3,7 @@
 RailsPress provides two transfer systems:
 
 1. **Post Import/Export** — Background-processed bulk content migration with YAML frontmatter support
-2. **CMS Content Transfer** — Synchronous export/import of content groups and elements between environments
+2. **Block Transfer** — Synchronous export/import of content groups and elements (blocks) between environments
 
 ---
 

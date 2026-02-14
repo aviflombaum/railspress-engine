@@ -362,7 +362,7 @@ config.route_key     # => "projects"
 
 ```ruby
 # Rails console
-Railspress.registered_entities  # => [:project, :testimonial]
+Railspress.registered_entities  # => [:project, :case_study]
 Railspress.entity_for("projects")  # => EntityConfig instance
 ```
 

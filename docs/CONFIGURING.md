@@ -80,9 +80,9 @@ See [Image Focal Point System](image-focal-point-system.md) for full documentati
 
 #### `enable_cms`
 
-Enables the CMS content elements system. When enabled, you get:
+Enables **Blocks** — the copy and images on your site itself (headlines, blurbs, CTAs, hero images). This is one of the three content types RailsPress manages alongside Posts and Entities. When enabled, you get:
 
-- **Content Groups and Content Elements** — manage structured text and image content in the admin panel
+- **Content Groups and Content Elements** — the models that power blocks. Groups organize related blocks (e.g., "Homepage Hero"), elements are individual blocks (text or image)
 - **Admin UI** — sidebar links for Content Groups, Content Elements, and CMS Transfer appear in the admin
 - **Dashboard stats** — Content Groups and Content Elements counts on the admin dashboard
 - **View helpers** — `cms_element` and `cms_value` become available in your host app views

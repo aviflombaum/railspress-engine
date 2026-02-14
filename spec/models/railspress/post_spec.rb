@@ -55,14 +55,14 @@ RSpec.describe Railspress::Post, type: :model do
   describe "tag_list" do
     it "returns comma-separated tag names" do
       post = railspress_posts(:hello_world)
-      expect(post.tag_list.split(", ")).to match_array(["ruby", "rails"])
+      expect(post.tag_list.split(", ")).to match_array([ "ruby", "rails" ])
     end
 
     it "accepts CSV and assigns tags" do
       post = Railspress::Post.new(title: "Tagged Post")
       post.tag_list = "ruby, rails, tutorial"
       post.save!
-      expect(post.tags.pluck(:name)).to match_array(["ruby", "rails", "tutorial"])
+      expect(post.tags.pluck(:name)).to match_array([ "ruby", "rails", "tutorial" ])
     end
   end
 

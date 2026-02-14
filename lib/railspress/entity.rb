@@ -31,7 +31,7 @@ module Railspress
       }
 
       # Auto-wire virtual attributes for array types
-      if explicit_type.in?([:list, :lines])
+      if explicit_type.in?([ :list, :lines ])
         define_array_accessors(name, explicit_type)
       end
     end
@@ -157,7 +157,7 @@ module Railspress
     class_methods do
       # Simple pagination for index views
       def page(page_number)
-        page_number = [page_number.to_i, 1].max
+        page_number = [ page_number.to_i, 1 ].max
         offset((page_number - 1) * per_page_count).limit(per_page_count)
       end
 

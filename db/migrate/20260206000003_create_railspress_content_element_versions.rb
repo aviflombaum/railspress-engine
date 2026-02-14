@@ -12,7 +12,7 @@ class CreateRailspressContentElementVersions < ActiveRecord::Migration[8.0]
     end
 
     add_index :railspress_content_element_versions,
-              [:content_element_id, :version_number],
+              [ :content_element_id, :version_number ],
               unique: true,
               name: "idx_content_element_versions_unique"
     add_index :railspress_content_element_versions, :author_id

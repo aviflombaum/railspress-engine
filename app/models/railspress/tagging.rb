@@ -4,7 +4,7 @@ module Railspress
     belongs_to :taggable, polymorphic: true
 
     validates :tag_id, uniqueness: {
-      scope: [:taggable_type, :taggable_id],
+      scope: [ :taggable_type, :taggable_id ],
       message: "has already been applied to this item"
     }
   end

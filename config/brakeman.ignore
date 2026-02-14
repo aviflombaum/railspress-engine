@@ -1,0 +1,18 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "63b49bb226efb52aff46bf077f8feded65c3d627b29de6ee403b37d2b08cfe23",
+      "note": "Attachment name is validated against entity_config.fields before use"
+    },
+    {
+      "fingerprint": "bb7ad80d40c0237746aced9b06bdfc144d6e3052b53647f09b1738005326de38",
+      "note": "Attachment name is validated in entities_controller#image_editor before rendering this partial"
+    },
+    {
+      "fingerprint": "1d94979921177aefb3064de87b6032a5f2760ef30946a52e3015b54af6150e35",
+      "note": "Attachment name is validated in entities_controller#image_editor before rendering this partial"
+    }
+  ],
+  "updated": "2026-02-14",
+  "brakeman_version": "8.0.2"
+}

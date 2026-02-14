@@ -2,7 +2,6 @@ module Railspress
   # Helper methods for building consistent admin views.
   # Use these helpers to ensure styling consistency across all entity views.
   module AdminHelper
-
     # ============================================================
     # FIELD RENDERING HELPERS
     # ============================================================
@@ -360,7 +359,7 @@ module Railspress
             # Image uploaded but record not saved yet - show preview
             output += content_tag(:div, class: "rp-image-section__compact") do
               preview = content_tag(:div, class: "rp-image-section__thumb") do
-                image_tag(main_app.url_for(attachment.variant(resize_to_limit: [120, 80])), alt: "")
+                image_tag(main_app.url_for(attachment.variant(resize_to_limit: [ 120, 80 ])), alt: "")
               end
               preview += content_tag(:div, class: "rp-image-section__info") do
                 content_tag(:span, attachment.filename, class: "rp-image-section__filename") +
@@ -556,7 +555,7 @@ module Railspress
 
         if actions.any?
           action_links = actions.map do |label, target|
-            path, options = target.is_a?(Array) ? target : [target, {}]
+            path, options = target.is_a?(Array) ? target : [ target, {} ]
             btn_class = options.delete(:class) || "rp-btn rp-btn--primary"
             link_to(label, path, options.merge(class: btn_class))
           end.join.html_safe
@@ -591,7 +590,7 @@ module Railspress
     #     <%= render "form" %>
     #   <% end %>
     def rp_card(padded: false, **options, &block)
-      classes = ["rp-card"]
+      classes = [ "rp-card" ]
       classes << "rp-card--padded" if padded
       classes << options.delete(:class) if options[:class]
 
@@ -678,7 +677,7 @@ module Railspress
     # @param size [Symbol] input size (:sm, :lg, or nil for default)
     # @return [String] CSS class string
     def rp_input_class(primary: false, mono: false, size: nil)
-      classes = ["rp-input"]
+      classes = [ "rp-input" ]
       classes << "rp-input--title" if primary
       classes << "rp-input--mono" if mono
       classes << "rp-input--#{size}" if size
@@ -690,7 +689,7 @@ module Railspress
     # @param required [Boolean] whether to show required indicator
     # @return [String] CSS class string
     def rp_label_class(large: false, required: false)
-      classes = ["rp-label"]
+      classes = [ "rp-label" ]
       classes << "rp-label--lg" if large
       classes << "rp-label--required" if required
       classes.join(" ")
@@ -712,7 +711,7 @@ module Railspress
       # Toggle direction if clicking the same column, otherwise default to asc
       new_direction = is_active && current_direction == "asc" ? "desc" : "asc"
 
-      classes = ["rp-sortable"]
+      classes = [ "rp-sortable" ]
       classes << "rp-sortable--active" if is_active
       classes << "rp-sortable--#{current_direction}" if is_active
 

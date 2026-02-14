@@ -1,10 +1,11 @@
 module Railspress
   module Admin
     class ImportsController < BaseController
-      before_action :validate_import_type, only: [:show]
+      before_action :validate_import_type, only: [ :show ]
 
       def show
         @import_type = params[:type]
+        @back_path = { "posts" => admin_posts_path }[@import_type]
         @recent_imports = Import.by_type(@import_type).recent
       end
 

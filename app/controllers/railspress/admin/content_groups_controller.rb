@@ -3,7 +3,7 @@
 module Railspress
   module Admin
     class ContentGroupsController < BaseController
-      before_action :set_content_group, only: [:show, :edit, :update, :destroy]
+      before_action :set_content_group, only: [ :show, :edit, :update, :destroy ]
 
       def index
         @content_groups = ContentGroup.active

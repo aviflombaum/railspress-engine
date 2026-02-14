@@ -105,13 +105,13 @@ RSpec.describe Railspress::Configuration do
     it "allows setting post_image_variants" do
       Railspress.configure do |config|
         config.post_image_variants = {
-          hero: { resize_to_fill: [1920, 1080] },
-          card: { resize_to_fill: [800, 500] }
+          hero: { resize_to_fill: [ 1920, 1080 ] },
+          card: { resize_to_fill: [ 800, 500 ] }
         }
       end
 
-      expect(Railspress.post_image_variants[:hero]).to eq({ resize_to_fill: [1920, 1080] })
-      expect(Railspress.post_image_variants[:card]).to eq({ resize_to_fill: [800, 500] })
+      expect(Railspress.post_image_variants[:hero]).to eq({ resize_to_fill: [ 1920, 1080 ] })
+      expect(Railspress.post_image_variants[:card]).to eq({ resize_to_fill: [ 800, 500 ] })
     end
 
     it "defaults post_image_variants to empty hash" do
@@ -123,11 +123,11 @@ RSpec.describe Railspress::Configuration do
     let(:mock_class) do
       Class.new do
         def self.all
-          [:all_users]
+          [ :all_users ]
         end
 
         def self.admins
-          [:admin_users]
+          [ :admin_users ]
         end
       end
     end
@@ -142,24 +142,24 @@ RSpec.describe Railspress::Configuration do
 
     context "with no scope configured" do
       it "returns all records" do
-        expect(Railspress.available_authors).to eq([:all_users])
+        expect(Railspress.available_authors).to eq([ :all_users ])
       end
     end
 
     context "with symbol scope" do
       it "calls the scope method on the class" do
         Railspress.configure { |c| c.author_scope = :admins }
-        expect(Railspress.available_authors).to eq([:admin_users])
+        expect(Railspress.available_authors).to eq([ :admin_users ])
       end
     end
 
     context "with proc scope" do
       it "calls the proc with the class" do
         Railspress.configure do |c|
-          c.author_scope = ->(klass) { [:custom_scope] }
+          c.author_scope = ->(klass) { [ :custom_scope ] }
         end
 
-        expect(Railspress.available_authors).to eq([:custom_scope])
+        expect(Railspress.available_authors).to eq([ :custom_scope ])
       end
     end
   end

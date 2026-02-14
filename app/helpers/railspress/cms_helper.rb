@@ -103,14 +103,14 @@ module Railspress
         if content_element.has_focal_point?(:image)
           focal_css = content_element.focal_point_css(:image)
           existing_style = img_options[:style].to_s
-          img_options[:style] = [existing_style, focal_css].reject(&:blank?).join("; ")
+          img_options[:style] = [ existing_style, focal_css ].reject(&:blank?).join("; ")
         end
         img_options[:alt] ||= content_element.name
         return image_tag(main_app.url_for(content_element.image), img_options)
       end
 
       rendered = if block_given?
-        args = block.arity.zero? ? [] : [element_value, content_element]
+        args = block.arity.zero? ? [] : [ element_value, content_element ]
         capture(*args, &block)
       else
         element_value
@@ -197,7 +197,7 @@ module Railspress
             action: "click->rp--cms-inline-editor#close"
           })
 
-        safe_join([display, menu, backdrop])
+        safe_join([ display, menu, backdrop ])
       end
     end
 

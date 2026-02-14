@@ -3,7 +3,7 @@
 module Railspress
   module Admin
     class ContentElementsController < BaseController
-      before_action :set_content_element, only: [:show, :edit, :update, :destroy, :inline, :image_editor]
+      before_action :set_content_element, only: [ :show, :edit, :update, :destroy, :inline, :image_editor ]
 
       def index
         scope = ContentElement.active
@@ -136,7 +136,7 @@ module Railspress
 
       def content_element_params
         params.require(:content_element).permit(:name, :content_group_id, :content_type, :position, :text_content, :image, :required, :image_hint,
-                                               image_focal_point_attributes: [:id, :focal_x, :focal_y])
+                                               image_focal_point_attributes: [ :id, :focal_x, :focal_y ])
       end
     end
   end

@@ -25,7 +25,7 @@ module Railspress
       return {} unless previous
 
       changes = {}
-      changes[:text_content] = [previous.text_content, text_content] if text_content != previous.text_content
+      changes[:text_content] = [ previous.text_content, text_content ] if text_content != previous.text_content
       changes.compact
     end
   end

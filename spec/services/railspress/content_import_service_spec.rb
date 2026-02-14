@@ -267,7 +267,7 @@ RSpec.describe Railspress::ContentImportService do
   end
 
   def build_zip(manifest)
-    file = Tempfile.new(["cms_import", ".zip"])
+    file = Tempfile.new([ "cms_import", ".zip" ])
     Zip::File.open(file.path, Zip::File::CREATE) do |zip|
       zip.get_output_stream("content.json") { |f| f.write(JSON.pretty_generate(manifest)) }
     end
@@ -276,7 +276,7 @@ RSpec.describe Railspress::ContentImportService do
   end
 
   def build_zip_without_manifest
-    file = Tempfile.new(["cms_import", ".zip"])
+    file = Tempfile.new([ "cms_import", ".zip" ])
     Zip::File.open(file.path, Zip::File::CREATE) do |zip|
       zip.get_output_stream("readme.txt") { |f| f.write("no manifest here") }
     end
@@ -285,7 +285,7 @@ RSpec.describe Railspress::ContentImportService do
   end
 
   def build_zip_with_content(content_json_text)
-    file = Tempfile.new(["cms_import", ".zip"])
+    file = Tempfile.new([ "cms_import", ".zip" ])
     Zip::File.open(file.path, Zip::File::CREATE) do |zip|
       zip.get_output_stream("content.json") { |f| f.write(content_json_text) }
     end

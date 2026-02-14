@@ -35,7 +35,7 @@ module Railspress
       @author_display_method = :name
       @words_per_minute = 200
       @blog_path = "/blog"
-      @default_index_columns = [:id, :title, :name, :created_at]
+      @default_index_columns = [ :id, :title, :name, :created_at ]
     end
 
     # Declarative setter: config.enable_authors
@@ -112,12 +112,12 @@ module Railspress
     def register_entity(identifier, options = {})
       # Normalize to class name string
       class_name = case identifier
-                   when String then identifier
-                   when Symbol then identifier.to_s.camelize
-                   when Class  then identifier.name
-                   else
+      when String then identifier
+      when Symbol then identifier.to_s.camelize
+      when Class  then identifier.name
+      else
                      raise ArgumentError, "Expected String, Symbol, or Class, got #{identifier.class}"
-                   end
+      end
 
       # Compute route_key from class name (e.g., "Project" -> "projects")
       route_key = class_name.underscore.pluralize
@@ -159,9 +159,9 @@ module Railspress
 
     def default_image_contexts
       {
-        hero:  { aspect: [16, 9], label: "Hero", sizes: [1920, 1280] },
-        card:  { aspect: [4, 3], label: "Card", sizes: [800, 400] },
-        thumb: { aspect: [1, 1], label: "Thumbnail", sizes: [200] }
+        hero:  { aspect: [ 16, 9 ], label: "Hero", sizes: [ 1920, 1280 ] },
+        card:  { aspect: [ 4, 3 ], label: "Card", sizes: [ 800, 400 ] },
+        thumb: { aspect: [ 1, 1 ], label: "Thumbnail", sizes: [ 200 ] }
       }
     end
 

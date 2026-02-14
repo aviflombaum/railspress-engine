@@ -1,8 +1,8 @@
 module Railspress
   module Admin
     class PostsController < BaseController
-      before_action :set_post, only: [:show, :edit, :update, :destroy, :image_editor]
-      before_action :load_categories, only: [:new, :create, :edit, :update]
+      before_action :set_post, only: [ :show, :edit, :update, :destroy, :image_editor ]
+      before_action :load_categories, only: [ :new, :create, :edit, :update ]
 
       def index
         @sort = params[:sort].presence || "created_at"
@@ -15,7 +15,7 @@ module Railspress
                      .sorted_by(@sort, @direction)
 
         @total_count = @posts.count
-        @page = [params[:page].to_i, 1].max
+        @page = [ params[:page].to_i, 1 ].max
         @total_pages = (@total_count.to_f / Post::PER_PAGE).ceil
         @posts = @posts.page(@page)
 
@@ -55,10 +55,15 @@ module Railspress
         redirect_to admin_posts_path, notice: "Post deleted."
       end
 
+      ALLOWED_ATTACHMENTS = %w[header_image].freeze
+
       # GET /admin/posts/:id/image_editor/:attachment
       # Returns the expanded image editor in a Turbo Frame
       # Pass ?compact=true to get the compact view (for Cancel)
       def image_editor
+        unless ALLOWED_ATTACHMENTS.include?(params[:attachment])
+          raise ActionController::RoutingError, "Invalid attachment"
+        end
         @attachment_name = params[:attachment].to_sym
 
         if params[:compact] == "true"
@@ -110,7 +115,7 @@ module Railspress
           permitted.push(:header_image, :remove_header_image)
           # Focal point nested attributes
           if Railspress.focal_points_enabled?
-            permitted.push(header_image_focal_point_attributes: [:focal_x, :focal_y, :overrides])
+            permitted.push(header_image_focal_point_attributes: [ :focal_x, :focal_y, :overrides ])
           end
         end
         params.require(:post).permit(permitted)

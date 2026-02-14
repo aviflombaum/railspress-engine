@@ -7,6 +7,6 @@ class CreateRailspressPostTags < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :railspress_post_tags, [:post_id, :tag_id], unique: true
+    add_index :railspress_post_tags, [ :post_id, :tag_id ], unique: true
   end
 end

@@ -117,7 +117,7 @@ RSpec.describe Railspress::Import, type: :model do
 
     it "parses JSON error messages" do
       import = railspress_imports(:failed_import)
-      expect(import.parsed_errors).to eq(["post-1.md: Parse error", "post-2.md: No content"])
+      expect(import.parsed_errors).to eq([ "post-1.md: Parse error", "post-2.md: No content" ])
     end
   end
 

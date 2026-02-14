@@ -189,11 +189,11 @@ module Railspress
       end
 
       content_type = case ext
-                     when ".jpg", ".jpeg" then "image/jpeg"
-                     when ".png" then "image/png"
-                     when ".gif" then "image/gif"
-                     when ".webp" then "image/webp"
-                     end
+      when ".jpg", ".jpeg" then "image/jpeg"
+      when ".png" then "image/png"
+      when ".gif" then "image/gif"
+      when ".webp" then "image/webp"
+      end
 
       element.image.attach(
         io: File.open(full_path),

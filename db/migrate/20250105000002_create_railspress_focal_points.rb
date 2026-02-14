@@ -13,7 +13,7 @@ class CreateRailspressFocalPoints < ActiveRecord::Migration[8.0]
     end
 
     add_index :railspress_focal_points,
-              [:record_type, :record_id, :attachment_name],
+              [ :record_type, :record_id, :attachment_name ],
               unique: true,
               name: "idx_focal_points_record_attachment"
   end

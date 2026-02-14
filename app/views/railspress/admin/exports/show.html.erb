@@ -1,7 +1,7 @@
 <div class="rp-page-header">
   <h1 class="rp-page-title">Export <%= @export_type.titleize %></h1>
   <div class="rp-page-actions">
-    <%= link_to "Back to #{@export_type.titleize}", send("admin_#{@export_type}_path"), class: "rp-btn rp-btn--secondary" %>
+    <%= link_to "Back to #{@export_type.titleize}", @back_path, class: "rp-btn rp-btn--secondary" %>
   </div>
 </div>
 

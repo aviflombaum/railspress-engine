@@ -88,7 +88,7 @@ RSpec.describe Railspress::ImportPostsJob, type: :job do
 
     context "with all failures" do
       let(:file_paths) do
-        [fixtures_path.join("invalid_frontmatter.md").to_s]
+        [ fixtures_path.join("invalid_frontmatter.md").to_s ]
       end
 
       it "marks import as failed" do

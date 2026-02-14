@@ -42,7 +42,7 @@ RSpec.describe Railspress::Taggable, type: :model do
       new_post.tag_list = "python, django, api"
       new_post.save!
 
-      expect(new_post.tags.pluck(:name)).to eq(["python", "django", "api"])
+      expect(new_post.tags.pluck(:name)).to eq([ "python", "django", "api" ])
     end
 
     it "finds existing tags instead of creating duplicates" do
@@ -60,7 +60,7 @@ RSpec.describe Railspress::Taggable, type: :model do
       post.tag_list = "javascript, react"
       post.save!
 
-      expect(post.tags.pluck(:name)).to eq(["javascript", "react"])
+      expect(post.tags.pluck(:name)).to eq([ "javascript", "react" ])
       expect(post.tags).not_to include(railspress_tags(:ruby))
     end
 

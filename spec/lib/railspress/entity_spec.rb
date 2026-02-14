@@ -69,16 +69,16 @@ RSpec.describe Railspress::Entity do
         self.table_name = "projects"
         include Railspress::Entity
       end
-      test_class.const_set(:RAILSPRESS_INDEX_COLUMNS, [:client, :featured, :created_at])
+      test_class.const_set(:RAILSPRESS_INDEX_COLUMNS, [ :client, :featured, :created_at ])
 
-      expect(test_class.railspress_index_columns).to eq([:client, :featured, :created_at])
+      expect(test_class.railspress_index_columns).to eq([ :client, :featured, :created_at ])
     end
 
     it "respects global default_index_columns config" do
       original = Railspress.configuration.default_index_columns
 
       Railspress.configure do |config|
-        config.default_index_columns = [:title, :client, :created_at]
+        config.default_index_columns = [ :title, :client, :created_at ]
       end
 
       # Project has title, client, and created_at

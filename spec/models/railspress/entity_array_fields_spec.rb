@@ -16,23 +16,23 @@ RSpec.describe "Entity array fields" do
     it "parses comma-separated input" do
       project = Project.new(title: "Test")
       project.tech_stack_list = "Ruby, Rails, PostgreSQL"
-      expect(project.tech_stack).to eq(["Ruby", "Rails", "PostgreSQL"])
+      expect(project.tech_stack).to eq([ "Ruby", "Rails", "PostgreSQL" ])
     end
 
     it "deduplicates values" do
       project = Project.new(title: "Test")
       project.tech_stack_list = "Ruby, Rails, Ruby"
-      expect(project.tech_stack).to eq(["Ruby", "Rails"])
+      expect(project.tech_stack).to eq([ "Ruby", "Rails" ])
     end
 
     it "strips whitespace and filters blanks" do
       project = Project.new(title: "Test")
       project.tech_stack_list = "  Ruby  ,, Rails ,  "
-      expect(project.tech_stack).to eq(["Ruby", "Rails"])
+      expect(project.tech_stack).to eq([ "Ruby", "Rails" ])
     end
 
     it "serializes array to comma-separated string" do
-      project = Project.new(title: "Test", tech_stack: ["Ruby", "Rails"])
+      project = Project.new(title: "Test", tech_stack: [ "Ruby", "Rails" ])
       expect(project.tech_stack_list).to eq("Ruby, Rails")
     end
 
@@ -49,9 +49,9 @@ RSpec.describe "Entity array fields" do
     end
 
     it "persists to database" do
-      project = Project.create!(title: "Test", tech_stack: ["Ruby", "Rails"])
+      project = Project.create!(title: "Test", tech_stack: [ "Ruby", "Rails" ])
       project.reload
-      expect(project.tech_stack).to eq(["Ruby", "Rails"])
+      expect(project.tech_stack).to eq([ "Ruby", "Rails" ])
     end
   end
 
@@ -64,29 +64,29 @@ RSpec.describe "Entity array fields" do
     it "parses line-separated input" do
       project = Project.new(title: "Test")
       project.highlights_list = "Line 1\nLine 2\nLine 3"
-      expect(project.highlights).to eq(["Line 1", "Line 2", "Line 3"])
+      expect(project.highlights).to eq([ "Line 1", "Line 2", "Line 3" ])
     end
 
     it "preserves duplicates (unlike :list)" do
       project = Project.new(title: "Test")
       project.highlights_list = "Same\nSame\nDifferent"
-      expect(project.highlights).to eq(["Same", "Same", "Different"])
+      expect(project.highlights).to eq([ "Same", "Same", "Different" ])
     end
 
     it "handles CRLF line endings" do
       project = Project.new(title: "Test")
       project.highlights_list = "Line 1\r\nLine 2"
-      expect(project.highlights).to eq(["Line 1", "Line 2"])
+      expect(project.highlights).to eq([ "Line 1", "Line 2" ])
     end
 
     it "strips whitespace and filters blanks" do
       project = Project.new(title: "Test")
       project.highlights_list = "  Line 1  \n\n  Line 2  \n"
-      expect(project.highlights).to eq(["Line 1", "Line 2"])
+      expect(project.highlights).to eq([ "Line 1", "Line 2" ])
     end
 
     it "serializes array to newline-separated string" do
-      project = Project.new(title: "Test", highlights: ["Line 1", "Line 2"])
+      project = Project.new(title: "Test", highlights: [ "Line 1", "Line 2" ])
       expect(project.highlights_list).to eq("Line 1\nLine 2")
     end
 
@@ -97,9 +97,9 @@ RSpec.describe "Entity array fields" do
     end
 
     it "persists to database" do
-      project = Project.create!(title: "Test", highlights: ["Fact 1", "Fact 2"])
+      project = Project.create!(title: "Test", highlights: [ "Fact 1", "Fact 2" ])
       project.reload
-      expect(project.highlights).to eq(["Fact 1", "Fact 2"])
+      expect(project.highlights).to eq([ "Fact 1", "Fact 2" ])
     end
   end
 
@@ -117,7 +117,7 @@ RSpec.describe "Entity array fields" do
       project.tech_stack_list = project.tech_stack_list + ", Redis"
       project.save!
       project.reload
-      expect(project.tech_stack).to eq(["Ruby", "Rails", "PostgreSQL", "Redis"])
+      expect(project.tech_stack).to eq([ "Ruby", "Rails", "PostgreSQL", "Redis" ])
     end
 
     it "preserves values through edit cycle for :lines" do
@@ -133,7 +133,7 @@ RSpec.describe "Entity array fields" do
       project.highlights_list = project.highlights_list + "\nFact 3"
       project.save!
       project.reload
-      expect(project.highlights).to eq(["Fact 1", "Fact 2", "Fact 3"])
+      expect(project.highlights).to eq([ "Fact 1", "Fact 2", "Fact 3" ])
     end
   end
 

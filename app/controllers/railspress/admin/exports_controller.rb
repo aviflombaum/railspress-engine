@@ -1,11 +1,12 @@
 module Railspress
   module Admin
     class ExportsController < BaseController
-      before_action :validate_export_type, only: [:show]
-      before_action :set_export, only: [:download]
+      before_action :validate_export_type, only: [ :show ]
+      before_action :set_export, only: [ :download ]
 
       def show
         @export_type = params[:type]
+        @back_path = { "posts" => admin_posts_path }[@export_type]
         @recent_exports = Export.by_type(@export_type).recent
         @post_count = Post.count
       end

@@ -137,14 +137,14 @@ module Railspress
         body = content.sub(FRONTMATTER_REGEX, "").strip
 
         begin
-          parsed = YAML.safe_load(yaml_content, permitted_classes: [Date, Time, DateTime], symbolize_names: true) || {}
-          [parsed, body]
+          parsed = YAML.safe_load(yaml_content, permitted_classes: [ Date, Time, DateTime ], symbolize_names: true) || {}
+          [ parsed, body ]
         rescue Psych::SyntaxError => e
           raise "Invalid YAML frontmatter: #{e.message}"
         end
       else
         # No frontmatter, treat entire content as body
-        [{}, content.strip]
+        [ {}, content.strip ]
       end
     end
 
@@ -239,12 +239,12 @@ module Railspress
       return unless IMAGE_EXTENSIONS.include?(ext)
 
       content_type = case ext
-                     when ".jpg", ".jpeg" then "image/jpeg"
-                     when ".png" then "image/png"
-                     when ".gif" then "image/gif"
-                     when ".webp" then "image/webp"
-                     else "application/octet-stream"
-                     end
+      when ".jpg", ".jpeg" then "image/jpeg"
+      when ".png" then "image/png"
+      when ".gif" then "image/gif"
+      when ".webp" then "image/webp"
+      else "application/octet-stream"
+      end
 
       post.header_image.attach(
         io: File.open(image_path),
@@ -292,9 +292,9 @@ module Railspress
       # Build a case-insensitive query using the display method
       # e.g., if display_method is :name, we search by name
       begin
+        column = author_class.arel_table[display_method]
         author = author_class.where(
-          "LOWER(#{display_method}) = ?",
-          author_value.to_s.downcase
+          column.lower.eq(author_value.to_s.downcase)
         ).first
 
         post.author_id = author.id if author

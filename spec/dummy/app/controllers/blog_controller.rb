@@ -44,8 +44,8 @@ class BlogController < ApplicationController
                                .where("title LIKE ?", "%#{@query}%")
                                .includes(:category, :tags)
                                .ordered
-             else
+    else
                Railspress::Post.none
-             end
+    end
   end
 end

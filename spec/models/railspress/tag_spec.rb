@@ -26,7 +26,7 @@ RSpec.describe Railspress::Tag, type: :model do
   describe ".from_csv" do
     it "creates tags from CSV string" do
       tags = Railspress::Tag.from_csv("python, django, api")
-      expect(tags.map(&:name)).to eq(["python", "django", "api"])
+      expect(tags.map(&:name)).to eq([ "python", "django", "api" ])
     end
 
     it "returns existing tags when they exist" do
@@ -39,12 +39,12 @@ RSpec.describe Railspress::Tag, type: :model do
 
     it "handles mixed case and whitespace" do
       tags = Railspress::Tag.from_csv("  Python ,  Django  ")
-      expect(tags.map(&:name)).to eq(["python", "django"])
+      expect(tags.map(&:name)).to eq([ "python", "django" ])
     end
 
     it "ignores empty strings and duplicates" do
       tags = Railspress::Tag.from_csv("python, , python, django")
-      expect(tags.map(&:name)).to eq(["python", "django"])
+      expect(tags.map(&:name)).to eq([ "python", "django" ])
     end
 
     it "returns empty array for blank input" do

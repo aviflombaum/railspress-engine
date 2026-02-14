@@ -48,6 +48,5 @@ module Railspress
         app.config.importmap.cache_sweepers << root.join("app", "javascript")
       end
     end
-
   end
 end

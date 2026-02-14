@@ -1,7 +1,7 @@
 module Railspress
   module Admin
     class TagsController < BaseController
-      before_action :set_tag, only: [:edit, :update, :destroy]
+      before_action :set_tag, only: [ :edit, :update, :destroy ]
 
       def index
         @tags = Tag.ordered

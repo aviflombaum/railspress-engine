@@ -14,10 +14,10 @@ Railspress::Engine.routes.draw do
           get :image_editor
         end
       end
-      resources :content_element_versions, only: [:show]
+      resources :content_element_versions, only: [ :show ]
 
       # CMS Content Transfer (export/import)
-      resource :cms_transfer, only: [:show] do
+      resource :cms_transfer, only: [ :show ] do
         post :export, on: :member
         post :import, on: :member
       end
@@ -30,13 +30,13 @@ Railspress::Engine.routes.draw do
     end
 
     # Standalone focal point updates (works outside parent form)
-    resources :focal_points, only: [:update]
-    resources :imports, only: [:create] do
+    resources :focal_points, only: [ :update ]
+    resources :imports, only: [ :create ] do
       collection do
         get ":type", action: :show, as: :typed
       end
     end
-    resources :exports, only: [:create] do
+    resources :exports, only: [ :create ] do
       collection do
         get ":type", action: :show, as: :typed
       end

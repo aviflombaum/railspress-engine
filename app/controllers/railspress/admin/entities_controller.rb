@@ -4,7 +4,7 @@ module Railspress
   module Admin
     class EntitiesController < BaseController
       before_action :set_entity_config
-      before_action :set_record, only: [:show, :edit, :update, :destroy, :image_editor]
+      before_action :set_record, only: [ :show, :edit, :update, :destroy, :image_editor ]
 
       def index
         @records = entity_class.order(created_at: :desc)
@@ -48,6 +48,12 @@ module Railspress
       # Returns the expanded image editor in a Turbo Frame
       # Pass ?compact=true to get the compact view (for Cancel)
       def image_editor
+        allowed = entity_config.fields
+          .select { |_, f| [ :attachment, :attachments, :focal_point_image ].include?(f[:type]) }
+          .keys.map(&:to_s)
+        unless allowed.include?(params[:attachment])
+          raise ActionController::RoutingError, "Invalid attachment"
+        end
         @attachment_name = params[:attachment].to_sym
 
         if params[:compact] == "true"
@@ -112,7 +118,7 @@ module Railspress
 
       def purge_removed_attachments
         entity_config.fields.each do |name, field|
-          next unless [:attachment, :attachments].include?(field[:type])
+          next unless [ :attachment, :attachments ].include?(field[:type])
 
           remove_key = "remove_#{name}"
           remove_ids = params.dig(entity_config.param_key, remove_key)

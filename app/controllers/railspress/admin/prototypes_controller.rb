@@ -20,9 +20,9 @@ module Railspress
 
       def default_contexts
         {
-          hero: { aspect: [21, 9] },
-          card: { aspect: [16, 10] },
-          tall: { aspect: [4, 5] }
+          hero: { aspect: [ 21, 9 ] },
+          card: { aspect: [ 16, 10 ] },
+          tall: { aspect: [ 4, 5 ] }
         }
       end
     end

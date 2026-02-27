@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    railspress-engine (0.1.2)
+    railspress-engine (1.0.0)
       lexxy (~> 0.7.6.beta)
       rails (>= 8.1)
       redcarpet (~> 3.6)

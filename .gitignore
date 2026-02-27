@@ -20,3 +20,4 @@ coverage
 /test/dummy/log/*
 .playwright-mcp
 plans
+spec/examples.txt

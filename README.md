@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <a href="https://rubygems.org/gems/railspress-engine"><img src="https://img.shields.io/gem/v/railspress-engine.svg?style=flat" alt="Gem Version"></a>
+  <a href="https://rubygems.org/gems/railspress-engine"><img src="https://img.shields.io/gem/v/railspress-engine.svg?style=flat&bump=true" alt="Gem Version"></a>
   <img src="https://img.shields.io/badge/Rails-8.1%2B-red.svg?style=flat" alt="Rails 8.1+">
   <img src="https://img.shields.io/badge/Ruby-3.3%2B-red.svg?style=flat" alt="Ruby 3.3+">
   <a href="https://osaasy.dev/"><img src="https://img.shields.io/badge/License-O'Saasy-blue.svg?style=flat" alt="License"></a>

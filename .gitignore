@@ -22,3 +22,4 @@ coverage
 plans
 spec/examples.txt
 *.gem
+/spec/dummy/public/assets/

@@ -2,6 +2,9 @@ default: &default
   adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
+  migrations_paths:
+    - <%= File.expand_path("../db/migrate", __dir__) %>
+    - <%= File.expand_path("../../../db/migrate", __dir__) %>
 
 development:
   <<: *default

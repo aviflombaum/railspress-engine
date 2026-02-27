@@ -6,9 +6,9 @@ Gem::Specification.new do |spec|
   spec.authors     = [ "Avi Flombaum" ]
   spec.email       = [ "git@avi.nyc" ]
   spec.homepage    = "https://github.com/aviflombaum/railspress-engine"
-  spec.summary     = "A mountable blog engine for Rails 7+"
-  spec.description = "RailsPress provides drop-in blog functionality with categories, tags, rich text editing, and an admin interface."
-  spec.license     = "O'Sassy"
+  spec.summary     = "A mountable blog + CMS engine for Rails 8+"
+  spec.description = "RailsPress gives your Rails app a complete content management system: a blog with categories and tags, structured entities with custom schemas, and editable site blocks with inline editing — all behind a namespaced admin interface."
+  spec.license     = "O'Saasy"
 
   spec.required_ruby_version = ">= 3.3.0"
 

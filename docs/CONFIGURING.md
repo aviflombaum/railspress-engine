@@ -460,7 +460,7 @@ See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 RailsPress uses [Lexxy](https://github.com/basecamp/lexxy), Basecamp's rich text editor built on Meta's Lexical framework. It replaces the default Trix editor that ships with ActionText.
 
-The gemspec pins `lexxy ~> 0.1.24.beta`. To update to the latest version:
+The gemspec pins `lexxy ~> 0.7.6.beta`. To update to the latest version:
 
 ```bash
 bundle update lexxy

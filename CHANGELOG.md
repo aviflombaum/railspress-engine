@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-27
+
 ### Added
 
-- **Content Element CMS**: Structured content management with groups and elements. Text and image content types with a chainable Ruby API (`Railspress::CMS.find("Group").load("Element").value`) and view helpers (`cms_value`, `cms_element`).
+- **Blocks (Content Element CMS)**: Structured content management with groups and elements. Text and image content types with a chainable Ruby API (`Railspress::CMS.find("Group").load("Element").value`) and view helpers (`cms_value`, `cms_element`).
 - **Inline CMS Editing**: Right-click any `cms_element` in the frontend to edit in place. Lazy-loads form via Turbo Frame, saves with dual Turbo Streams. Configure with `Railspress.configure { |c| c.inline_editing_check = ->(ctx) { ... } }`.
 - **Image Content Elements**: Content elements can be text or image type. Image elements support upload via dropzone, `image_hint` field for admin guidance on recommended dimensions, and focal point cropping.
 - **Required Content Elements**: Boolean `required` flag on content elements prevents accidental deletion of elements your application code depends on.

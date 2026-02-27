@@ -6,7 +6,7 @@ This guide covers upgrading the RailsPress engine between versions.
 
 ```bash
 # 1. Update the gem
-bundle update railspress
+bundle update railspress-engine
 
 # 2. Copy new migrations
 rails railspress:install:migrations
@@ -25,26 +25,26 @@ If using a version constraint in your Gemfile:
 
 ```ruby
 # Gemfile
-gem "railspress", "~> 0.2.0"
+gem "railspress-engine", "~> 1.0"
 ```
 
 Run:
 
 ```bash
-bundle update railspress
+bundle update railspress-engine
 ```
 
 If using a git source:
 
 ```ruby
 # Gemfile
-gem "railspress", git: "https://github.com/your-org/railspress", branch: "main"
+gem "railspress-engine", git: "https://github.com/aviflombaum/railspress-engine", branch: "main"
 ```
 
 Run:
 
 ```bash
-bundle update railspress
+bundle update railspress-engine
 ```
 
 ### 2. Copy New Migrations
@@ -215,24 +215,42 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
-### Upgrading to 0.2.0
+### Upgrading to 1.0.0
 
-**New: Import/Export feature**
+**New: Blocks (Content Element CMS), Inline Editing, and more**
 
-Adds two new migrations:
-- `create_railspress_imports`
-- `create_railspress_exports`
+This is a major release that introduces the third content pillar — Blocks — alongside Posts and Entities.
 
-Requires:
-- `rubyzip` gem (included in railspress dependencies)
-- `redcarpet` gem (included in railspress dependencies)
-- ActiveStorage configured (for export file storage)
+New migrations:
+- `create_railspress_content_groups`
+- `create_railspress_content_elements`
+- `create_railspress_content_element_versions`
+
+New features:
+- **Blocks**: Content groups and elements for managing site copy and images
+- **Inline CMS editing**: Right-click any `cms_element` to edit in place
+- **Image content elements**: Text or image type with dropzone upload and focal point cropping
+- **Auto-versioning**: Full audit trail for every content element edit
+- **CMS export/import**: Sync content groups across environments as ZIP files
+- **Soft deletion**: Content groups use non-destructive deletion
+
+New configuration:
+```ruby
+Railspress.configure do |config|
+  config.enable_cms                    # Enable Blocks
+  config.inline_editing_check = ->(ctx) { ctx.controller.current_user&.admin? }
+end
+```
 
 After upgrade:
 ```bash
 rails railspress:install:migrations
 rails db:migrate
 ```
+
+Add `import "railspress"` to your `app/javascript/application.js` if you haven't already (required for inline editing Stimulus controllers).
+
+See [Blocks & Inline Editing](INLINE_EDITING.md) and [Configuring](CONFIGURING.md) for full details.
 
 ### Upgrading to 0.1.x
 

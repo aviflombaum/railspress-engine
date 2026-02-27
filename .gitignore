@@ -21,3 +21,4 @@ coverage
 .playwright-mcp
 plans
 spec/examples.txt
+*.gem

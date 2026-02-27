@@ -14,6 +14,8 @@
 
 RailsPress is a mountable Rails engine that gives your app a complete content management system — namespaced and isolated so it stays out of your way.
 
+You can read more at [Railspress.org](https://railspress.org).
+
 It manages three kinds of content:
 
 ## Posts, Entities, and Blocks

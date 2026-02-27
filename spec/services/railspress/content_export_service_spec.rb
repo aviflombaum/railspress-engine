@@ -11,8 +11,8 @@ RSpec.describe Railspress::ContentExportService do
       result = described_class.new.call
       expect(result.zip_data).to be_present
       expect(result.filename).to match(/\Acms_content_\d{8}_\d{6}\.zip\z/)
-      expect(result.group_count).to eq(2) # headers + footers (not deleted_group)
-      expect(result.element_count).to eq(4) # homepage_h1 + tagline + required_element + footer_text (not deleted_element)
+      expect(result.group_count).to eq(3) # headers + footers + homepage (not deleted_group)
+      expect(result.element_count).to eq(7) # homepage_h1 + tagline + required_element + footer_text + homepage_headline + homepage_subheadline + homepage_cta (not deleted_element)
     end
 
     it "produces a valid ZIP containing content.json" do

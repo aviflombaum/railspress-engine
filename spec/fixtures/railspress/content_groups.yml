@@ -10,6 +10,12 @@ footers:
   created_at: <%= Time.current %>
   updated_at: <%= Time.current %>
 
+homepage:
+  name: Homepage
+  description: Homepage content blocks
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
 deleted_group:
   name: Deleted Group
   description: A soft-deleted group

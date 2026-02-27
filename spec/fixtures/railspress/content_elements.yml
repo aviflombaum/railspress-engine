@@ -35,6 +35,33 @@ required_element:
   created_at: <%= Time.current %>
   updated_at: <%= Time.current %>
 
+homepage_headline:
+  name: headline
+  content_type: 0
+  text_content: "Build with RailsPress"
+  content_group: homepage
+  position: 0
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+homepage_subheadline:
+  name: subheadline
+  content_type: 0
+  text_content: "A complete CMS for Rails 8"
+  content_group: homepage
+  position: 1
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+homepage_cta:
+  name: cta_text
+  content_type: 0
+  text_content: "View Our Work"
+  content_group: homepage
+  position: 2
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
 deleted_element:
   name: Deleted Element
   content_type: 0

@@ -1,0 +1,27 @@
+<div class="blog">
+  <h1>Portfolio</h1>
+
+  <div class="posts">
+    <% @projects.each do |project| %>
+      <article class="post-card">
+        <h2>
+          <%= link_to project.title, portfolio_project_path(project) %>
+          <% if project.featured %>
+            <span class="tag">Featured</span>
+          <% end %>
+        </h2>
+        <div class="post-meta">
+          <span><%= project.client %></span>
+        </div>
+        <p class="post-excerpt"><%= truncate(project.description, length: 200) %></p>
+        <% if project.tech_stack.any? %>
+          <div class="post-tags">
+            <% project.tech_stack.each do |tech| %>
+              <span class="tag"><%= tech %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+</div>

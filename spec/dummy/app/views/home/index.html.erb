@@ -1,0 +1,226 @@
+<style>
+  .home-hero {
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+  .home-hero h1 { font-size: 3rem; font-weight: 700; margin: 0 0 1rem; color: white; letter-spacing: -0.02em; }
+  .home-hero p { font-size: 1.35rem; margin: 0 auto; max-width: 600px; opacity: 0.9; line-height: 1.6; }
+  .home-hero .hero-cta {
+    display: inline-block; margin-top: 2rem;
+    padding: 0.75rem 1.5rem; background: white; color: #667eea;
+    border-radius: 6px; font-weight: 600; text-decoration: none;
+  }
+  .home-hero .hero-cta:hover { background: #f0f0ff; }
+
+  .home-banner {
+    background: #eff6ff; border-bottom: 1px solid #bfdbfe;
+    padding: 0.6rem 1.5rem; text-align: center;
+    font-size: 0.85rem; color: #1e40af;
+  }
+
+  .home-content { max-width: var(--width-wide, 900px); margin: 0 auto; padding: 0 2rem; }
+
+  .home-section { padding: 3rem 0; }
+  .home-section h2 {
+    font-size: 1.75rem; font-weight: 700; color: var(--color-heading, #111827);
+    margin: 0 0 0.5rem;
+  }
+  .home-section > p { color: var(--color-text-muted, #6b7280); margin: 0 0 2rem; }
+
+  .cms-demo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+  }
+  @media (max-width: 768px) { .cms-demo-grid { grid-template-columns: 1fr; } }
+
+  .cms-card {
+    padding: 1.75rem; background: white;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 10px;
+  }
+  .cms-card h3 {
+    font-size: 1.1rem; font-weight: 600;
+    margin: 0 0 0.5rem; color: var(--color-heading, #111827);
+  }
+  .cms-card .desc {
+    font-size: 0.875rem; color: var(--color-text-muted, #6b7280); margin: 0 0 1rem;
+  }
+  .cms-card .live-output {
+    padding: 0.75rem; background: #f9fafb;
+    border-radius: 6px; border: 1px solid var(--color-border, #e5e7eb);
+  }
+  .cms-card .live-output .label {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 0.25rem;
+  }
+  .cms-card .live-output p { margin: 0; font-size: 0.95rem; color: #111827; }
+  .cms-card .icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1rem; font-size: 1.25rem;
+  }
+
+  .cms-code {
+    background: #1e293b; color: #e2e8f0;
+    padding: 1rem; border-radius: 8px;
+    font-size: 0.8rem; line-height: 1.6; overflow-x: auto;
+    font-family: var(--font-mono, monospace);
+    margin: 0.5rem 0 0;
+  }
+  .cms-code .comment { color: #94a3b8; }
+
+  .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media (max-width: 768px) { .projects-grid { grid-template-columns: 1fr; } }
+
+  .project-card {
+    padding: 1.5rem; border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 10px; background: white;
+  }
+  .project-card h3 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+  .project-card h3 a { color: var(--color-heading, #111827); text-decoration: none; }
+  .project-card h3 a:hover { color: var(--color-link, #2563eb); }
+  .project-card .client { font-size: 0.875rem; color: var(--color-text-muted, #6b7280); margin: 0 0 0.75rem; }
+  .project-card .desc { font-size: 0.875rem; color: var(--color-text-muted, #6b7280); margin: 0; }
+</style>
+
+<%# ============================================================ %>
+<%# Inline Editing Banner %>
+<%# ============================================================ %>
+<div class="home-banner">
+  <strong>Inline Editing Active</strong> — Right-click any highlighted text below to edit it in place.
+</div>
+
+<%# ============================================================ %>
+<%# Hero — powered by CMS blocks %>
+<%# ============================================================ %>
+<section class="home-hero">
+  <h1><%= cms_element(group: "Homepage", name: "headline") %></h1>
+  <p><%= cms_element(group: "Homepage", name: "subheadline") %></p>
+  <a href="/portfolio" class="hero-cta"><%= cms_value("Homepage", "cta_text") %></a>
+</section>
+
+<div class="home-content">
+
+  <%# ============================================================ %>
+  <%# Blocks Demo — show the three CMS API styles %>
+  <%# ============================================================ %>
+  <section class="home-section">
+    <h2>The Blocks System</h2>
+    <p>Every piece of text in the hero above is managed through the CMS. Here are the three ways to load block content:</p>
+
+    <div class="cms-demo-grid">
+      <div class="cms-card">
+        <div class="icon" style="background: #dbeafe;">&#9889;</div>
+        <h3>cms_value</h3>
+        <p class="desc">Returns a raw string. No wrapper, no editing. Perfect for attributes and meta tags.</p>
+        <div class="live-output">
+          <p class="label">Live from CMS</p>
+          <p><strong><%= cms_value("Headers", "Homepage H1") %></strong></p>
+        </div>
+        <pre class="cms-code"><code><span class="comment">&lt;%# Raw value %&gt;</span>
+&lt;h1&gt;&lt;%= cms_value("Headers", "Homepage H1") %&gt;&lt;/h1&gt;</code></pre>
+      </div>
+
+      <div class="cms-card">
+        <div class="icon" style="background: #fce7f3;">&#127912;</div>
+        <h3>cms_element</h3>
+        <p class="desc">Wraps content with inline editing. Right-click to edit, changes save instantly via Turbo Streams.</p>
+        <div class="live-output">
+          <p class="label">Live + editable</p>
+          <%= cms_element(group: "Headers", name: "Tagline") do |value| %>
+            <p style="font-style: italic; color: #6b7280;"><%= value %></p>
+          <% end %>
+        </div>
+        <pre class="cms-code"><code><span class="comment">&lt;%# Inline-editable %&gt;</span>
+&lt;%= cms_element(
+  group: "Headers",
+  name: "Tagline"
+) do |value| %&gt;
+  &lt;p&gt;&lt;%= value %&gt;&lt;/p&gt;
+&lt;% end %&gt;</code></pre>
+      </div>
+
+      <div class="cms-card">
+        <div class="icon" style="background: #d1fae5;">&#128279;</div>
+        <h3>Railspress::CMS</h3>
+        <p class="desc">Chainable API for controllers, services, and anywhere outside views.</p>
+        <div class="live-output">
+          <p class="label">Live from CMS</p>
+          <p><%= Railspress::CMS.find("Footers").load("Footer Text").value %></p>
+        </div>
+        <pre class="cms-code"><code><span class="comment"># In a controller or service</span>
+Railspress::CMS
+  .find("Footers")
+  .load("Footer Text")
+  .value</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <%# ============================================================ %>
+  <%# Recent Posts — the Posts pillar %>
+  <%# ============================================================ %>
+  <% if @recent_posts.any? %>
+    <section class="home-section">
+      <h2>From the Blog</h2>
+      <p>The Posts pillar — chronological content with categories, tags, and rich text.</p>
+      <div class="posts">
+        <% @recent_posts.each do |post| %>
+          <article class="post-card">
+            <h3><%= link_to post.title, blog_post_path(slug: post.slug) %></h3>
+            <div class="post-meta">
+              <time datetime="<%= post.published_at.iso8601 %>">
+                <%= post.published_at.strftime("%B %d, %Y") %>
+              </time>
+              <% if post.category %>
+                <span class="category"><%= post.category.name %></span>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+      <p><%= link_to "View all posts &rarr;".html_safe, blog_path, style: "color: var(--color-link); text-decoration: none; font-weight: 500;" %></p>
+    </section>
+  <% end %>
+
+  <%# ============================================================ %>
+  <%# Featured Projects — the Entities pillar %>
+  <%# ============================================================ %>
+  <% if @featured_projects.any? %>
+    <section class="home-section">
+      <h2>Featured Work</h2>
+      <p>The Entities pillar — structured content with custom schemas, managed through the admin.</p>
+      <div class="projects-grid">
+        <% @featured_projects.each do |project| %>
+          <article class="project-card">
+            <h3><%= link_to project.title, portfolio_project_path(project) %></h3>
+            <p class="client"><%= project.client %></p>
+            <p class="desc"><%= truncate(project.description, length: 120) %></p>
+            <% if project.tech_stack.any? %>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.75rem;">
+                <% project.tech_stack.each do |tech| %>
+                  <span class="tag"><%= tech %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+      <p><%= link_to "View all work &rarr;".html_safe, portfolio_path, style: "color: var(--color-link); text-decoration: none; font-weight: 500;" %></p>
+    </section>
+  <% end %>
+
+</div>
+
+<%# ============================================================ %>
+<%# Footer — also powered by CMS blocks %>
+<%# ============================================================ %>
+<footer style="padding: 2rem; background: #1e293b; text-align: center; margin-top: 2rem;">
+  <p style="margin: 0 0 0.5rem; font-size: 0.875rem; color: #94a3b8;"><%= cms_value("Footers", "Footer Text") %></p>
+  <div style="display: flex; gap: 1.5rem; justify-content: center; font-size: 0.8rem;">
+    <a href="/railspress/admin" style="color: #60a5fa; text-decoration: none;">Admin Dashboard</a>
+    <a href="/railspress/admin/content_groups" style="color: #60a5fa; text-decoration: none;">Manage Blocks</a>
+    <a href="/pages" style="color: #60a5fa; text-decoration: none;">CMS API Demo</a>
+  </div>
+</footer>

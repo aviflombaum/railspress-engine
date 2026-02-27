@@ -8,8 +8,12 @@ Rails.application.routes.draw do
   get "blog/tag/:slug", to: "blog#tag", as: :blog_tag
   get "blog/:slug", to: "blog#show", as: :blog_post
 
+  # Portfolio frontend routes
+  get "portfolio", to: "portfolio#index", as: :portfolio
+  get "portfolio/:id", to: "portfolio#show", as: :portfolio_project
+
   # CMS demo page
   get "pages", to: "pages#index"
 
-  root 'railspress/admin/dashboard#index'
+  root "home#index"
 end

@@ -3,6 +3,15 @@ portfolio_site:
   client: Creative Agency
   description: A modern portfolio website with animations
   featured: true
+  tech_stack:
+    - Ruby
+    - Rails
+    - PostgreSQL
+    - Stimulus
+  highlights:
+    - Launched in 3 weeks
+    - 99 Lighthouse score
+    - Featured in Ruby Weekly
   created_at: <%= 3.days.ago %>
   updated_at: <%= 3.days.ago %>
 
@@ -11,6 +20,16 @@ ecommerce_platform:
   client: Retail Corp
   description: Full-featured online store with payments
   featured: true
+  tech_stack:
+    - Ruby
+    - Rails
+    - Stripe
+    - Redis
+    - Sidekiq
+  highlights:
+    - Processes 10k orders/day
+    - 99.9% uptime
+    - Sub-second page loads
   created_at: <%= 2.days.ago %>
   updated_at: <%= 2.days.ago %>
 
@@ -19,5 +38,12 @@ mobile_app:
   client: Startup Inc
   description: Cross-platform mobile application
   featured: false
+  tech_stack:
+    - React Native
+    - TypeScript
+    - GraphQL
+  highlights:
+    - 50k downloads in first month
+    - 4.8 star rating
   created_at: <%= 1.day.ago %>
   updated_at: <%= 1.day.ago %>

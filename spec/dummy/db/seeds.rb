@@ -58,24 +58,24 @@ Project.find_or_create_by!(title: "Portfolio Website") do |p|
   p.client = "Creative Agency"
   p.description = "A modern portfolio website with animations and responsive design. Built with Rails 8 and Hotwire for a seamless, app-like experience."
   p.featured = true
-  p.tech_stack = ["Ruby", "Rails", "PostgreSQL", "Stimulus"]
-  p.highlights = ["Launched in 3 weeks", "99 Lighthouse score", "Featured in Ruby Weekly"]
+  p.tech_stack = [ "Ruby", "Rails", "PostgreSQL", "Stimulus" ]
+  p.highlights = [ "Launched in 3 weeks", "99 Lighthouse score", "Featured in Ruby Weekly" ]
 end
 
 Project.find_or_create_by!(title: "E-commerce Platform") do |p|
   p.client = "Retail Corp"
   p.description = "Full-featured online store with Stripe payments, inventory management, and real-time order tracking."
   p.featured = true
-  p.tech_stack = ["Ruby", "Rails", "Stripe", "Redis", "Sidekiq"]
-  p.highlights = ["Processes 10k orders/day", "99.9% uptime", "Sub-second page loads"]
+  p.tech_stack = [ "Ruby", "Rails", "Stripe", "Redis", "Sidekiq" ]
+  p.highlights = [ "Processes 10k orders/day", "99.9% uptime", "Sub-second page loads" ]
 end
 
 Project.find_or_create_by!(title: "Mobile App") do |p|
   p.client = "Startup Inc"
   p.description = "Cross-platform mobile application for iOS and Android with real-time messaging and push notifications."
   p.featured = false
-  p.tech_stack = ["React Native", "TypeScript", "GraphQL"]
-  p.highlights = ["50k downloads in first month", "4.8 star rating"]
+  p.tech_stack = [ "React Native", "TypeScript", "GraphQL" ]
+  p.highlights = [ "50k downloads in first month", "4.8 star rating" ]
 end
 
 puts "Done! Created #{Project.count} projects."

@@ -64,6 +64,13 @@ RSpec.describe Railspress::HasFocalPoint do
       post.header_image_focal_point.update!(overrides: { "card" => { "type" => "crop" } })
       expect(post.image_override(:hero, :header_image)).to be_nil
     end
+
+    it "returns nil when overrides column is NULL" do
+      fp = post.header_image_focal_point
+      fp.save! unless fp.persisted?
+      fp.update_column(:overrides, nil)
+      expect(post.image_override(:hero, :header_image)).to be_nil
+    end
   end
 
   describe "#has_image_override?" do
@@ -297,6 +304,34 @@ RSpec.describe Railspress::FocalPoint do
     it "allows nil override value for context" do
       focal_point.overrides = { "hero" => nil }
       expect(focal_point).to be_valid
+    end
+
+    it "allows nil overrides column" do
+      focal_point.overrides = nil
+      expect(focal_point).to be_valid
+    end
+  end
+
+  describe "#override_for" do
+    let(:saved_focal_point) do
+      Railspress::FocalPoint.create!(record: railspress_posts(:hello_world), attachment_name: "header_image", focal_x: 0.5, focal_y: 0.5, overrides: {})
+    end
+
+    it "returns nil when overrides column is NULL" do
+      saved_focal_point.update_column(:overrides, nil)
+      expect(saved_focal_point.reload.override_for(:hero)).to be_nil
+    end
+
+    it "returns nil for missing context" do
+      saved_focal_point.update!(overrides: { "card" => { "type" => "crop" } })
+      expect(saved_focal_point.override_for(:hero)).to be_nil
+    end
+
+    it "returns override with indifferent access" do
+      saved_focal_point.update!(overrides: { "hero" => { "type" => "crop" } })
+      override = saved_focal_point.override_for(:hero)
+      expect(override[:type]).to eq("crop")
+      expect(override["type"]).to eq("crop")
     end
   end
 end

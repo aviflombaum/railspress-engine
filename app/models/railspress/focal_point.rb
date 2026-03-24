@@ -30,7 +30,7 @@ module Railspress
 
     # Get override for specific context
     def override_for(context)
-      overrides[context.to_s]&.with_indifferent_access
+      overrides&.dig(context.to_s)&.with_indifferent_access
     end
 
     # Check if context has custom override (not using focal point)

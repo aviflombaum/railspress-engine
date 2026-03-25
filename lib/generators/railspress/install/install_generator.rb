@@ -59,17 +59,7 @@ module Railspress
           say_status :pinned, "@rails/activestorage in importmap", :green
         end
 
-        # Pin Lexxy editor
-        if importmap_content.include?('"lexxy"')
-          say_status :skip, "Lexxy already pinned in importmap", :yellow
-        else
-          append_to_file importmap_file, <<~RUBY
-
-            # RailsPress rich text editor
-            pin "lexxy", to: "lexxy.js"
-          RUBY
-          say_status :pinned, "Lexxy in importmap", :green
-        end
+        # Lexxy is auto-pinned by the engine's importmap — no host app pin needed
       end
 
       def generate_initializer

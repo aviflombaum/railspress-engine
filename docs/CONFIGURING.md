@@ -466,12 +466,9 @@ The gemspec pins `lexxy ~> 0.7.6.beta`. To update to the latest version:
 bundle update lexxy
 ```
 
-Lexxy is loaded in two places:
+Lexxy is handled automatically by the engine — no host app configuration needed. When you `import "railspress"` in your application.js, Lexxy is imported and its importmap pin is registered by the engine.
 
-- **Admin layout** — The admin interface loads Lexxy's stylesheet and JavaScript automatically. No host app configuration needed.
-- **Host app importmap** — The installer pins `lexxy` in your `config/importmap.rb` so the admin editor works with importmap-based asset delivery.
-
-**Note:** Lexxy is only needed in the admin interface. It is not loaded on public-facing pages unless you explicitly import it.
+**Note:** Lexxy is only loaded in the admin interface. It is not loaded on public-facing pages unless you explicitly import it.
 
 #### Keeping Lexxy Updated
 

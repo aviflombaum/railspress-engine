@@ -16,6 +16,9 @@
  *   register(application)
  */
 
+// Lexxy rich text editor
+import "lexxy"
+
 // Import Turbo for Turbo Frames support
 import "@hotwired/turbo-rails"
 

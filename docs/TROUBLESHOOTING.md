@@ -44,14 +44,7 @@ config.active_storage.service = :local
 
 **Symptom**: Textarea appears instead of rich text editor; no formatting toolbar.
 
-**Solution**: Ensure the Lexxy editor JavaScript is loaded. Check your importmap:
-
-```ruby
-# config/importmap.rb
-pin "railspress", to: "railspress.js"
-```
-
-And include in your application.js:
+**Solution**: Ensure RailsPress is imported in your application.js. Lexxy is automatically loaded by the engine:
 
 ```javascript
 import "railspress"

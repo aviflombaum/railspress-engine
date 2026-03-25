@@ -153,8 +153,9 @@ module Railspress
     private
 
     # Wrap content in a Stimulus-controlled <span> for inline editing.
-    # Includes a display Turbo Frame, hidden context menu with form Turbo Frame,
-    # and hidden backdrop.
+    # Only the display Turbo Frame lives inside the span — the menu and
+    # backdrop are created dynamically on document.body by the JS controller
+    # to avoid inheriting ancestor stacking contexts (opacity, transforms).
     def inline_wrapper_for(content_element, rendered_content)
       suffix = SecureRandom.hex(4)
       display_frame_id = "cms_display_#{content_element.id}_#{suffix}"
@@ -177,27 +178,7 @@ module Railspress
         },
         style: "display:contents"
       ) do
-        # Display frame (replaced after save)
-        display = content_tag("turbo-frame", rendered_content, id: display_frame_id)
-
-        # Context menu panel (hidden by default)
-        menu = content_tag(:div, class: "rp-inline-menu rp-inline-hidden",
-          data: { "rp--cms-inline-editor-target": "menu" }
-        ) do
-          # Form Turbo Frame (lazy-loaded on first open)
-          content_tag("turbo-frame", "", id: form_frame_id,
-            src: nil,
-            data: { "rp--cms-inline-editor-target": "frame" })
-        end
-
-        # Backdrop (hidden by default)
-        backdrop = content_tag(:div, "", class: "rp-inline-backdrop rp-inline-hidden",
-          data: {
-            "rp--cms-inline-editor-target": "backdrop",
-            action: "click->rp--cms-inline-editor#close"
-          })
-
-        safe_join([ display, menu, backdrop ])
+        content_tag("turbo-frame", rendered_content, id: display_frame_id)
       end
     end
 

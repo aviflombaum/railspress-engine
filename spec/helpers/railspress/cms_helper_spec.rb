@@ -142,11 +142,10 @@ RSpec.describe Railspress::CmsHelper, type: :helper do
       expect(result).to include("Welcome to Our Site")
     end
 
-    it "includes hidden menu and backdrop" do
+    it "does not include menu or backdrop (created dynamically by JS on document.body)" do
       result = helper.cms_element(group: "Headers", name: "Homepage H1")
-      expect(result).to include("rp-inline-menu")
-      expect(result).to include("rp-inline-backdrop")
-      expect(result).to include("rp-inline-hidden")
+      expect(result).not_to include("rp-inline-menu")
+      expect(result).not_to include("rp-inline-backdrop")
     end
 
     it "generates unique frame IDs for duplicate elements" do

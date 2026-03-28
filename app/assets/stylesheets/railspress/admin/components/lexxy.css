@@ -4,8 +4,13 @@
  */
 
 :where(lexxy-toolbar){
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--rp-bg-elevated, #fff);
   margin-bottom: 20px;
   padding-bottom: 10px;
+  border-bottom: 1px solid var(--rp-border);
 }
 
 /* Fix toolbar dropdown alignment (color/link buttons) */

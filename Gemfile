@@ -9,7 +9,7 @@ gem "sqlite3"
 gem "propshaft"
 gem "importmap-rails"
 gem "turbo-rails"
-gem "image_processing", "~> 1.2"
+gem "image_processing"
 
 # Code quality
 gem "rubocop-rails-omakase", require: false

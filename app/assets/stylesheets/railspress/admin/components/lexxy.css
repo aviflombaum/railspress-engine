@@ -13,7 +13,12 @@
   border-bottom: 1px solid var(--rp-border);
 }
 
-/* Fix toolbar dropdown alignment (color/link buttons) */
+/*
+ * Disabled custom Lexxy dropdown sizing override.
+ * Lexxy 0.9.8.beta manages dropdown layout internally; forcing fixed 34x34
+ * sizing can break toolbar dropdown/picker rendering.
+ */
+/*
 .lexxy-editor__toolbar-dropdown {
   width: 34px !important;
   height: 34px !important;
@@ -35,6 +40,7 @@
 .lexxy-editor__toolbar-dropdown > summary::-webkit-details-marker {
   display: none;
 }
+*/
 
 /* Rich text content spacing */
 .rp-rich-text p,

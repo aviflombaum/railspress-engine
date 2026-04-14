@@ -23,8 +23,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 8.1"
   spec.add_dependency "lexxy", ">= 0.9.0.beta"
-  spec.add_dependency "rubyzip", "~> 2.3"
-  spec.add_dependency "redcarpet", "~> 3.6"
+  spec.add_dependency "rubyzip", ">= 2.3"
+  spec.add_dependency "redcarpet", ">= 3.6"
 
   spec.add_development_dependency "rspec-rails"
   spec.add_development_dependency "capybara"

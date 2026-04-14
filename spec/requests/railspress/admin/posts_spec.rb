@@ -100,6 +100,18 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       expect(post_record.reload.tags.count).to eq(2)
     end
 
+    it "resolves slug-like tag input to an existing tag without failing update" do
+      post_record = railspress_posts(:hello_world)
+      existing_tag = Railspress::Tag.create!(name: "small business")
+
+      patch railspress.admin_post_path(post_record), params: {
+        post: { tag_list: "small-business" }
+      }
+
+      expect(response).to redirect_to(railspress.admin_post_path(post_record))
+      expect(post_record.reload.tags).to contain_exactly(existing_tag)
+    end
+
     it "fails with invalid params" do
       post_record = railspress_posts(:hello_world)
       patch railspress.admin_post_path(post_record), params: {

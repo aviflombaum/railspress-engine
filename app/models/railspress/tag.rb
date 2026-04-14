@@ -21,7 +21,9 @@ module Railspress
       return [] if csv_string.blank?
 
       tag_names = csv_string.split(",").map { |t| t.strip.downcase }.reject(&:blank?).uniq
-      tag_names.map { |name| find_or_create_by(name: name) }
+      tag_names.map do |name|
+        find_by(name: name) || find_by(slug: name.parameterize) || create!(name: name)
+      end
     end
 
     private

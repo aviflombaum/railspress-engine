@@ -51,6 +51,15 @@ RSpec.describe Railspress::Tag, type: :model do
       expect(Railspress::Tag.from_csv("")).to eq([])
       expect(Railspress::Tag.from_csv(nil)).to eq([])
     end
+
+    it "resolves slug-like input to an existing tag by slug" do
+      existing_tag = Railspress::Tag.create!(name: "small business")
+
+      tags = Railspress::Tag.from_csv("small-business")
+
+      expect(tags).to eq([ existing_tag ])
+      expect(Railspress::Tag.where(slug: "small-business").count).to eq(1)
+    end
   end
 
   describe "associations" do

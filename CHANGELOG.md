@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Inline editor stacking context bug**: Inline CMS editor menu/backdrop now avoid ancestor opacity/transform stacking context issues by being created at `document.body`, fixing invisible/dimmed editor panel behavior on styled pages.
+- **Tag slug collision on post edit**: Admin post updates now correctly resolve slug-like tag input (for example `small-business`) to existing tags by slug, instead of failing with `422 Unprocessable Entity` when a name/slug collision occurs.
 
 ### Upgrade Notes (target: 1.2.0)
 

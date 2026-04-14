@@ -101,7 +101,8 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
   end
 
   describe "#show_post_install_message" do
-    it "displays success message and next steps" do
+    it "displays install guidance for new installs" do
+      generator.instance_variable_set(:@upgrading_existing_install, false)
       messages = []
       allow(generator).to receive(:say) { |msg, *| messages << msg.to_s }
 
@@ -109,8 +110,22 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
 
       output = messages.join("\n")
       expect(output).to include("RailsPress installed successfully")
-      expect(output).to include("rails db:migrate")
-      expect(output).to include("/railspress/admin")
+      expect(output).to include("http://localhost:3000/railspress/admin")
+      expect(output).to include("https://railspress.org")
+    end
+
+    it "displays upgrade guidance when upgrading an existing install" do
+      generator.instance_variable_set(:@upgrading_existing_install, true)
+      messages = []
+      allow(generator).to receive(:say) { |msg, *| messages << msg.to_s }
+
+      generator.show_post_install_message
+
+      output = messages.join("\n")
+      expect(output).to include("RailsPress upgrade setup completed")
+      expect(output).to include("docs/UPGRADING.md")
+      expect(output).to include('import "railspress"')
+      expect(output).to include("https://railspress.org")
     end
   end
 
@@ -159,8 +174,8 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       end
     end
 
-    context "when lexxy is not pinned" do
-      it "adds lexxy pin to importmap" do
+    context "when importmap is available" do
+      it "does not pin lexxy (engine handles it)" do
         allow(generator).to receive(:importmap_available?).and_return(true)
         allow(File).to receive(:read).with(importmap_file).and_return('pin "application"')
         allow(generator).to receive(:append_to_file)
@@ -168,21 +183,7 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
 
         generator.configure_importmap
 
-        expect(generator).to have_received(:append_to_file).with(importmap_file, /pin "lexxy"/)
-        expect(generator).to have_received(:say_status).with(:pinned, "Lexxy in importmap", :green)
-      end
-    end
-
-    context "when lexxy is already pinned" do
-      it "skips pinning" do
-        allow(generator).to receive(:importmap_available?).and_return(true)
-        allow(File).to receive(:read).with(importmap_file).and_return('pin "lexxy", to: "lexxy.js"')
-        allow(generator).to receive(:append_to_file)
-        allow(generator).to receive(:say_status)
-
-        generator.configure_importmap
-
-        expect(generator).to have_received(:say_status).with(:skip, "Lexxy already pinned in importmap", :yellow)
+        expect(generator).not_to have_received(:append_to_file).with(importmap_file, /pin "lexxy"/)
       end
     end
   end

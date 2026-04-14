@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 8.1"
-  spec.add_dependency "lexxy", "~> 0.9.0.beta"
+  spec.add_dependency "lexxy", ">= 0.9.0.beta"
   spec.add_dependency "rubyzip", "~> 2.3"
   spec.add_dependency "redcarpet", "~> 3.6"
 
@@ -34,14 +34,19 @@ Gem::Specification.new do |spec|
   spec.post_install_message = <<~MSG
 
     ============================================================
-      RailsPress installed! Run the generator to complete setup:
+      RailsPress installed/updated.
 
+      New install:
         $ rails generate railspress:install
 
-      This will:
-        - Copy database migrations
-        - Mount the engine in your routes
-        - Install ActionText (if needed)
+      Upgrading existing app:
+        $ rails railspress:install:migrations
+        $ rails db:migrate
+
+      Guides:
+        - Install/setup: README.md + docs/CONFIGURING.md
+        - Upgrading: docs/UPGRADING.md
+        - Full docs: https://railspress.org
     ============================================================
 
   MSG

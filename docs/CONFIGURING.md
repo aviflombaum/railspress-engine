@@ -460,18 +460,20 @@ See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 RailsPress uses [Lexxy](https://github.com/basecamp/lexxy), Basecamp's rich text editor built on Meta's Lexical framework. It replaces the default Trix editor that ships with ActionText.
 
-The gemspec pins `lexxy ~> 0.7.6.beta`. To update to the latest version:
+RailsPress requires `lexxy >= 0.9.0.beta` (no upper pin). To update to the newest available Lexxy in your app:
 
 ```bash
 bundle update lexxy
 ```
 
-Lexxy is loaded in two places:
+Lexxy is auto-wired by RailsPress:
 
-- **Admin layout** — The admin interface loads Lexxy's stylesheet and JavaScript automatically. No host app configuration needed.
-- **Host app importmap** — The installer pins `lexxy` in your `config/importmap.rb` so the admin editor works with importmap-based asset delivery.
+- Engine importmap auto-pins `lexxy`
+- RailsPress admin layout auto-imports `railspress` (which imports Lexxy)
 
-**Note:** Lexxy is only needed in the admin interface. It is not loaded on public-facing pages unless you explicitly import it.
+You only need `import "railspress"` in your host `application.js` for host-page features like inline CMS editing.
+
+**Note:** Lexxy is only loaded in the admin interface. It is not loaded on public-facing pages unless you explicitly import it.
 
 #### Keeping Lexxy Updated
 
@@ -500,6 +502,6 @@ gem "lexxy", "0.1.26.beta"  # Pin to known-good version
 | Gem | Purpose |
 |-----|---------|
 | `rails >= 8.1` | Framework (includes ActionText, Active Storage, Turbo) |
-| `lexxy ~> 0.7.4.beta` | Rich text editor (replaces Trix) |
+| `lexxy >= 0.9.0.beta` | Rich text editor (replaces Trix) |
 | `rubyzip ~> 2.3` | ZIP file handling for CMS import/export |
 | `redcarpet ~> 3.6` | Markdown parsing for post import |

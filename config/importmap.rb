@@ -8,6 +8,9 @@
 #
 # This auto-registers all RailsPress Stimulus controllers.
 
+# Lexxy rich text editor (hard dependency — auto-pinned so host apps don't need to)
+pin "lexxy", to: "lexxy.js"
+
 # Turbo for Turbo Frames support
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 

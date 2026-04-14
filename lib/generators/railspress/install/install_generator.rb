@@ -10,6 +10,10 @@ module Railspress
 
       desc "Install RailsPress: copy migrations, mount engine, and configure JavaScript"
 
+      def detect_install_mode
+        @upgrading_existing_install = existing_railspress_installation?
+      end
+
       def copy_railspress_migrations
         run "bundle exec rake railspress:install:migrations"
       end
@@ -74,27 +78,43 @@ module Railspress
       end
 
       def show_post_install_message
+        upgrading = !!@upgrading_existing_install
+
         say ""
         say "=" * 60, :green
-        say "  RailsPress installed successfully!", :green
+        say("  RailsPress #{upgrading ? "upgrade setup completed!" : "installed successfully!"}", :green)
         say "=" * 60, :green
         say ""
-        say "Next steps:", :yellow
+        say(upgrading ? "Upgrade next steps:" : "Next steps:", :yellow)
         say ""
-        say "  1. Run migrations:"
-        say "     $ rails db:migrate", :cyan
-        say ""
-        say "  2. Access the admin dashboard:"
-        say "     http://localhost:3000/railspress/admin", :cyan
-        say ""
-        say "  3. (Optional) Change the mount path in config/routes.rb:"
-        say "     mount Railspress::Engine => \"/blog\"", :cyan
+        if upgrading
+          say "  1. Review upgrade notes:"
+          say "     docs/UPGRADING.md", :cyan
+          say ""
+          say "  2. Run migrations:"
+          say "     $ rails db:migrate", :cyan
+          say ""
+          say "  3. Verify your JS integration if using host-page features:"
+          say '     app/javascript/application.js includes: import "railspress"', :cyan
+        else
+          say "  1. Run migrations:"
+          say "     $ rails db:migrate", :cyan
+          say ""
+          say "  2. Access the admin dashboard:"
+          say "     http://localhost:3000/railspress/admin", :cyan
+          say ""
+          say "  3. (Optional) Change the mount path in config/routes.rb:"
+          say '     mount Railspress::Engine => "/blog"', :cyan
+        end
         say ""
         say "Optional features:", :yellow
         say "  Edit config/initializers/railspress.rb to enable:"
         say "    - CMS content elements (config.enable_cms)"
         say "    - Inline CMS editing (config.inline_editing_check)"
         say "  See docs/CONFIGURING.md and docs/INLINE_EDITING.md for details."
+        say ""
+        say "Full guides & documentation:", :yellow
+        say "  https://railspress.org", :cyan
         say ""
         say "=" * 60, :green
       end
@@ -119,6 +139,16 @@ module Railspress
 
       def importmap_available?
         defined?(Importmap) && Rails.root.join("config", "importmap.rb").exist?
+      end
+
+      def existing_railspress_installation?
+        routes_mounted = File.read(rails_route_file).include?("Railspress::Engine")
+        initializer_exists = Rails.root.join("config", "initializers", "railspress.rb").exist?
+        migrations_copied = Dir.glob(migrations_dir.join("*railspress*.rb")).any?
+
+        routes_mounted || initializer_exists || migrations_copied
+      rescue Errno::ENOENT
+        false
       end
     end
   end

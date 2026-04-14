@@ -44,10 +44,19 @@ config.active_storage.service = :local
 
 **Symptom**: Textarea appears instead of rich text editor; no formatting toolbar.
 
-**Solution**: Ensure RailsPress is imported in your application.js. Lexxy is automatically loaded by the engine:
+**Solution**:
+
+1. Admin pages: RailsPress admin layout auto-imports `railspress`, which loads Lexxy.
+2. Host-page features (inline editing on your app pages): ensure RailsPress is imported in host `application.js`:
 
 ```javascript
 import "railspress"
+```
+
+3. If you override RailsPress admin layout, add this line in that layout:
+
+```erb
+<script type="module">import "railspress"</script>
 ```
 
 ### CSS Not Loading

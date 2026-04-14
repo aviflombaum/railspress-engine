@@ -215,6 +215,33 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
+### Upgrading to 1.2.0 (from 1.0.0+)
+
+This release improves Lexxy integration and upgrade behavior for host apps.
+
+Key changes:
+- Lexxy is now an open lower-bound dependency (`>= 0.9.0.beta`) instead of a pessimistic pin.
+- Engine-managed importmap + RailsPress JS entrypoint handle Lexxy loading.
+- Installer no longer adds a manual host `lexxy` importmap pin.
+- Inline editor menu/backdrop rendering was hardened for pages with opacity/transform stacking contexts.
+
+Recommended upgrade flow:
+
+```bash
+bundle update railspress-engine lexxy
+rails railspress:install:migrations
+rails db:migrate
+```
+
+JavaScript/config checklist:
+- Keep/add `import "railspress"` in host `app/javascript/application.js` if you use host-page RailsPress features (inline editing, focal point controls, etc.).
+- Remove manual host `pin "lexxy", to: "lexxy.js"` from `config/importmap.rb` unless you intentionally pin a specific Lexxy version.
+- If you override RailsPress admin layout, include:
+
+```erb
+<script type="module">import "railspress"</script>
+```
+
 ### Upgrading to 1.0.0
 
 **New: Blocks (Content Element CMS), Inline Editing, and more**
@@ -248,7 +275,12 @@ rails railspress:install:migrations
 rails db:migrate
 ```
 
-Add `import "railspress"` to your `app/javascript/application.js` if you haven't already (required for inline editing Stimulus controllers).
+JavaScript upgrade notes:
+
+- New installs auto-import RailsPress in the admin layout (`<script type="module">import "railspress"</script>`), so Lexxy loads automatically in admin.
+- Keep/add `import "railspress"` in your host `app/javascript/application.js` when using host-page features like inline CMS editing.
+- If you previously pinned `lexxy` manually in host `config/importmap.rb`, you can remove that pin (engine importmap now provides it).
+- If you override RailsPress admin layout in your app, add back the admin import line manually.
 
 See [Blocks & Inline Editing](INLINE_EDITING.md) and [Configuring](CONFIGURING.md) for full details.
 

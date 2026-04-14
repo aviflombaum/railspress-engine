@@ -101,7 +101,8 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
   end
 
   describe "#show_post_install_message" do
-    it "displays success message and next steps" do
+    it "displays install guidance for new installs" do
+      generator.instance_variable_set(:@upgrading_existing_install, false)
       messages = []
       allow(generator).to receive(:say) { |msg, *| messages << msg.to_s }
 
@@ -109,8 +110,22 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
 
       output = messages.join("\n")
       expect(output).to include("RailsPress installed successfully")
-      expect(output).to include("rails db:migrate")
-      expect(output).to include("/railspress/admin")
+      expect(output).to include("http://localhost:3000/railspress/admin")
+      expect(output).to include("https://railspress.org")
+    end
+
+    it "displays upgrade guidance when upgrading an existing install" do
+      generator.instance_variable_set(:@upgrading_existing_install, true)
+      messages = []
+      allow(generator).to receive(:say) { |msg, *| messages << msg.to_s }
+
+      generator.show_post_install_message
+
+      output = messages.join("\n")
+      expect(output).to include("RailsPress upgrade setup completed")
+      expect(output).to include("docs/UPGRADING.md")
+      expect(output).to include('import "railspress"')
+      expect(output).to include("https://railspress.org")
     end
   end
 

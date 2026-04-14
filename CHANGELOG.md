@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Lexxy dependency policy**: RailsPress now requires `lexxy >= 0.9.0.beta` (no upper pin). Host apps can get newer Lexxy releases via normal Bundler updates (`bundle update lexxy` or `bundle update --all`), while still allowing explicit host-level pinning when needed.
+- **Lexxy auto-wiring**: Lexxy is now consistently wired through RailsPress internals (engine importmap + RailsPress JavaScript entrypoint). Host apps no longer need to manually pin `lexxy` in `config/importmap.rb`.
+- **Install generator behavior**: `rails generate railspress:install` no longer appends a host-level `lexxy` pin to importmap; the engine handles this.
+
+### Fixed
+
+- **Inline editor stacking context bug**: Inline CMS editor menu/backdrop now avoid ancestor opacity/transform stacking context issues by being created at `document.body`, fixing invisible/dimmed editor panel behavior on styled pages.
+
+### Upgrade Notes (target: 1.2.0)
+
+- Run `bundle update railspress-engine lexxy` to adopt both RailsPress and the latest compatible Lexxy.
+- Keep `import "railspress"` in host `app/javascript/application.js` for host-page features (for example inline CMS editing on public pages).
+- If your app manually pins `lexxy` in host `config/importmap.rb`, remove that pin unless you intentionally need a fixed Lexxy version.
+- If your app overrides the RailsPress admin layout, ensure it includes `<script type="module">import "railspress"</script>`.
+
 ## [1.0.0] - 2026-02-27
 
 ### Added

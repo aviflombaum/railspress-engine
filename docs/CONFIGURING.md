@@ -494,7 +494,7 @@ If a Lexxy update introduces breaking changes to the editor, you can pin to a sp
 
 ```ruby
 # Gemfile
-gem "lexxy", "0.1.26.beta"  # Pin to known-good version
+gem "lexxy", "= 0.9.8.beta"  # Example exact pin; choose a version tested in your app
 ```
 
 ### Other Dependencies
@@ -503,5 +503,5 @@ gem "lexxy", "0.1.26.beta"  # Pin to known-good version
 |-----|---------|
 | `rails >= 8.1` | Framework (includes ActionText, Active Storage, Turbo) |
 | `lexxy >= 0.9.0.beta` | Rich text editor (replaces Trix) |
-| `rubyzip ~> 2.3` | ZIP file handling for CMS import/export |
-| `redcarpet ~> 3.6` | Markdown parsing for post import |
+| `rubyzip >= 2.3` | ZIP file handling for CMS import/export |
+| `redcarpet >= 3.6` | Markdown parsing for post import |

@@ -24,7 +24,7 @@ It manages three kinds of content:
 
 Your blog. Chronological content published over time — articles, news, announcements. Categories, tags, draft/published workflow.
 
-- Rich text editing with [Lexxy](https://github.com/aviflombaum/lexxy) + markdown mode toggle
+- Rich text editing with [Lexxy](https://github.com/basecamp/lexxy) + markdown mode toggle
 - Categories, tags, draft/published workflow
 - SEO metadata (meta title, meta description)
 - Reading time auto-calculation

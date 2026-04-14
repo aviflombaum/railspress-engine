@@ -31,17 +31,28 @@ gem build railspress.gemspec
 
 This should produce `railspress-engine-<version>.gem`.
 
-## 4. Tag and Publish (after verification)
+## 4. Commit and Push Release Commit
 
 ```bash
 git add .
 git commit -m "Release v<version>"
-git tag v<version>
-git push origin main --tags
+git push origin main
+```
+
+## 5. Publish Gem
+
+```bash
 gem push railspress-engine-<version>.gem
 ```
 
-## 5. Post-Release
+## 6. Tag and Publish GitHub Release
+
+```bash
+git tag v<version>
+git push origin v<version>
+```
+
+## 7. Post-Release
 
 - Create GitHub release notes from `CHANGELOG.md`.
 - Verify installation in a fresh Rails app:

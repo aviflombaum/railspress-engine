@@ -132,7 +132,7 @@ module Railspress
       zip_filename = "posts_export_#{timestamp}.zip"
       zip_path = Rails.root.join("tmp", zip_filename)
 
-      Zip::File.open(zip_path, Zip::File::CREATE) do |zipfile|
+      Zip::File.open(zip_path, create: true) do |zipfile|
         add_directory_to_zip(zipfile, @export_dir, "")
       end
 

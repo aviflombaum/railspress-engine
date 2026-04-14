@@ -73,9 +73,9 @@ module Railspress
             break
           end
 
-          destination = File.join(@extract_dir, entry.name)
-          FileUtils.mkdir_p(File.dirname(destination))
-          entry.extract(destination) unless File.exist?(destination)
+          # rubyzip 3+ expects extraction with a destination directory.
+          destination = File.join(@extract_dir.to_s, entry.name)
+          entry.extract(entry.name, destination_directory: @extract_dir.to_s) unless File.exist?(destination)
         end
       end
     rescue Zip::Error => e

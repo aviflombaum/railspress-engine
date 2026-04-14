@@ -86,7 +86,7 @@ RSpec.describe "Railspress::Admin::CmsTransfers", type: :request do
 
     it "handles ZIP without content.json" do
       file = Tempfile.new([ "no_manifest", ".zip" ])
-      Zip::File.open(file.path, Zip::File::CREATE) do |zip|
+      Zip::File.open(file.path, create: true) do |zip|
         zip.get_output_stream("readme.txt") { |f| f.write("no manifest") }
       end
       file.rewind
@@ -108,7 +108,7 @@ RSpec.describe "Railspress::Admin::CmsTransfers", type: :request do
     }
 
     file = Tempfile.new([ "cms_import", ".zip" ])
-    Zip::File.open(file.path, Zip::File::CREATE) do |zip|
+    Zip::File.open(file.path, create: true) do |zip|
       zip.get_output_stream("content.json") { |f| f.write(JSON.pretty_generate(manifest)) }
     end
     file.rewind

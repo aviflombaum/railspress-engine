@@ -224,6 +224,8 @@ Key changes:
 - Engine-managed importmap + RailsPress JS entrypoint handle Lexxy loading.
 - Installer no longer adds a manual host `lexxy` importmap pin.
 - Inline editor menu/backdrop rendering was hardened for pages with opacity/transform stacking contexts.
+- ZIP import/export internals were updated for rubyzip 3 compatibility.
+- Admin editor toolbar is sticky to improve long-form editing.
 
 Recommended upgrade flow:
 

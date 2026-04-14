@@ -245,7 +245,7 @@ RSpec.describe Railspress::HasFocalPoint do
 end
 
 RSpec.describe Railspress::FocalPoint do
-  fixtures "railspress/posts"
+  fixtures "railspress/categories", "railspress/posts"
 
   describe "validations" do
     let(:post) { railspress_posts(:hello_world) }

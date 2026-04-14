@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Railspress::Tag, type: :model do
-  fixtures "railspress/tags", "railspress/posts", "railspress/taggings"
+  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
 
   describe "validations" do
     it "requires a name" do

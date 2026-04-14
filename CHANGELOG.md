@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-04-14
+
+### Added
+
+- **Admin sidebar resources**: Added bottom-pinned sidebar links for Guide, Docs, and GitHub, plus visible version display and project credits linking to `avi.nyc`.
+
+### Fixed
+
+- **CI foreign key fixture failures**: Model specs that loaded post fixtures now also load category fixtures, preventing SQLite foreign key violations (`railspress_posts.category_id`) in clean CI databases.
+
 ## [1.2.0] - 2026-04-14
 
 ### Changed

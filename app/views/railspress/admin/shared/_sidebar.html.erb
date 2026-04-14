@@ -103,4 +103,36 @@
       <span class="rp-nav-text">Main Site</span>
     <% end %>
   </nav>
+
+  <div class="rp-sidebar-footer">
+    <div class="rp-sidebar-version">v<%= Railspress::VERSION %></div>
+
+    <%= link_to "https://railspress.org/guide/", class: "rp-sidebar-footer-link", target: "_blank", rel: "noopener noreferrer", title: "Guide" do %>
+      <svg class="rp-sidebar-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span class="rp-sidebar-footer-text">Guide</span>
+    <% end %>
+
+    <%= link_to "https://railspress.org/docs/", class: "rp-sidebar-footer-link", target: "_blank", rel: "noopener noreferrer", title: "Docs" do %>
+      <svg class="rp-sidebar-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <span class="rp-sidebar-footer-text">Docs</span>
+    <% end %>
+
+    <%= link_to "https://github.com/aviflombaum/railspress-engine", class: "rp-sidebar-footer-link", target: "_blank", rel: "noopener noreferrer", title: "GitHub" do %>
+      <svg class="rp-sidebar-footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+      </svg>
+      <span class="rp-sidebar-footer-text">GitHub</span>
+    <% end %>
+
+    <p class="rp-sidebar-credit">
+      Made with ❤️ by
+      <%= link_to "Avi.nyc", "https://avi.nyc", target: "_blank", rel: "noopener noreferrer", class: "rp-sidebar-credit-link" %>
+    </p>
+  </div>
 </div>

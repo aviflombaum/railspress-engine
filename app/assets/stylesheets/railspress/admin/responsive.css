@@ -56,6 +56,21 @@
     clip: auto;
   }
 
+  .rp-sidebar--collapsed .rp-sidebar-footer {
+    align-items: stretch;
+  }
+
+  .rp-sidebar--collapsed .rp-sidebar-version,
+  .rp-sidebar--collapsed .rp-sidebar-footer-text,
+  .rp-sidebar--collapsed .rp-sidebar-credit {
+    display: block;
+  }
+
+  .rp-sidebar--collapsed .rp-sidebar-footer-link {
+    justify-content: flex-start;
+    padding: 8px 10px;
+  }
+
   .rp-mobile-header {
     display: flex;
   }

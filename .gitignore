@@ -24,3 +24,6 @@ spec/examples.txt
 *.gem
 /spec/dummy/public/assets/
 spec/examples.txt
+.agents/
+bin/agent-rspec
+docs/conventions

@@ -28,6 +28,22 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.current_author_method).to eq(:current_user)
     end
 
+    it "defaults current_api_actor_method to :current_user" do
+      expect(Railspress.current_api_actor_method).to eq(:current_user)
+    end
+
+    it "defaults current_author_proc to nil" do
+      expect(Railspress.current_author_proc).to be_nil
+    end
+
+    it "defaults current_api_actor_proc to nil" do
+      expect(Railspress.current_api_actor_proc).to be_nil
+    end
+
+    it "defaults admin_auth_concern to nil" do
+      expect(Railspress.admin_auth_concern).to be_nil
+    end
+
     it "defaults author_scope to nil" do
       expect(Railspress.configuration.author_scope).to be_nil
     end
@@ -74,6 +90,55 @@ RSpec.describe Railspress::Configuration do
       end
 
       expect(Railspress.current_author_method).to eq(:current_admin)
+    end
+
+    it "allows setting current_author_proc" do
+      author_proc = -> { Current.user }
+
+      Railspress.configure do |config|
+        config.current_author_proc = author_proc
+      end
+
+      expect(Railspress.current_author_proc).to eq(author_proc)
+    end
+
+    it "allows setting current_api_actor_proc" do
+      api_actor_proc = -> { Current.user }
+
+      Railspress.configure do |config|
+        config.current_api_actor_proc = api_actor_proc
+      end
+
+      expect(Railspress.current_api_actor_proc).to eq(api_actor_proc)
+    end
+
+    it "allows setting admin_auth_concern" do
+      Railspress.configure do |config|
+        config.admin_auth_concern = "Railspress::SpecAdminAuthConcern"
+      end
+
+      expect(Railspress.admin_auth_concern).to eq("Railspress::SpecAdminAuthConcern")
+      expect(Railspress.resolved_admin_auth_concern).to eq(Railspress::SpecAdminAuthConcern)
+    end
+
+    it "resolves snake_case symbols for admin_auth_concern" do
+      stub_const("RailspressAdminAuth", Module.new)
+
+      Railspress.configure do |config|
+        config.admin_auth_concern = :railspress_admin_auth
+      end
+
+      expect(Railspress.resolved_admin_auth_concern).to eq(RailspressAdminAuth)
+    end
+
+    it "raises for unresolved admin_auth_concern values" do
+      Railspress.configure do |config|
+        config.admin_auth_concern = "Missing::AuthConcern"
+      end
+
+      expect {
+        Railspress.resolved_admin_auth_concern
+      }.to raise_error(Railspress::ConfigurationError, /admin_auth_concern/)
     end
 
     it "allows setting author_scope as a symbol" do

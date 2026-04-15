@@ -41,6 +41,18 @@ module Railspress
       end
     end
 
+    # Allow host apps to inject their auth concern into the admin base controller.
+    # This keeps host auth logic in app/controllers concerns while Railspress handles reload-safe wiring.
+    initializer "railspress.admin_auth_concern" do |app|
+      app.config.to_prepare do
+        concern = Railspress.resolved_admin_auth_concern
+        next unless concern
+        next if Railspress::Admin::BaseController < concern
+
+        Railspress::Admin::BaseController.include(concern)
+      end
+    end
+
     # Configure importmap for Stimulus controllers
     initializer "railspress.importmap", before: "importmap" do |app|
       if app.respond_to?(:importmap)

@@ -12,6 +12,7 @@ module Railspress
                   :current_author_proc,
                   :current_api_actor_method,
                   :current_api_actor_proc,
+                  :admin_auth_concern,
                   :public_base_url,
                   :author_scope,
                   :author_display_method,
@@ -37,6 +38,7 @@ module Railspress
       @current_author_proc = nil
       @current_api_actor_method = :current_user
       @current_api_actor_proc = nil
+      @admin_auth_concern = nil
       @public_base_url = nil
       @author_scope = nil
       @author_display_method = :name
@@ -281,6 +283,28 @@ module Railspress
 
     def current_api_actor_proc
       configuration.current_api_actor_proc
+    end
+
+    def admin_auth_concern
+      configuration.admin_auth_concern
+    end
+
+    def resolved_admin_auth_concern
+      concern = admin_auth_concern
+      return nil if concern.blank?
+
+      module_value = case concern
+      when Module then concern
+      when String, Symbol
+        concern_name = concern.to_s
+        concern_name.safe_constantize || concern_name.camelize.safe_constantize
+      end
+
+      unless module_value.is_a?(Module)
+        raise ConfigurationError, "admin_auth_concern must resolve to a Module. Got: #{concern.inspect}"
+      end
+
+      module_value
     end
 
     def public_base_url

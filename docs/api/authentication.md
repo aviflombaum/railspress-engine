@@ -8,11 +8,22 @@ RailsPress API uses bearer tokens managed from admin.
 # config/initializers/railspress.rb
 Railspress.configure do |config|
   config.enable_api
+  # Optional: include a host concern into Railspress::Admin::BaseController
+  # so current_user and auth guards are available in RailsPress admin.
+  # config.admin_auth_concern = "RailspressAdminAuth"
   config.current_api_actor_method = :current_user
-  # config.current_api_actor_proc = -> { Current.user }
+  # Alternative for host-app auth helpers that rely on Current/session/cookies:
+  # config.current_api_actor_proc = -> {
+  #   user = Session.find_by(id: cookies.signed[:session_id])&.user
+  #   user if user&.admin?
+  # }
   # config.public_base_url = "https://blog.example.com"
 end
 ```
+
+If `current_user` is already available in RailsPress admin controllers (Devise-style or via `config.admin_auth_concern`), `current_api_actor_method = :current_user` is the clean default.
+
+Use `current_api_actor_proc` when your auth helper is not directly available on `Railspress::Admin::BaseController`.
 
 When generating admin API/agent instruction snippets, RailsPress resolves the base URL in this order:
 

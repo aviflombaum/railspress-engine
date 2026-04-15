@@ -11,6 +11,7 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
     actor_id = actor.id
     Railspress.configure do |config|
       config.enable_api
+      config.admin_auth_concern = nil
       config.current_api_actor_proc = -> { User.find_by(id: actor_id) }
     end
   end
@@ -158,6 +159,37 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       get railspress.admin_api_keys_path
 
       expect(response).to redirect_to(railspress.admin_root_path)
+    end
+
+    it "allows request-scoped current_api_actor_proc strategies" do
+      actor_id = actor.id
+      Railspress.configure do |config|
+        config.enable_api
+        config.admin_auth_concern = nil
+        config.current_api_actor_proc = lambda {
+          header_id = request.headers["X-Railspress-Actor-ID"]
+          User.find_by(id: header_id)
+        }
+      end
+
+      get railspress.admin_api_keys_path, headers: { "X-Railspress-Actor-ID" => actor_id.to_s }
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "supports current_user method auth via configured admin_auth_concern" do
+      actor_id = actor.id
+      Railspress.configure do |config|
+        config.enable_api
+        config.admin_auth_concern = "Railspress::SpecAdminAuthConcern"
+        config.current_api_actor_proc = nil
+        config.current_api_actor_method = :current_user
+      end
+
+      Rails.application.reloader.prepare!
+      get railspress.admin_api_keys_path, headers: { "X-Railspress-Actor-ID" => actor_id.to_s }
+
+      expect(response).to have_http_status(:ok)
     end
   end
 end

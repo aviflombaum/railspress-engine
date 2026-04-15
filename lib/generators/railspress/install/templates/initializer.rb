@@ -8,6 +8,7 @@ Railspress.configure do |config|
   # config.enable_authors
   # config.author_class_name = "User"
   # config.current_author_method = :current_user
+  # config.current_author_proc = -> { Current.user }
 
   # === CMS Content Elements (opt-in) ===
   # Adds content groups, content elements, and the cms_element/cms_value
@@ -32,8 +33,12 @@ Railspress.configure do |config|
   # Requires Active Record Encryption keys in your host app config.
   # Uncomment to enable:
   # config.enable_api
+  # Optional: include a host auth concern into Railspress::Admin::BaseController.
+  # Define your concern in app/controllers/concerns/railspress_admin_auth.rb
+  # and set this to its constant name (String or Symbol).
+  # config.admin_auth_concern = "RailspressAdminAuth"
   # config.current_api_actor_method = :current_user
-  # config.current_api_actor_proc = -> { Current.user }
+  # config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
   # Optional: force a canonical public base URL in generated API instructions.
   # Falls back to Rails.application.routes.default_url_options, then request host.
   # config.public_base_url = "https://blog.example.com"

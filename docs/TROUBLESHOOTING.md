@@ -122,6 +122,51 @@ Or use a proc:
 config.current_author_proc = -> { Current.user }
 ```
 
+### "You must be signed in to manage API keys."
+
+**Symptom**: `/blog/admin/api_keys` redirects with "You must be signed in to manage API keys." even though you are signed in elsewhere.
+
+**Cause**: RailsPress admin controllers can’t resolve your configured API actor method in their controller context.
+
+**Solution (preferred)**: define a host concern and configure `admin_auth_concern` so `current_user` is available in RailsPress admin controllers.
+
+```ruby
+# app/controllers/concerns/railspress_admin_auth.rb
+module RailspressAdminAuth
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :authenticate_user!
+    before_action :require_admin!
+  end
+
+  private
+
+  def require_admin!
+    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
+  end
+end
+
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.enable_api
+  config.admin_auth_concern = "RailspressAdminAuth"
+  config.current_api_actor_method = :current_user
+end
+```
+
+Alternative: use `current_api_actor_proc` with request-scoped auth lookup:
+
+```ruby
+Railspress.configure do |config|
+  config.enable_api
+  config.current_api_actor_proc = -> {
+    user = Session.find_by(id: cookies.signed[:session_id])&.user
+    user if user&.admin?
+  }
+end
+```
+
 ---
 
 ## Entity Issues

@@ -152,6 +152,8 @@ config.current_author_method = :current_admin  # admin-specific
 config.current_author_method = :logged_in_user # custom auth
 ```
 
+This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_author_proc`.
+
 **Default:** `:current_user`
 
 #### `author_scope`
@@ -189,7 +191,9 @@ Alternative to `current_author_method`. Use a Proc when your current user logic 
 
 ```ruby
 config.current_author_proc = -> { Current.user }
-config.current_author_proc = -> { RequestStore.store[:current_user] }
+config.current_author_proc = -> {
+  Session.find_by(id: cookies.signed[:session_id])&.user
+}
 ```
 
 **Default:** `nil` (uses `current_author_method` instead)
@@ -207,6 +211,8 @@ config.current_api_actor_method = :current_user    # default
 config.current_api_actor_method = :current_admin   # custom auth
 ```
 
+This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_api_actor_proc`.
+
 **Default:** `:current_user`
 
 #### `current_api_actor_proc`
@@ -214,11 +220,48 @@ config.current_api_actor_method = :current_admin   # custom auth
 Alternative to `current_api_actor_method` for custom request-scoped auth logic.
 
 ```ruby
-config.current_api_actor_proc = -> { Current.user }
-config.current_api_actor_proc = -> { RequestStore.store[:current_user] }
+config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
+config.current_api_actor_proc = -> {
+  user = Session.find_by(id: cookies.signed[:session_id])&.user
+  user if user&.admin?
+}
 ```
 
 **Default:** `nil` (uses `current_api_actor_method` instead)
+
+#### `admin_auth_concern`
+
+Optional host-app concern to include into `Railspress::Admin::BaseController`.
+Use this when your auth stack defines helpers like `current_user` in app concerns and you want method-based config (`current_author_method`, `current_api_actor_method`) to work cleanly.
+
+Set this to a concern constant name (String/Symbol) or Module.
+
+```ruby
+config.admin_auth_concern = "RailspressAdminAuth"
+config.admin_auth_concern = :railspress_admin_auth
+```
+
+Example host concern:
+
+```ruby
+# app/controllers/concerns/railspress_admin_auth.rb
+module RailspressAdminAuth
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :authenticate_user!
+    before_action :require_admin!
+  end
+
+  private
+
+  def require_admin!
+    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
+  end
+end
+```
+
+**Default:** `nil` (no concern is included)
 
 #### `public_base_url`
 
@@ -353,12 +396,47 @@ Railspress.blog_path               # => "/blog"
 
 ## Adding Authentication
 
-RailsPress does not include authentication. Protect the admin area by configuring your application controller:
+RailsPress does not include authentication. The preferred pattern is to keep auth logic in a host concern and have RailsPress include it via `admin_auth_concern`:
+
+```ruby
+# app/controllers/concerns/railspress_admin_auth.rb
+module RailspressAdminAuth
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :authenticate_user!
+    before_action :require_admin!
+  end
+
+  private
+
+  def require_admin!
+    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
+  end
+end
+
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.admin_auth_concern = "RailspressAdminAuth"
+  config.current_author_method = :current_user
+  config.current_api_actor_method = :current_user
+end
+```
+
+If your app already handles authentication and you only need RailsPress to resolve the current author/API actor, configure proc hooks:
+
+```ruby
+Railspress.configure do |config|
+  config.current_author_proc = -> { Current.user }
+  config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
+end
+```
+
+Alternative: protect the admin path from your application controller:
 
 ```ruby
 # app/controllers/application_controller.rb
 class ApplicationController < ActionController::Base
-  # If using Devise
   before_action :authenticate_user!, if: :railspress_admin?
 
   private
@@ -369,7 +447,7 @@ class ApplicationController < ActionController::Base
 end
 ```
 
-Or override the RailsPress base controller:
+Alternative: override the RailsPress base controller directly:
 
 ```ruby
 # config/initializers/railspress.rb

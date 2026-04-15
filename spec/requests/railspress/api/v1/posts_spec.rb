@@ -235,4 +235,14 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "bootstrap key access" do
+    it "returns unauthorized when using a bootstrap token against content endpoints" do
+      _bootstrap_key, bootstrap_token = Railspress::AgentBootstrapKey.issue!(name: "Bootstrap Only", actor: actor)
+
+      get railspress.api_v1_posts_path, headers: { "Authorization" => "Bearer #{bootstrap_token}" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

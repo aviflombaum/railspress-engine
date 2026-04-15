@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_15_000002) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -58,6 +58,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_000001) do
     t.json "tech_stack", default: [], null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "railspress_agent_bootstrap_keys", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.string "created_by_type"
+    t.bigint "exchanged_api_key_id"
+    t.datetime "expires_at", null: false
+    t.string "global_uuid", null: false
+    t.string "name", null: false
+    t.bigint "owner_id"
+    t.string "owner_type"
+    t.string "revoke_reason"
+    t.datetime "revoked_at"
+    t.bigint "revoked_by_id"
+    t.string "revoked_by_type"
+    t.text "secret_ciphertext", null: false
+    t.string "token_digest", null: false
+    t.string "token_prefix", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.string "used_ip"
+    t.index ["created_by_type", "created_by_id"], name: "idx_rp_agent_bootstrap_keys_created_by"
+    t.index ["exchanged_api_key_id"], name: "index_railspress_agent_bootstrap_keys_on_exchanged_api_key_id"
+    t.index ["global_uuid"], name: "index_railspress_agent_bootstrap_keys_on_global_uuid", unique: true
+    t.index ["owner_type", "owner_id"], name: "idx_rp_agent_bootstrap_keys_owner"
+    t.index ["revoked_by_type", "revoked_by_id"], name: "idx_rp_agent_bootstrap_keys_revoked_by"
+    t.index ["token_digest"], name: "index_railspress_agent_bootstrap_keys_on_token_digest", unique: true
+    t.index ["token_prefix"], name: "index_railspress_agent_bootstrap_keys_on_token_prefix"
   end
 
   create_table "railspress_api_keys", force: :cascade do |t|

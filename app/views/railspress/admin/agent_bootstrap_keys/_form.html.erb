@@ -1,0 +1,25 @@
+<%= form_with model: [:admin, agent_bootstrap_key], class: "rp-form rp-form--narrow" do |form| %>
+  <%= rp_form_errors(agent_bootstrap_key) %>
+
+  <%= rp_hint("Bootstrap keys are one-time exchange tokens for agents. They default to a 1-hour expiration.") %>
+
+  <%= rp_string_field(
+        form,
+        :name,
+        primary: true,
+        required: true,
+        label: "Bootstrap Key Name",
+        placeholder: "e.g., Claude Code",
+        hint: "Use a descriptive name so you can identify this bootstrap key later."
+      ) %>
+
+  <%= rp_datetime_field(
+        form,
+        :expires_at,
+        label: "Expiration",
+        hint: "Defaults to 1 hour from now. Set a custom date/time to override.",
+        step: 60
+      ) %>
+
+  <%= rp_form_actions(form, admin_api_keys_path, submit_text: "Create Agent Bootstrap Key") %>
+<% end %>

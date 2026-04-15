@@ -107,6 +107,11 @@ Required:
 
 - `post[title]`
 
+Default behavior:
+
+- If `post[status]` is omitted, the post is created as `draft`.
+- To publish, explicitly set `post[status]` to `published`.
+
 Optional:
 
 - `post[slug]`

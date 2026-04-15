@@ -1,48 +1,142 @@
-<% content_for :title, "API Keys" %>
+<% content_for :title, "Agents & API" %>
 
-<%= rp_page_header "API Keys", "New API Key" => new_admin_api_key_path %>
+<%= rp_page_header "Agents & API",
+    "New Agent Key" => [new_admin_agent_bootstrap_key_path, class: "rp-btn rp-btn--secondary"],
+    "New API Key" => new_admin_api_key_path %>
 
-<div class="rp-card">
-  <% if @api_keys.any? %>
-    <div class="rp-table--responsive">
-      <table class="rp-table">
-        <thead>
-          <tr>
-            <th><%= rp_table_header("Name") %></th>
-            <th><%= rp_table_header("Prefix") %></th>
-            <th><%= rp_table_header("Status") %></th>
-            <th><%= rp_table_header("Last Used") %></th>
-            <th><%= rp_table_header("Expires") %></th>
-            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @api_keys.each do |api_key| %>
-            <tr>
-              <td class="rp-table-primary"><%= api_key.name %></td>
-              <td class="rp-table-secondary"><code><%= api_key.token_prefix %></code></td>
-              <td><%= rp_status_badge(api_key.status) %></td>
-              <td><%= api_key.last_used_at ? l(api_key.last_used_at, format: :short) : "Never" %></td>
-              <td><%= api_key.expires_at ? l(api_key.expires_at, format: :short) : "Never" %></td>
-              <td class="rp-table-actions">
-                <%= button_to "Rotate",
-                    rotate_admin_api_key_path(api_key),
-                    method: :post,
-                    class: "rp-btn rp-btn--secondary rp-btn--sm" %>
-                <% unless api_key.revoked_at %>
-                  <%= button_to "Revoke",
-                      revoke_admin_api_key_path(api_key),
-                      method: :post,
-                      class: "rp-btn rp-btn--danger rp-btn--sm",
-                      data: { turbo_confirm: "Revoke this API key?" } %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+<div class="rp-card rp-card--padded rp-card--section">
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h2 class="rp-section-title">Agent Setup (Generic)</h2>
     </div>
-  <% else %>
-    <%= rp_empty_state("No API keys yet.", link_text: "Create your first API key", link_path: new_admin_api_key_path) %>
-  <% end %>
+
+    <div class="rp-form rp-form--spacious">
+      <p class="rp-hint">Use a short-lived bootstrap key in agent instructions. The agent exchanges it once for a real API key.</p>
+
+      <%= render "railspress/admin/shared/copyable_textarea",
+          id: "rp-generic-agent-quick-start",
+          label: "Bootstrap Quick Start",
+          value: @generic_agent_quick_start,
+          rows: 10,
+          button_text: "Copy Quick Start" %>
+
+      <%= render "railspress/admin/shared/copyable_textarea",
+          id: "rp-generic-agent-instructions",
+          label: "Agent Instructions",
+          value: @generic_agent_instructions,
+          rows: 10,
+          button_text: "Copy Instructions" %>
+    </div>
+  </div>
+</div>
+
+<div class="rp-card rp-card--padded rp-card--section">
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h2 class="rp-section-title">API Keys</h2>
+    </div>
+
+    <% if @api_keys.any? %>
+      <div class="rp-table--responsive">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th><%= rp_table_header("Name") %></th>
+              <th><%= rp_table_header("Prefix") %></th>
+              <th><%= rp_table_header("Status") %></th>
+              <th><%= rp_table_header("Last Used") %></th>
+              <th><%= rp_table_header("Expires") %></th>
+              <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @api_keys.each do |api_key| %>
+              <% api_status_type = case api_key.status
+                  when "active" then :published
+                  when "expired" then :draft
+                  else :failed
+                  end %>
+              <tr>
+                <td class="rp-table-primary"><%= api_key.name %></td>
+                <td class="rp-table-secondary"><code><%= api_key.token_prefix %></code></td>
+                <td><%= rp_status_badge(api_key.status, type: api_status_type) %></td>
+                <td><%= api_key.last_used_at ? l(api_key.last_used_at, format: :short) : "Never" %></td>
+                <td><%= api_key.expires_at ? l(api_key.expires_at, format: :short) : "Never" %></td>
+                <td class="rp-table-actions">
+                  <%= button_to "Rotate",
+                      rotate_admin_api_key_path(api_key),
+                      method: :post,
+                      class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+                  <% unless api_key.revoked_at %>
+                    <%= button_to "Revoke",
+                        revoke_admin_api_key_path(api_key),
+                        method: :post,
+                        class: "rp-btn rp-btn--danger rp-btn--sm",
+                        data: { turbo_confirm: "Revoke this API key?" } %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <%= rp_empty_state("No API keys yet.", link_text: "Create your first API key", link_path: new_admin_api_key_path) %>
+    <% end %>
+  </div>
+</div>
+
+<div class="rp-card rp-card--padded rp-card--section">
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h2 class="rp-section-title">Agent Bootstrap Keys</h2>
+    </div>
+
+    <% if @agent_bootstrap_keys.any? %>
+      <div class="rp-table--responsive">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th><%= rp_table_header("Name") %></th>
+              <th><%= rp_table_header("Prefix") %></th>
+              <th><%= rp_table_header("Status") %></th>
+              <th><%= rp_table_header("Used") %></th>
+              <th><%= rp_table_header("Expires") %></th>
+              <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @agent_bootstrap_keys.each do |bootstrap_key| %>
+              <% bootstrap_status_type = case bootstrap_key.status
+                  when "active" then :published
+                  when "used" then :completed
+                  when "expired" then :draft
+                  else :failed
+                  end %>
+              <tr>
+                <td class="rp-table-primary"><%= bootstrap_key.name %></td>
+                <td class="rp-table-secondary"><code><%= bootstrap_key.token_prefix %></code></td>
+                <td><%= rp_status_badge(bootstrap_key.status, type: bootstrap_status_type) %></td>
+                <td><%= bootstrap_key.used_at ? l(bootstrap_key.used_at, format: :short) : "No" %></td>
+                <td><%= l(bootstrap_key.expires_at, format: :short) %></td>
+                <td class="rp-table-actions">
+                  <% if bootstrap_key.active? %>
+                    <%= button_to "Revoke",
+                        revoke_admin_agent_bootstrap_key_path(bootstrap_key),
+                        method: :post,
+                        class: "rp-btn rp-btn--danger rp-btn--sm",
+                        data: { turbo_confirm: "Revoke this bootstrap key?" } %>
+                  <% else %>
+                    <span class="rp-hint">No actions</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <%= rp_empty_state("No bootstrap keys yet.", link_text: "Create your first bootstrap key", link_path: new_admin_agent_bootstrap_key_path) %>
+    <% end %>
+  </div>
 </div>

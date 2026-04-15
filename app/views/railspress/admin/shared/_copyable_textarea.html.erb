@@ -1,0 +1,17 @@
+<div class="rp-form-group">
+  <label class="rp-label"><%= label %></label>
+  <% textarea_classes = ["rp-input", "rp-input--mono", "rp-input--code", local_assigns[:textarea_class]].compact.join(" ") %>
+  <textarea id="<%= id %>"
+            class="<%= textarea_classes %>"
+            rows="<%= local_assigns.fetch(:rows, 4) %>"
+            readonly><%= value %></textarea>
+  <% if local_assigns[:hint].present? %>
+    <p class="rp-hint"><%= hint %></p>
+  <% end %>
+  <% button_variant = local_assigns.fetch(:button_class, "rp-btn--accent") %>
+  <button type="button"
+          class="rp-btn rp-btn--sm <%= button_variant %>"
+          data-copy-target="<%= id %>">
+    <%= local_assigns.fetch(:button_text, "Copy") %>
+  </button>
+</div>

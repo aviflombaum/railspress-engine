@@ -228,6 +228,59 @@
   }
 
   // ============================================
+  // Copy-to-Clipboard Buttons
+  // ============================================
+
+  function initCopyButtons() {
+    const copyButtons = document.querySelectorAll('[data-copy-target]');
+
+    if (!copyButtons.length) return;
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+
+      return new Promise(function(resolve, reject) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+
+        try {
+          const copied = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          copied ? resolve() : reject(new Error('Copy failed'));
+        } catch (error) {
+          document.body.removeChild(textarea);
+          reject(error);
+        }
+      });
+    }
+
+    copyButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const targetId = button.dataset.copyTarget;
+        const source = document.getElementById(targetId);
+        if (!source) return;
+
+        const originalLabel = button.textContent;
+        copyText(source.value || source.textContent || '').then(function() {
+          button.textContent = 'Copied';
+          setTimeout(function() { button.textContent = originalLabel; }, 1500);
+        }).catch(function() {
+          button.textContent = 'Copy failed';
+          setTimeout(function() { button.textContent = originalLabel; }, 1500);
+        });
+      });
+    });
+  }
+
+  // ============================================
   // Initialize on DOM Ready
   // ============================================
 
@@ -238,6 +291,7 @@
     initDeleteConfirmation();
     initFlashMessages();
     initFormValidation();
+    initCopyButtons();
   }
 
   if (document.readyState === 'loading') {

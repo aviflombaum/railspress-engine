@@ -9,6 +9,10 @@
   flex-direction: column;
 }
 
+.rp-form--spacious {
+  gap: var(--rp-space-lg);
+}
+
 .rp-form--narrow {
   max-width: 560px;
 }
@@ -130,6 +134,23 @@
 .rp-input--mono {
   font-family: var(--rp-font-mono);
   font-size: 0.875rem;
+}
+
+.rp-input--code {
+  background: var(--rp-sidebar-bg);
+  color: var(--rp-sidebar-text-active);
+  border-color: var(--rp-sidebar-hover);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  line-height: 1.6;
+}
+
+.rp-input--code::placeholder {
+  color: var(--rp-sidebar-text);
+}
+
+.rp-input--code:focus {
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-light), inset 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 textarea.rp-input {

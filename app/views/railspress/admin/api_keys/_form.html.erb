@@ -1,14 +1,14 @@
 <%= form_with model: [:admin, api_key], class: "rp-form rp-form--narrow" do |form| %>
   <%= rp_form_errors(api_key) %>
 
-  <%= rp_hint("Keys currently grant full access to API resources that are exposed in this version.") %>
+  <%= rp_hint("API keys currently grant full access to API resources that are exposed in this version.") %>
 
   <%= rp_string_field(
         form,
         :name,
         primary: true,
         required: true,
-        label: "Key Name",
+        label: "API Key Name",
         placeholder: "e.g., Production Sync Worker",
         hint: "Use a descriptive name so you can identify this key later."
       ) %>
@@ -16,8 +16,8 @@
   <%= rp_datetime_field(
         form,
         :expires_at,
-        label: "Expiration (optional)",
-        hint: "Leave blank if this key should not expire.",
+        label: "Expiration",
+        hint: "Default is no expiration. Set a custom date/time if you want this key to expire.",
         step: 60
       ) %>
 

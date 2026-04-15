@@ -3,20 +3,38 @@
 <h1 class="rp-page-title rp-page-title--standalone">API Key Created</h1>
 
 <div class="rp-card rp-card--padded">
-  <div class="rp-form rp-form--narrow">
+  <div class="rp-form rp-form--spacious">
     <p class="rp-hint">
       Copy this key now. For security reasons it will not be shown again.
     </p>
 
-    <div class="rp-form-group">
-      <label class="rp-label">Bearer Token</label>
-      <textarea class="rp-input rp-input--mono" rows="4" readonly><%= @plain_token %></textarea>
-      <p class="rp-hint">Use this value as <code>Authorization: Bearer &lt;token&gt;</code>.</p>
-    </div>
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-api-key-token",
+        label: "Bearer Token",
+        value: @plain_token,
+        rows: 4,
+        hint: "Use this as Authorization: Bearer <token> (or save it to ~/.railspress_token for reuse).",
+        button_text: "Copy Token" %>
+
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-api-key-quick-start",
+        label: "API Quick Start",
+        value: @api_key_quick_start,
+        rows: 3,
+        hint: "This verifies connectivity and capabilities via /api/v1/prime.",
+        button_text: "Copy Quick Start" %>
+
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-api-key-instructions",
+        label: "API Key Instructions",
+        value: @api_key_instructions,
+        rows: 14,
+        hint: "Draft is default; publishing is supported when explicitly requested.",
+        button_text: "Copy Instructions" %>
 
     <div class="rp-form-actions">
-      <%= link_to "Create Another Key", new_admin_api_key_path, class: "rp-btn rp-btn--primary" %>
-      <%= link_to "Back to API Keys", admin_api_keys_path, class: "rp-btn rp-btn--secondary" %>
+      <%= link_to "Create Another API Key", new_admin_api_key_path, class: "rp-btn rp-btn--primary" %>
+      <%= link_to "Back to Agents & API", admin_api_keys_path, class: "rp-btn rp-btn--secondary" %>
     </div>
   </div>
 </div>

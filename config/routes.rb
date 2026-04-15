@@ -10,6 +10,11 @@ Railspress::Engine.routes.draw do
         post :revoke
       end
     end
+    resources :agent_bootstrap_keys, only: [ :new, :create ] do
+      member do
+        post :revoke
+      end
+    end
 
     # Content Element CMS (opt-in via config.enable_cms)
     if Railspress.cms_enabled?
@@ -76,6 +81,12 @@ Railspress::Engine.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resource :prime, only: [ :show ], controller: "prime"
+      resources :agent_keys, only: [] do
+        collection do
+          post :exchange, to: "agent_key_exchanges#create"
+        end
+      end
       resources :post_imports, path: "posts/imports", only: [ :create, :show ]
       resources :posts, only: [ :index, :show, :create, :update, :destroy ] do
         resource :header_image, only: [ :show, :update, :destroy ], controller: "post_header_images" do

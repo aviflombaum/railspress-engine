@@ -1,0 +1,38 @@
+<% content_for :title, "Agent Bootstrap Key Created" %>
+
+<h1 class="rp-page-title rp-page-title--standalone">Agent Bootstrap Key Created</h1>
+
+<div class="rp-card rp-card--padded">
+  <div class="rp-form rp-form--spacious">
+    <p class="rp-hint">
+      Copy this bootstrap key now. It is one-time use and will not be shown again.
+    </p>
+
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-bootstrap-key-token",
+        label: "Bootstrap Token",
+        value: @plain_bootstrap_token,
+        rows: 4,
+        hint: "Use this once at #{exchange_api_v1_agent_keys_path} to mint a real API key.",
+        button_text: "Copy Bootstrap Token" %>
+
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-bootstrap-quick-start",
+        label: "Bootstrap Quick Start",
+        value: @bootstrap_quick_start,
+        rows: 6,
+        button_text: "Copy Quick Start" %>
+
+    <%= render "railspress/admin/shared/copyable_textarea",
+        id: "rp-bootstrap-instructions",
+        label: "Agent Setup Instructions",
+        value: @bootstrap_instructions,
+        rows: 15,
+        button_text: "Copy Instructions" %>
+
+    <div class="rp-form-actions">
+      <%= link_to "Create Another Bootstrap Key", new_admin_agent_bootstrap_key_path, class: "rp-btn rp-btn--primary" %>
+      <%= link_to "Back to Agents & API", admin_api_keys_path, class: "rp-btn rp-btn--secondary" %>
+    </div>
+  </div>
+</div>

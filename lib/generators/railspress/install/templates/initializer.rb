@@ -34,4 +34,7 @@ Railspress.configure do |config|
   # config.enable_api
   # config.current_api_actor_method = :current_user
   # config.current_api_actor_proc = -> { Current.user }
+  # Optional: force a canonical public base URL in generated API instructions.
+  # Falls back to Rails.application.routes.default_url_options, then request host.
+  # config.public_base_url = "https://blog.example.com"
 end

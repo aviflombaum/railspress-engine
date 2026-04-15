@@ -59,6 +59,18 @@
   background: #8f3436;
 }
 
+.rp-btn--accent {
+  background: var(--rp-success-light);
+  color: var(--rp-success);
+  border-color: rgba(74, 124, 89, 0.28);
+}
+
+.rp-btn--accent:hover {
+  background: #dbeadf;
+  border-color: rgba(74, 124, 89, 0.5);
+  color: #365f45;
+}
+
 .rp-btn--text {
   background: none;
   border: none;

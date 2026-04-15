@@ -12,6 +12,7 @@ module Railspress
                   :current_author_proc,
                   :current_api_actor_method,
                   :current_api_actor_proc,
+                  :public_base_url,
                   :author_scope,
                   :author_display_method,
                   :words_per_minute,
@@ -36,6 +37,7 @@ module Railspress
       @current_author_proc = nil
       @current_api_actor_method = :current_user
       @current_api_actor_proc = nil
+      @public_base_url = nil
       @author_scope = nil
       @author_display_method = :name
       @words_per_minute = 200
@@ -279,6 +281,10 @@ module Railspress
 
     def current_api_actor_proc
       configuration.current_api_actor_proc
+    end
+
+    def public_base_url
+      configuration.public_base_url
     end
 
     def words_per_minute

@@ -220,6 +220,21 @@ config.current_api_actor_proc = -> { RequestStore.store[:current_user] }
 
 **Default:** `nil` (uses `current_api_actor_method` instead)
 
+#### `public_base_url`
+
+Optional canonical base URL used in admin-generated API/agent instructions.
+
+If not set, RailsPress resolves the URL in this order:
+
+1. `Rails.application.routes.default_url_options` (host/protocol/port/script_name)
+2. Current request base URL (`request.base_url`)
+
+```ruby
+config.public_base_url = "https://blog.example.com"
+```
+
+**Default:** `nil`
+
 ### Reading Time
 
 #### `words_per_minute`

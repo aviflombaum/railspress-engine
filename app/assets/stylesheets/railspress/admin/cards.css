@@ -14,6 +14,14 @@
   padding: var(--rp-space-xl);
 }
 
+.rp-card--spaced {
+  margin-bottom: var(--rp-space-2xl);
+}
+
+.rp-card--section + .rp-card--section {
+  margin-top: var(--rp-space-2xl);
+}
+
 /* Detail list for show views */
 .rp-detail-list {
   padding: var(--rp-space-lg);

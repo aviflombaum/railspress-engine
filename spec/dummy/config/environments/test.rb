@@ -33,4 +33,11 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Request specs default to www.example.com, and some specs override host!.
+  # Allow these hosts so HostAuthorization does not block test requests.
+  config.hosts << "www.example.com"
+  config.hosts << "request-host.test"
+  config.hosts << "localhost"
+  config.hosts << /\A127\.0\.0\.1(?::\d+)?\z/
 end

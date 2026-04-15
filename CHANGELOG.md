@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-04-15
+
+### Added
+
+- **Host auth concern hook**: Added `config.admin_auth_concern` so host apps can register a concern (for example `RailspressAdminAuth`) that RailsPress includes into `Railspress::Admin::BaseController` in a reload-safe `to_prepare` hook.
+- **Admin auth concern resolution**: Added `Railspress.resolved_admin_auth_concern` to resolve concern configuration from Module/String/Symbol (including snake_case symbols).
+- **Request coverage for API actor auth wiring**: Added request specs for method-based API actor lookup via configured admin concern and request-scoped proc strategies.
+
+### Changed
+
+- **Auth documentation and installer template**: Updated docs and generated initializer comments to recommend the cleaner host concern pattern for `current_user` availability in RailsPress admin, with proc hooks documented as fallback.
+
 ## [1.3.0] - 2026-04-15
 
 ### Added

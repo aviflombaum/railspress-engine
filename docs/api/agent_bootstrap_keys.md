@@ -1,12 +1,12 @@
 # Agent Bootstrap Keys
 
-Agent bootstrap keys are short-lived, one-time tokens designed for agent onboarding.
+Agent bootstrap keys are short-lived, one-time onboarding tokens.
 
 - Token format: `rpb_<environment>_<prefix>_<secret>`
 - Default expiration: 1 hour
 - One-time exchange: once exchanged, token is invalid
 
-Use bootstrap keys when you need to place a token in agent instructions without exposing a long-lived API key directly.
+Use bootstrap keys when you want to give an agent setup instructions without exposing a long-lived API key directly.
 
 ## Exchange Endpoint
 
@@ -32,7 +32,7 @@ Successful response (`201`) returns a one-time API key token:
   "data": {
     "api_key": {
       "id": 42,
-      "name": "Cora Setup (API Key)",
+      "name": "Claude Code Setup (API Key)",
       "token": "rp_test_...",
       "expires_at": null
     },
@@ -52,4 +52,9 @@ Admin endpoints:
 - `POST /railspress/admin/agent_bootstrap_keys`
 - `POST /railspress/admin/agent_bootstrap_keys/:id/revoke`
 
-The one-time bootstrap token is shown only on create.
+UI location:
+
+- `/railspress/admin/api_keys` (**Agents & API** page)
+- Click **New Agent Key**
+
+The one-time bootstrap token is only shown on create.

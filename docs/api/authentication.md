@@ -1,6 +1,6 @@
 # API Authentication
 
-RailsPress API uses bearer tokens from admin-managed keys.
+RailsPress API uses bearer tokens managed from admin.
 
 ## Enable API
 
@@ -49,7 +49,7 @@ Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetc
 
 ## Bootstrap Exchange Flow
 
-1. Create bootstrap key in admin (`/railspress/admin/api_keys`)
+1. Create a key in admin (`/railspress/admin/api_keys`) via **New Agent Key** on the **Agents & API** page.
 2. Exchange bootstrap key for API key:
 
 ```bash
@@ -96,3 +96,4 @@ Bootstrap keys:
 - Token plaintext is shown once at create/rotate/exchange.
 - API keys are full-access for exposed v1 resources.
 - Bootstrap keys cannot call content endpoints directly.
+- Bootstrap keys are short-lived by default (1 hour).

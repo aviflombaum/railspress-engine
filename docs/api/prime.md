@@ -4,7 +4,7 @@ Endpoint: `GET /railspress/api/v1/prime`
 
 Authentication: bearer token (see [authentication.md](authentication.md)).
 
-Use this endpoint as a connectivity handshake for agents and integrations.
+Use this endpoint as the first connectivity handshake for agents and integrations.
 
 It returns:
 

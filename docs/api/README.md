@@ -24,12 +24,14 @@ Base path (default mount): `/railspress/api/v1`
 Railspress.configure do |config|
   config.enable_api
   config.current_api_actor_method = :current_user
+  # Optional canonical host used in generated instruction snippets:
+  # config.public_base_url = "https://blog.example.com"
 end
 ```
 
-2. Create a bootstrap key in RailsPress admin (`/railspress/admin/api_keys`):
+2. Open **Agents & API** in admin (`/railspress/admin/api_keys`) and create a bootstrap key:
 - Go to `/railspress/admin/api_keys`
-- Create an **Agent Bootstrap Key** and copy the one-time reveal instructions
+- Click **New Agent Key** and copy the one-time reveal instructions
 - Exchange the bootstrap token once to mint an API key
 
 3. Call the API with the API key bearer token:
@@ -44,3 +46,4 @@ curl -H "Authorization: Bearer rp_test_..." \
 - API keys are full-access for currently exposed v1 resources.
 - Key lifecycle management is admin-only in v1.
 - Bootstrap keys are onboarding-only and cannot access content endpoints directly.
+- Token plaintext is shown once at create/rotate/exchange time.

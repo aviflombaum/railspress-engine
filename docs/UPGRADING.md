@@ -298,7 +298,9 @@ rails db:migrate
 
 2. Configure Active Record Encryption keys in your host app.
 3. Enable API in your RailsPress initializer (`config.enable_api`).
-4. Create API keys from `/railspress/admin/api_keys`.
+4. Open `/railspress/admin/api_keys` (Agents & API) and create:
+   - an **Agent Key** (bootstrap, one-time exchange), or
+   - an **API Key** (direct bearer token).
 
 See [Blocks & Inline Editing](INLINE_EDITING.md) and [Configuring](CONFIGURING.md) for full details.
 

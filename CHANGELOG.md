@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-15
+
+### Added
+
+- **Versioned JSON API (`v1`)**: Added authenticated CRUD endpoints for posts, categories, and tags under `/railspress/api/v1`.
+- **Post media API surface**: Added nested post resources for header image management, focal point updates, and per-context image overrides.
+- **Agent/bootstrap auth flow**: Added one-time bootstrap keys (`rpb_*`) with exchange endpoint (`POST /api/v1/agent_keys/exchange`) that mints API keys (`rp_*`).
+- **Prime endpoint**: Added `GET /railspress/api/v1/prime` for agent/integration capability handshake and key metadata.
+- **Markdown import API**: Added `POST /railspress/api/v1/posts/imports` and status polling for markdown/text/zip imports.
+- **Admin key management UI**: Added **Agents & API** admin section with create/reveal/rotate/revoke flows, copy-ready quick starts, and one-time token reveal UX.
+- **Active Record Encryption-backed key storage**: Added new key models and migrations for encrypted API key and bootstrap key secret material.
+- **API docs set**: Added end-user API docs for authentication, prime, posts, imports, categories, tags, and error behavior in `docs/api/*`.
+
+### Changed
+
+- **Instruction URL resolution**: Admin-generated API/agent instructions now resolve host in this order:
+  1) `config.public_base_url`, 2) `Rails.application.routes.default_url_options`, 3) request base URL.
+- **Sidebar IA**: Consolidated API setup and key management under a dedicated **Agents & API** section in admin navigation.
+- **Post API behavior**: Documented and enforced draft-by-default creation with explicit publish behavior.
+
+### Fixed
+
+- **Dummy app API readiness**: Updated dummy app setup/initializers so API features can be exercised end-to-end in development and specs.
+- **Admin author rendering robustness**: Hardened author display behavior used by admin post forms/listing serialization paths.
+
 ## [1.2.1] - 2026-04-14
 
 ### Added

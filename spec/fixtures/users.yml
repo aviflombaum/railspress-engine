@@ -1,0 +1,9 @@
+api_admin:
+  email_address: api-admin@example.com
+  first_name: Api
+  last_name: Admin
+
+api_operator:
+  email_address: api-operator@example.com
+  first_name: Api
+  last_name: Operator

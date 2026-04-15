@@ -664,6 +664,25 @@ module Railspress
       content_tag(:span, text, class: "rp-badge rp-badge--#{status}")
     end
 
+    # Returns a safe display string for an author record in admin views.
+    # Falls back through common attributes if configured display method is unavailable.
+    def rp_author_display(author)
+      return nil unless author
+
+      configured_method = Railspress.author_display_method
+      if configured_method.present? && author.respond_to?(configured_method)
+        configured_value = author.public_send(configured_method)
+        return configured_value if configured_value.present?
+      end
+
+      fallback_method = [ :name, :full_name, :display_name, :email, :email_address ]
+        .find { |method| author.respond_to?(method) && author.public_send(method).present? }
+
+      return author.public_send(fallback_method) if fallback_method
+
+      "Author ##{author.id || "unknown"}"
+    end
+
     # Renders a hint/help text below a form input.
     # @param text [String] the hint text
     # @return [String] rendered HTML

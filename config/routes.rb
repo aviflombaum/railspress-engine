@@ -4,6 +4,12 @@ Railspress::Engine.routes.draw do
     root "dashboard#index"
     resources :categories, except: [ :show ]
     resources :tags, except: [ :show ]
+    resources :api_keys, only: [ :index, :new, :create ] do
+      member do
+        post :rotate
+        post :revoke
+      end
+    end
 
     # Content Element CMS (opt-in via config.enable_cms)
     if Railspress.cms_enabled?
@@ -65,6 +71,21 @@ Railspress::Engine.routes.draw do
         put "/:id", to: "entities#update"
         delete "/:id", to: "entities#destroy"
       end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      resources :posts, only: [ :index, :show, :create, :update, :destroy ] do
+        resource :header_image, only: [ :show, :update, :destroy ], controller: "post_header_images" do
+          resource :focal_point, only: [ :show, :update ], controller: "post_header_image_focal_points"
+          resources :contexts, only: [ :index, :show, :update, :destroy ],
+                               controller: "post_header_image_contexts",
+                               param: :context
+        end
+      end
+      resources :categories, only: [ :index, :show, :create, :update, :destroy ]
+      resources :tags, only: [ :index, :show, :create, :update, :destroy ]
     end
   end
 end

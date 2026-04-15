@@ -10,6 +10,8 @@ module Railspress
     attr_accessor :author_class_name,
                   :current_author_method,
                   :current_author_proc,
+                  :current_api_actor_method,
+                  :current_api_actor_proc,
                   :author_scope,
                   :author_display_method,
                   :words_per_minute,
@@ -18,19 +20,22 @@ module Railspress
                   :post_image_variants,
                   :inline_editing_check
 
-    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :image_contexts
+    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :api_enabled, :image_contexts
 
     def initialize
       @authors_enabled = false
       @post_images_enabled = false
       @focal_points_enabled = false
       @cms_enabled = false
+      @api_enabled = false
       @image_contexts = default_image_contexts
       @post_image_variants = {}
       @inline_editing_check = nil
       @author_class_name = "User"
       @current_author_method = :current_user
       @current_author_proc = nil
+      @current_api_actor_method = :current_user
+      @current_api_actor_proc = nil
       @author_scope = nil
       @author_display_method = :name
       @words_per_minute = 200
@@ -56,6 +61,11 @@ module Railspress
     # Declarative setter: config.enable_cms
     def enable_cms
       @cms_enabled = true
+    end
+
+    # Declarative setter: config.enable_api
+    def enable_api
+      @api_enabled = true
     end
 
     # Validate configuration after the configure block completes.
@@ -212,6 +222,10 @@ module Railspress
       configuration.image_contexts
     end
 
+    def api_enabled?
+      configuration.api_enabled
+    end
+
     def author_class
       configuration.author_class_name.constantize
     end
@@ -231,12 +245,40 @@ module Railspress
       configuration.author_display_method
     end
 
+    # Returns a safe display string for an author record.
+    # Falls back through common attribute names when the configured display
+    # method is missing on the model.
+    def author_display_for(author)
+      return nil unless author
+
+      configured_method = author_display_method
+      if configured_method.present? && author.respond_to?(configured_method)
+        value = author.public_send(configured_method)
+        return value if value.present?
+      end
+
+      fallback_method = [ :name, :full_name, :display_name, :email, :email_address ]
+        .find { |method| author.respond_to?(method) && author.public_send(method).present? }
+
+      return author.public_send(fallback_method) if fallback_method
+
+      "Author ##{author.id || "unknown"}"
+    end
+
     def current_author_method
       configuration.current_author_method
     end
 
     def current_author_proc
       configuration.current_author_proc
+    end
+
+    def current_api_actor_method
+      configuration.current_api_actor_method
+    end
+
+    def current_api_actor_proc
+      configuration.current_api_actor_proc
     end
 
     def words_per_minute

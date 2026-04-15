@@ -6,7 +6,7 @@ module Railspress
       layout "railspress/admin"
       helper Railspress::AdminHelper
 
-      helper_method :current_author, :available_authors, :authors_enabled?, :post_images_enabled?
+      helper_method :current_author, :available_authors, :authors_enabled?, :post_images_enabled?, :current_api_actor
 
       # Authentication hook - to be configured later
       # before_action :authenticate_admin!
@@ -40,6 +40,14 @@ module Railspress
       def available_authors
         return [] unless authors_enabled?
         Railspress.available_authors
+      end
+
+      def current_api_actor
+        if Railspress.current_api_actor_proc
+          instance_exec(&Railspress.current_api_actor_proc)
+        elsif respond_to?(Railspress.current_api_actor_method, true)
+          send(Railspress.current_api_actor_method)
+        end
       end
     end
   end

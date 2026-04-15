@@ -26,4 +26,12 @@ Railspress.configure do |config|
   # config.inline_editing_check = ->(context) {
   #   context.controller.current_user&.admin?
   # }
+
+  # === API (opt-in) ===
+  # Enables API endpoints under /railspress/api/v1 and admin API key management.
+  # Requires Active Record Encryption keys in your host app config.
+  # Uncomment to enable:
+  # config.enable_api
+  # config.current_api_actor_method = :current_user
+  # config.current_api_actor_proc = -> { Current.user }
 end

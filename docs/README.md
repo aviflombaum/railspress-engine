@@ -26,6 +26,7 @@ Blocks are implemented as `ContentGroup` and `ContentElement` models internally.
 - **[INLINE_EDITING.md](INLINE_EDITING.md)** - Blocks and inline editing: editable site copy and images.
 - **[CONFIGURING.md](CONFIGURING.md)** - Configuration options for authors, header images, view overrides, and other features.
 - **[IMPORT_EXPORT.md](IMPORT_EXPORT.md)** - Bulk import/export for posts (markdown) and CMS content (ZIP).
+- **[api/README.md](api/README.md)** - Programmatic API: authentication, errors, and endpoint reference.
 - **[image-focal-point-system.md](image-focal-point-system.md)** - Focal point image cropping for posts and content elements.
 - **[THEMING.md](THEMING.md)** - CSS variables and theming customization for the admin interface.
 - **[ADMIN_HELPERS.md](ADMIN_HELPERS.md)** - Reference for admin view helper methods (forms, layouts, display).

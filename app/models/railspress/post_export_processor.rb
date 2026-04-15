@@ -85,8 +85,7 @@ module Railspress
       fm["meta_description"] = post.meta_description if post.meta_description.present?
 
       if Railspress.authors_enabled? && post.respond_to?(:author) && post.author.present?
-        display_method = Railspress.author_display_method
-        fm["author"] = post.author.public_send(display_method)
+        fm["author"] = author_display_for_export(post.author)
       end
 
       if post.header_image.attached?
@@ -157,6 +156,21 @@ module Railspress
         entry_name = prefix.present? ? File.join(prefix, relative_path) : relative_path
         zipfile.add(entry_name, file)
       end
+    end
+
+    def author_display_for_export(author)
+      display_method = Railspress.author_display_method
+      if display_method.present? && author.respond_to?(display_method)
+        configured_value = author.public_send(display_method)
+        return configured_value if configured_value.present?
+      end
+
+      fallback_method = [ :name, :full_name, :display_name, :email, :email_address ]
+        .find { |method| author.respond_to?(method) && author.public_send(method).present? }
+
+      return author.public_send(fallback_method) if fallback_method
+
+      "Author ##{author.id || "unknown"}"
     end
   end
 end

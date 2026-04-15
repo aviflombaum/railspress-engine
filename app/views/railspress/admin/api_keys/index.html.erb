@@ -1,0 +1,48 @@
+<% content_for :title, "API Keys" %>
+
+<%= rp_page_header "API Keys", "New API Key" => new_admin_api_key_path %>
+
+<div class="rp-card">
+  <% if @api_keys.any? %>
+    <div class="rp-table--responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th><%= rp_table_header("Name") %></th>
+            <th><%= rp_table_header("Prefix") %></th>
+            <th><%= rp_table_header("Status") %></th>
+            <th><%= rp_table_header("Last Used") %></th>
+            <th><%= rp_table_header("Expires") %></th>
+            <th class="rp-table-actions"><%= rp_table_header("Actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @api_keys.each do |api_key| %>
+            <tr>
+              <td class="rp-table-primary"><%= api_key.name %></td>
+              <td class="rp-table-secondary"><code><%= api_key.token_prefix %></code></td>
+              <td><%= rp_status_badge(api_key.status) %></td>
+              <td><%= api_key.last_used_at ? l(api_key.last_used_at, format: :short) : "Never" %></td>
+              <td><%= api_key.expires_at ? l(api_key.expires_at, format: :short) : "Never" %></td>
+              <td class="rp-table-actions">
+                <%= button_to "Rotate",
+                    rotate_admin_api_key_path(api_key),
+                    method: :post,
+                    class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+                <% unless api_key.revoked_at %>
+                  <%= button_to "Revoke",
+                      revoke_admin_api_key_path(api_key),
+                      method: :post,
+                      class: "rp-btn rp-btn--danger rp-btn--sm",
+                      data: { turbo_confirm: "Revoke this API key?" } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%= rp_empty_state("No API keys yet.", link_text: "Create your first API key", link_path: new_admin_api_key_path) %>
+  <% end %>
+</div>

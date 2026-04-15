@@ -2,7 +2,7 @@
   <div>
     <h1 class="rp-page-title"><%= @post.title %></h1>
     <% if authors_enabled? && @post.author %>
-      <p class="rp-byline">by <%= @post.author.public_send(Railspress.author_display_method) %></p>
+      <p class="rp-byline">by <%= rp_author_display(@post.author) %></p>
     <% end %>
   </div>
   <div class="rp-page-actions">

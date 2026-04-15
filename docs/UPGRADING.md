@@ -145,6 +145,7 @@ RailsPress uses a fixed timestamp prefix pattern:
 | `20241218000004` | create_railspress_post_tags |
 | `20241218000005` | create_railspress_imports |
 | `20241218000006` | create_railspress_exports |
+| `20260415000001` | create_railspress_api_keys |
 
 New migrations increment the suffix (000007, 000008, etc.).
 
@@ -283,6 +284,21 @@ JavaScript upgrade notes:
 - Keep/add `import "railspress"` in your host `app/javascript/application.js` when using host-page features like inline CMS editing.
 - If you previously pinned `lexxy` manually in host `config/importmap.rb`, you can remove that pin (engine importmap now provides it).
 - If you override RailsPress admin layout in your app, add back the admin import line manually.
+
+### API support upgrade notes
+
+If you are upgrading to a version that includes API support:
+
+1. Copy and run migrations:
+
+```bash
+rails railspress:install:migrations
+rails db:migrate
+```
+
+2. Configure Active Record Encryption keys in your host app.
+3. Enable API in your RailsPress initializer (`config.enable_api`).
+4. Create API keys from `/railspress/admin/api_keys`.
 
 See [Blocks & Inline Editing](INLINE_EDITING.md) and [Configuring](CONFIGURING.md) for full details.
 

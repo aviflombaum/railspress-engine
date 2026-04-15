@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Railspress::Admin::Posts", type: :request do
-  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
+  fixtures "users", "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
 
   let(:category) { railspress_categories(:technology) }
 
@@ -29,6 +29,17 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
     it "returns success" do
       get railspress.new_admin_post_path
       expect(response).to have_http_status(:success)
+    end
+
+    it "falls back to a safe author label when configured display method is missing" do
+      allow(Railspress).to receive(:authors_enabled?).and_return(true)
+      allow(Railspress).to receive(:available_authors).and_return([ users(:api_admin) ])
+      allow(Railspress).to receive(:author_display_method).and_return(:name)
+
+      get railspress.new_admin_post_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(users(:api_admin).email_address)
     end
   end
 

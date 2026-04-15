@@ -1,0 +1,22 @@
+<% content_for :title, "API Key Created" %>
+
+<h1 class="rp-page-title rp-page-title--standalone">API Key Created</h1>
+
+<div class="rp-card rp-card--padded">
+  <div class="rp-form rp-form--narrow">
+    <p class="rp-hint">
+      Copy this key now. For security reasons it will not be shown again.
+    </p>
+
+    <div class="rp-form-group">
+      <label class="rp-label">Bearer Token</label>
+      <textarea class="rp-input rp-input--mono" rows="4" readonly><%= @plain_token %></textarea>
+      <p class="rp-hint">Use this value as <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+    </div>
+
+    <div class="rp-form-actions">
+      <%= link_to "Create Another Key", new_admin_api_key_path, class: "rp-btn rp-btn--primary" %>
+      <%= link_to "Back to API Keys", admin_api_keys_path, class: "rp-btn rp-btn--secondary" %>
+    </div>
+  </div>
+</div>

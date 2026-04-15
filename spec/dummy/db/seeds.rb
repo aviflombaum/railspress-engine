@@ -1,6 +1,8 @@
 # Seed content groups and elements for CMS demo
 puts "Seeding CMS content..."
 
+User.find_or_create_by!(email_address: "demo@railspress.local")
+
 headers = Railspress::ContentGroup.find_or_create_by!(name: "Headers") do |g|
   g.description = "Site header content elements"
 end

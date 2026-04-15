@@ -102,6 +102,30 @@ When CMS is disabled, calling `cms_element` or `cms_value` in a view raises `Rai
 
 **Inline editing** builds on top of CMS. See [Inline Editing](INLINE_EDITING.md) for how to enable right-click editing of CMS content on public pages.
 
+#### `enable_api`
+
+Enables the RailsPress JSON API (`/api/v1`) and admin API key management pages.
+
+```ruby
+Railspress.configure do |config|
+  config.enable_api
+end
+```
+
+**Default:** Disabled
+
+When enabled:
+- API endpoints are available under `/blog/api/v1/*` (assuming engine mounted at `/blog`)
+- API key management is available at `/blog/admin/api_keys`
+
+**Requirements:** Active Record Encryption keys must be configured in your host app.
+
+```ruby
+Rails.application.config.active_record.encryption.primary_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY")
+Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY")
+Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT")
+```
+
 ### Author Configuration
 
 These options are only relevant when `enable_authors` is called.
@@ -169,6 +193,32 @@ config.current_author_proc = -> { RequestStore.store[:current_user] }
 ```
 
 **Default:** `nil` (uses `current_author_method` instead)
+
+### API Actor Configuration
+
+These options are used when creating/rotating/revoking API keys in the admin.
+
+#### `current_api_actor_method`
+
+The controller method used to identify the currently signed-in actor for API key lifecycle actions.
+
+```ruby
+config.current_api_actor_method = :current_user    # default
+config.current_api_actor_method = :current_admin   # custom auth
+```
+
+**Default:** `:current_user`
+
+#### `current_api_actor_proc`
+
+Alternative to `current_api_actor_method` for custom request-scoped auth logic.
+
+```ruby
+config.current_api_actor_proc = -> { Current.user }
+config.current_api_actor_proc = -> { RequestStore.store[:current_user] }
+```
+
+**Default:** `nil` (uses `current_api_actor_method` instead)
 
 ### Reading Time
 
@@ -277,10 +327,12 @@ Railspress.authors_enabled?        # => true/false
 Railspress.post_images_enabled?    # => true/false
 Railspress.focal_points_enabled?   # => true/false
 Railspress.cms_enabled?            # => true/false
+Railspress.api_enabled?            # => true/false
 Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name
 Railspress.current_author_method   # => :current_user
+Railspress.current_api_actor_method # => :current_user
 Railspress.blog_path               # => "/blog"
 ```
 

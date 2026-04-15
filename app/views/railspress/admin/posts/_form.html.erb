@@ -159,7 +159,7 @@
         <% if authors_enabled? %>
           <div class="rp-form-group">
             <%= form.label :author_id, "Author", class: "rp-label" %>
-            <%= form.collection_select :author_id, available_authors, :id, Railspress.author_display_method,
+            <%= form.collection_select :author_id, available_authors, :id, ->(author) { rp_author_display(author) },
                 { prompt: "No author", selected: @post.author_id },
                 { class: "rp-select" } %>
           </div>

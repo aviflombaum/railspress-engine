@@ -94,6 +94,18 @@
     <% end %>
 
     <div class="rp-nav-divider"></div>
+    <% if Railspress.api_enabled? %>
+      <%= link_to railspress.admin_api_keys_path, class: "rp-nav-link #{controller_name == 'api_keys' ? 'rp-nav-link--active' : ''}" do %>
+        <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="16.5" cy="7.5" r="3.5"/>
+          <path d="M13.9 10.1 6 18v3h3v-2h2v-2h1.5l1.4-1.4"/>
+        </svg>
+        <span class="rp-nav-text">API</span>
+      <% end %>
+
+      <div class="rp-nav-divider"></div>
+    <% end %>
+
     <%= link_to "/", class: "rp-nav-link" do %>
       <svg class="rp-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>

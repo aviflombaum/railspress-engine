@@ -11,7 +11,7 @@
   </td>
   <td><%= post.category&.name || "—" %></td>
   <% if authors_enabled? %>
-    <td><%= post.author&.public_send(Railspress.author_display_method) || "—" %></td>
+    <td><%= post.author ? rp_author_display(post.author) : "—" %></td>
   <% end %>
   <td>
     <span class="rp-badge rp-badge--<%= post.display_status %>">

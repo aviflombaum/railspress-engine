@@ -4,6 +4,8 @@ Base path: `/railspress/api/v1/posts`
 
 Authentication: bearer token (see [authentication.md](authentication.md)).
 
+For markdown/text/zip attachment imports, use [post_imports.md](post_imports.md).
+
 ## Response Shape
 
 Single resource:

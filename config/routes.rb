@@ -76,6 +76,7 @@ Railspress::Engine.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :post_imports, path: "posts/imports", only: [ :create, :show ]
       resources :posts, only: [ :index, :show, :create, :update, :destroy ] do
         resource :header_image, only: [ :show, :update, :destroy ], controller: "post_header_images" do
           resource :focal_point, only: [ :show, :update ], controller: "post_header_image_focal_points"

@@ -16,6 +16,7 @@ module Dummy
     # Use absolute paths so db:migrate and maintain_test_schema! work
     # regardless of working directory (engine root vs dummy app root).
     config.paths["db/migrate"] << Railspress::Engine.root.join("db/migrate").to_s
-       config.hosts << "local.avi.nyc"
+    config.hosts << "local.avi.nyc"
+    config.hosts << "demo.railspress.org"
   end
 end

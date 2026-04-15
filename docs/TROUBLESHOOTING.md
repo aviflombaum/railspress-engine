@@ -167,6 +167,38 @@ Railspress.configure do |config|
 end
 ```
 
+### API endpoints return 404 behind route constraints
+
+**Symptom**: `/railspress/api/v1/*` returns `404` when RailsPress is mounted behind an app-level admin constraint.
+
+**Cause**: The host route constraint blocks API requests before RailsPress token auth can run.
+
+**Solution**: Allow `/railspress/api/*` through your constraint while keeping admin paths protected.
+
+```ruby
+class AdminConstraint
+  def self.matches?(request)
+    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
+
+    session_id = request.cookie_jar.signed[:session_id]
+    return false if session_id.blank?
+
+    Session.includes(:user).find_by(id: session_id)&.user&.admin?
+  end
+end
+
+Rails.application.routes.draw do
+  constraints AdminConstraint do
+    mount Railspress::Engine => "/railspress"
+  end
+end
+```
+
+Expected behavior after this change:
+
+- Unauthenticated `/railspress/admin/*` remains blocked by host auth.
+- Unauthenticated `/railspress/api/v1/*` returns `401` (not `404`), indicating RailsPress API auth is active.
+
 ---
 
 ## Entity Issues

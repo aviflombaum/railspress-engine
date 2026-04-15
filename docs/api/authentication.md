@@ -31,6 +31,34 @@ When generating admin API/agent instruction snippets, RailsPress resolves the ba
 2. `Rails.application.routes.default_url_options`
 3. current request base URL
 
+## Route Constraints
+
+If your host app mounts RailsPress behind an admin route constraint, ensure API paths are allowed through the constraint. Otherwise agents will see `404` before RailsPress API auth runs.
+
+```ruby
+class AdminConstraint
+  def self.matches?(request)
+    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
+
+    session_id = request.cookie_jar.signed[:session_id]
+    return false if session_id.blank?
+
+    Session.includes(:user).find_by(id: session_id)&.user&.admin?
+  end
+end
+
+Rails.application.routes.draw do
+  constraints AdminConstraint do
+    mount Railspress::Engine => "/railspress"
+  end
+end
+```
+
+Expected behavior:
+
+- `/railspress/admin/*` remains host-auth protected.
+- `/railspress/api/*` reaches RailsPress and then enforces bearer token auth (`401` without a token).
+
 ## Active Record Encryption Requirement
 
 `Railspress::ApiKey` and `Railspress::AgentBootstrapKey` store key secret material with Active Record Encryption.

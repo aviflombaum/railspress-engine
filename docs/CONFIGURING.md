@@ -432,6 +432,21 @@ Railspress.configure do |config|
 end
 ```
 
+If RailsPress is mounted behind a host route constraint, allow API paths through so bearer-token auth can execute:
+
+```ruby
+class AdminConstraint
+  def self.matches?(request)
+    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
+
+    session_id = request.cookie_jar.signed[:session_id]
+    return false if session_id.blank?
+
+    Session.includes(:user).find_by(id: session_id)&.user&.admin?
+  end
+end
+```
+
 Alternative: protect the admin path from your application controller:
 
 ```ruby

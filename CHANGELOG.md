@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-04-15
+
+### Changed
+
+- **Host route-constraint guidance**: Updated configuration, API authentication, and troubleshooting docs to cover apps that mount RailsPress behind admin route constraints and must allow `/railspress/api/*` through for bearer-token auth.
+- **API onboarding troubleshooting**: Added explicit diagnostics and a concrete `AdminConstraint` example so teams can resolve `404` API responses caused by host-level constraints before RailsPress auth runs.
+
 ## [1.3.1] - 2026-04-15
 
 ### Added

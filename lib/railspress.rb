@@ -6,6 +6,8 @@ require "lexxy"
 module Railspress
   class ConfigurationError < StandardError; end
 
+  require "railspress/cms"
+
   class Configuration
     attr_accessor :author_class_name,
                   :current_author_method,

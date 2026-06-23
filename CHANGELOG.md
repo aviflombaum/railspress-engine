@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-06-23
+
+### Fixed
+
+- **CMS helper load order**: Fixed a Rails 8.1 boot-order issue where host apps could raise `NameError: uninitialized constant Railspress::CmsHelper` while Action View loaded before the engine helper constant was available.
+
+### Changed
+
+- **CMS API boundaries**: Moved the non-view `Railspress::CMS` query/cache API into `lib/railspress/cms.rb` while keeping Action View rendering helpers in `app/helpers/railspress/cms_helper.rb`.
+
 ## [1.3.2] - 2026-04-15
 
 ### Changed

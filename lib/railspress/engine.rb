@@ -15,6 +15,8 @@ module Railspress
 
     # Make CMS helper available to host application views (or stub when disabled)
     initializer "railspress.cms_helper" do
+      ActiveSupport::Dependencies.require_dependency(root.join("app/helpers/railspress/cms_helper").to_s)
+
       ActiveSupport.on_load(:action_view) do
         if Railspress.cms_enabled?
           include Railspress::CmsHelper

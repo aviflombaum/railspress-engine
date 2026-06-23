@@ -29,52 +29,12 @@ module Railspress
       end
     end
 
-    # Request-level cache to avoid repeated queries
     def self.cache
-      @cache ||= {}
+      Railspress::CMS.cache
     end
 
     def self.clear_cache
-      @cache = {}
-    end
-
-    # Chainable query class for content retrieval
-    class CMSQuery
-      def initialize
-        @group_name = nil
-        @element_name = nil
-      end
-
-      def find(group_name)
-        @group_name = group_name
-        self
-      end
-
-      def load(element_name)
-        @element_name = element_name
-        self
-      end
-
-      def element
-        return nil unless @group_name && @element_name
-
-        cache_key = "#{@group_name}:#{@element_name}"
-        cached = CmsHelper.cache[cache_key]
-        return cached if cached
-
-        group = Railspress::ContentGroup.active.find_by(name: @group_name)
-        return nil unless group
-
-        found = group.content_elements.active.find_by(name: @element_name)
-        CmsHelper.cache[cache_key] = found if found
-        found
-      rescue ActiveRecord::RecordNotFound
-        nil
-      end
-
-      def value
-        element&.value
-      end
+      Railspress::CMS.clear_cache
     end
 
     # Get a content element's value by group and element name.
@@ -145,9 +105,9 @@ module Railspress
     end
 
     # Return a new CMSQuery instance for chainable API in views.
-    # @return [CMSQuery]
+    # @return [Railspress::CMS::Query]
     def cms
-      CmsHelper::CMSQuery.new
+      Railspress::CMS::Query.new
     end
 
     private
@@ -303,17 +263,5 @@ module Railspress
       }
       .rp-inline-actions__admin-link:hover { color: #3b82f6; }
     CSS
-  end
-
-  # Global CMS module for chainable API access outside views.
-  # Usage: Railspress::CMS.find("group").load("element").value
-  module CMS
-    def self.find(group_name)
-      unless Railspress.cms_enabled?
-        raise Railspress::ConfigurationError,
-          "CMS is not enabled. Add `config.enable_cms` to your Railspress initializer."
-      end
-      CmsHelper::CMSQuery.new.find(group_name)
-    end
   end
 end

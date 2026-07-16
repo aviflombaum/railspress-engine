@@ -620,7 +620,7 @@ See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 RailsPress uses [Lexxy](https://github.com/basecamp/lexxy), Basecamp's rich text editor built on Meta's Lexical framework. It replaces the default Trix editor that ships with ActionText.
 
-RailsPress requires `lexxy >= 0.9.0.beta` (no upper pin). To update to the newest available Lexxy in your app:
+RailsPress depends on Lexxy and is tested with Lexxy `0.9.24`, its first stable release. To update Lexxy in your app:
 
 ```bash
 bundle update lexxy
@@ -654,7 +654,7 @@ If a Lexxy update introduces breaking changes to the editor, you can pin to a sp
 
 ```ruby
 # Gemfile
-gem "lexxy", "= 0.9.8.beta"  # Example exact pin; choose a version tested in your app
+gem "lexxy", "= 0.9.24"  # Example exact pin; choose a version tested in your app
 ```
 
 ### Other Dependencies
@@ -662,6 +662,6 @@ gem "lexxy", "= 0.9.8.beta"  # Example exact pin; choose a version tested in you
 | Gem | Purpose |
 |-----|---------|
 | `rails >= 8.1` | Framework (includes ActionText, Active Storage, Turbo) |
-| `lexxy >= 0.9.0.beta` | Rich text editor (replaces Trix) |
+| `lexxy` | Rich text editor (replaces Trix) |
 | `rubyzip >= 2.3` | ZIP file handling for CMS import/export |
 | `redcarpet >= 3.6` | Markdown parsing for post import |

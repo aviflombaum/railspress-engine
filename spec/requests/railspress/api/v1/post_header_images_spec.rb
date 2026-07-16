@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Railspress::Api::V1::PostHeaderImages", type: :request do
-  fixtures "railspress/posts", :users
+  fixtures "railspress/categories", "railspress/posts", :users
 
   let(:actor) { users(:api_admin) }
   let(:api_token) { Railspress::ApiKey.issue!(name: "Post Header Image API", actor: actor).last }

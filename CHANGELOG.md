@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-15
+
+### Changed
+
+- **Lexxy stable release support**: Updated the bundled dependency set for Lexxy `0.9.24` and removed the obsolete beta-version constraint. RailsPress continues to manage Lexxy through its engine importmap and JavaScript entrypoint.
+- **Dependency refresh**: Updated direct and transitive dependencies, including rubyzip, RuboCop, and Rails ecosystem packages.
+
+### Fixed
+
+- **Header image API fixture isolation**: Explicitly load post categories in header-image request specs so they no longer depend on randomized suite order.
+
+### Upgrade Notes (target: 1.4.0)
+
+- Run `bundle update railspress-engine lexxy`.
+- Keep `import "railspress"` in your host JavaScript entrypoint for inline editing and other host-page RailsPress features.
+- No migrations or host importmap changes are required.
+
 ## [1.3.3] - 2026-06-23
 
 ### Fixed

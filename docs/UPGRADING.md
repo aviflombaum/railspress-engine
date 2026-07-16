@@ -216,6 +216,18 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
+### Upgrading to 1.4.0 (from 1.3.x)
+
+RailsPress 1.4.0 adopts Lexxy's first stable release and refreshes its dependency set.
+
+Recommended upgrade flow:
+
+```bash
+bundle update railspress-engine lexxy
+```
+
+No migrations or host importmap changes are required. Keep `import "railspress"` in your host JavaScript entrypoint if you use host-page RailsPress features such as inline editing.
+
 ### Upgrading to 1.2.0 (from 1.0.0+)
 
 This release improves Lexxy integration and upgrade behavior for host apps.

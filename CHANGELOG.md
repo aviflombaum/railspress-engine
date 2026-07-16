@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-07-15
+
+### Changed
+
+- **Installer configuration guidance**: The generated RailsPress initializer now surfaces `author_scope` and the opt-in post-image and focal-point settings.
+- **Active Storage variant setup documentation**: Installation, configuration, and troubleshooting guides now explain the required `image_processing` gem, processor gem, native dependency, and optional processor selection for resized or converted images.
+- **CI action maintenance**: Updated GitHub Actions checkout and cache actions to their current major versions.
+
 ## [1.4.0] - 2026-07-15
 
 ### Changed

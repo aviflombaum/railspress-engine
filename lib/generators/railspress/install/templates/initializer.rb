@@ -7,8 +7,14 @@ Railspress.configure do |config|
   # Uncomment to enable:
   # config.enable_authors
   # config.author_class_name = "User"
+  # config.author_scope = :admins
   # config.current_author_method = :current_user
   # config.current_author_proc = -> { Current.user }
+
+  # Header images for Posts
+  # Uncomment to enable:
+  # config.enable_post_images
+  # config.enable_focal_points
 
   # === CMS Content Elements (opt-in) ===
   # Adds content groups, content elements, and the cms_element/cms_value

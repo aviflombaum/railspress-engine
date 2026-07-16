@@ -40,6 +40,31 @@ Configure a storage service in `config/storage.yml` and set it in your environme
 config.active_storage.service = :local
 ```
 
+### Image Variants Do Not Generate
+
+**Symptom**: An original header image uploads successfully, but a resized image, WebP conversion, or `variant:` passed to `rp_featured_image_url` fails.
+
+**Solution**: Install an Active Storage image processor in the host application. RailsPress does not bundle one because the processor and its native system dependency are deployment choices.
+
+```ruby
+# Gemfile — choose one processor
+gem "image_processing", "~> 2.0"
+gem "ruby-vips", "~> 2.0"       # recommended for new Rails 8.1+ apps
+
+# Or:
+# gem "image_processing", "~> 2.0"
+# gem "mini_magick", "~> 5.0"
+```
+
+Also install libvips or ImageMagick on the machine that generates variants. If your app uses ImageMagick, configure it explicitly:
+
+```ruby
+# config/application.rb
+config.active_storage.variant_processor = :mini_magick
+```
+
+Use `:vips` to select libvips explicitly. See [Active Storage Setup](CONFIGURING.md#image-variants) for the full configuration.
+
 ### Rich Text Editor Not Loading
 
 **Symptom**: Textarea appears instead of rich text editor; no formatting toolbar.

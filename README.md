@@ -92,6 +92,31 @@ rails action_text:install
 rails active_storage:install
 ```
 
+### Image variants
+
+RailsPress can generate resized image variants for post header images and image helpers. Active Storage needs an image processor for this; RailsPress does not install one for your application.
+
+Choose one processor and add the corresponding gems to your application's `Gemfile`:
+
+```ruby
+# Recommended for new Rails 8.1+ applications
+gem "image_processing", "~> 2.0"
+gem "ruby-vips", "~> 2.0"
+
+# Or use ImageMagick instead
+# gem "image_processing", "~> 2.0"
+# gem "mini_magick", "~> 5.0"
+```
+
+Install the matching system library in every environment where variants are generated: [libvips](https://www.libvips.org/) for `ruby-vips`, or [ImageMagick](https://imagemagick.org/) for `mini_magick`. If your app uses ImageMagick, select it explicitly:
+
+```ruby
+# config/application.rb
+config.active_storage.variant_processor = :mini_magick
+```
+
+Use `:vips` instead if you need to select libvips explicitly. RailsPress header images can be displayed without variants; this setup is required when your application requests resizing or format conversion.
+
 Add to your Gemfile:
 
 ```ruby

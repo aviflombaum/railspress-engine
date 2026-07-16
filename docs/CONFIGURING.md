@@ -504,6 +504,33 @@ bin/rails db:migrate
 
 Configure your storage service in `config/storage.yml` and set `config.active_storage.service` in your environment files.
 
+### Image variants
+
+When your application uses resized header images or passes a `variant:` option to `rp_featured_image_url`, Active Storage also needs an image-processing backend. This is a host-application dependency, so RailsPress does not add it automatically.
+
+Choose one processor:
+
+```ruby
+# Gemfile
+# Recommended for new Rails 8.1+ applications
+gem "image_processing", "~> 2.0"
+gem "ruby-vips", "~> 2.0"
+
+# Or use ImageMagick instead
+# gem "image_processing", "~> 2.0"
+# gem "mini_magick", "~> 5.0"
+```
+
+Install the matching system package in development, test, and production: libvips for `ruby-vips`, or ImageMagick for `mini_magick`. Rails selects a processor from your application defaults; set it explicitly when needed:
+
+```ruby
+# config/application.rb
+config.active_storage.variant_processor = :vips       # libvips
+# config.active_storage.variant_processor = :mini_magick # ImageMagick
+```
+
+The `image_processing` gem alone is not enough: it needs one of the processor gems and its native library. See the [Rails Active Storage guide](https://guides.rubyonrails.org/active_storage_overview.html#transforming-images) for platform-specific installation details.
+
 ## Customizing Views
 
 RailsPress uses standard Rails engine view overrides. Copy engine views to your app to customize them.

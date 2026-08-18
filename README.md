@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://rubygems.org/gems/railspress-engine"><img src="https://img.shields.io/gem/v/railspress-engine.svg?style=flat&bump=true" alt="Gem Version"></a>
-  <img src="https://img.shields.io/badge/Rails-8.1%2B-red.svg?style=flat" alt="Rails 8.1+">
+  <img src="https://img.shields.io/badge/Rails-8.1.3.1%2B-red.svg?style=flat" alt="Rails 8.1.3.1+">
   <img src="https://img.shields.io/badge/Ruby-3.3%2B-red.svg?style=flat" alt="Ruby 3.3+">
   <a href="https://osaasy.dev/"><img src="https://img.shields.io/badge/License-O'Saasy-blue.svg?style=flat" alt="License"></a>
 </p>
@@ -78,7 +78,7 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 
 ## Requirements
 
-- Rails 8.1+
+- Rails 8.1.3.1+
 - Ruby 3.3+
 - ActionText
 - Active Storage
@@ -94,21 +94,19 @@ rails active_storage:install
 
 ### Image variants
 
-RailsPress can generate resized image variants for post header images and image helpers. Active Storage needs an image processor for this; RailsPress does not install one for your application.
+RailsPress can generate resized image variants for post header images and image helpers. RailsPress includes a secure version of `image_processing`, but Active Storage still needs a processor gem and its native system library.
 
-Choose one processor and add the corresponding gems to your application's `Gemfile`:
+Choose one processor and add its gem to your application's `Gemfile`:
 
 ```ruby
-# Recommended for new Rails 8.1+ applications
-gem "image_processing", "~> 2.0"
-gem "ruby-vips", "~> 2.0"
+# Recommended for Rails 8.1.3.1+ applications
+gem "ruby-vips", "~> 2.2", ">= 2.2.1"
 
 # Or use ImageMagick instead
-# gem "image_processing", "~> 2.0"
 # gem "mini_magick", "~> 5.0"
 ```
 
-Install the matching system library in every environment where variants are generated: [libvips](https://www.libvips.org/) for `ruby-vips`, or [ImageMagick](https://imagemagick.org/) for `mini_magick`. If your app uses ImageMagick, select it explicitly:
+Install the matching system library in every environment where variants are generated: libvips `8.13+` for `ruby-vips`, or [ImageMagick](https://imagemagick.org/) for `mini_magick`. Rails and ruby-vips cannot safely block untrusted libvips operations on older libvips releases. If your app uses ImageMagick, select it explicitly:
 
 ```ruby
 # config/application.rb

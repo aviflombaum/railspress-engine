@@ -1,4 +1,5 @@
 require "railspress/version"
+require "railspress/cms_helper"
 require "railspress/engine"
 require "railspress/entity"
 require "lexxy"

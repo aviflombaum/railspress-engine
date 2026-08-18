@@ -5,7 +5,7 @@ Gem::Specification.new do |spec|
   spec.version     = Railspress::VERSION
   spec.authors     = [ "Avi Flombaum" ]
   spec.email       = [ "git@avi.nyc" ]
-  spec.homepage    = "https://github.com/aviflombaum/railspress-engine"
+  spec.homepage    = "https://railspress.org"
   spec.summary     = "A mountable blog + CMS engine for Rails 8+"
   spec.description = "RailsPress gives your Rails app a complete content management system: a blog with categories and tags, structured entities with custom schemas, and editable site blocks with inline editing — all behind a namespaced admin interface."
   spec.license     = "Nonstandard"
@@ -21,8 +21,9 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "rails", ">= 8.1"
-  spec.add_dependency "lexxy"
+  spec.add_dependency "rails", ">= 8.1.3.1"
+  spec.add_dependency "lexxy", ">= 0.9.29"
+  spec.add_dependency "image_processing", "~> 2.0", ">= 2.0.3"
   spec.add_dependency "rubyzip", ">= 2.3"
   spec.add_dependency "redcarpet", ">= 3.6"
 

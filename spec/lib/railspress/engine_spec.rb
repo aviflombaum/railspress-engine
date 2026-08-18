@@ -20,6 +20,7 @@ RSpec.describe Railspress::Engine do
 
       stdout, stderr, status = Open3.capture3("bundle", "exec", "ruby", "-Ilib", "-e", script)
       expect(status).to be_success, "#{stdout}\n#{stderr}"
+      expect(stderr).not_to include("require_dependency is deprecated")
     end
   end
 end

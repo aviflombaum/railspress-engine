@@ -216,6 +216,31 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
+### Upgrading to 1.4.2 (from 1.4.1)
+
+RailsPress 1.4.2 updates CMS helper loading for compatibility with newer Rails versions. It preserves the Rails 8.1 load-order behavior while removing the `require_dependency` call deprecated in Rails 8.2 and scheduled for removal in Rails 9.
+
+This release also raises its runtime floors to Rails `8.1.3.1`, Lexxy `0.9.29`, and image_processing `2.0.3`. RailsPress owns the Lexxy and image_processing dependencies, so do not add them to the host Gemfile. Applications using Vips must provide ruby-vips `2.2.1+` and system libvips `8.13+`.
+
+Recommended upgrade flow:
+
+```bash
+bundle update railspress-engine
+```
+
+If Bundler reports a direct Rails version conflict, unlock Rails at the same time with `bundle update rails railspress-engine`. No migrations, initializer changes, or host application code changes are required.
+
+If the application uses Vips, verify every deployed environment before restarting:
+
+```bash
+bundle exec ruby -e 'require "vips"; puts Vips::VERSION'
+vips --version
+```
+
+The first version must be `2.2.1+`; the native libvips version must be `8.13+`. Rails 8.1.3.1 will refuse to boot with an older libvips because it cannot disable unsafe operations there.
+
+Applications that previously accepted untrusted image uploads while using Vips on Rails earlier than 8.1.3.1 should follow the [Rails security advisory](https://github.com/rails/rails/security/advisories/GHSA-xr9x-r78c-5hrm), including rotating application and service credentials that may have been exposed.
+
 ### Upgrading to 1.4.0 (from 1.3.x)
 
 RailsPress 1.4.0 adopts Lexxy's first stable release and refreshes its dependency set.

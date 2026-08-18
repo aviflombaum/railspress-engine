@@ -44,19 +44,17 @@ config.active_storage.service = :local
 
 **Symptom**: An original header image uploads successfully, but a resized image, WebP conversion, or `variant:` passed to `rp_featured_image_url` fails.
 
-**Solution**: Install an Active Storage image processor in the host application. RailsPress does not bundle one because the processor and its native system dependency are deployment choices.
+**Solution**: Install an Active Storage image processor in the host application. RailsPress supplies `image_processing`, but the processor gem and its native system dependency remain deployment choices.
 
 ```ruby
 # Gemfile — choose one processor
-gem "image_processing", "~> 2.0"
-gem "ruby-vips", "~> 2.0"       # recommended for new Rails 8.1+ apps
+gem "ruby-vips", "~> 2.2", ">= 2.2.1" # recommended for Rails 8.1.3.1+ apps
 
 # Or:
-# gem "image_processing", "~> 2.0"
 # gem "mini_magick", "~> 5.0"
 ```
 
-Also install libvips or ImageMagick on the machine that generates variants. If your app uses ImageMagick, configure it explicitly:
+Also install libvips `8.13+` or ImageMagick on the machine that generates variants. If your app uses ImageMagick, configure it explicitly:
 
 ```ruby
 # config/application.rb

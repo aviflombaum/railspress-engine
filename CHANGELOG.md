@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-08-17
+
+### Changed
+
+- **Lexxy dependency**: Raised the engine-managed Lexxy floor to `0.9.29`. Host applications do not need to add or import Lexxy themselves.
+- **Development dependencies**: Updated Brakeman to `8.0.6`, SQLite to `2.9.6`, and the dummy app's Vips stack to current secure versions.
+
+### Security
+
+- **Active Storage variant processing**: Raised the Rails floor to `8.1.3.1`, which contains the fix for CVE-2026-66066, and added `image_processing >= 2.0.3, < 3` as an engine runtime dependency. Vips hosts must use ruby-vips `2.2.1+` with system libvips `8.13+` so Rails can disable unsafe operations.
+
+### Fixed
+
+- **CMS helper loading on newer Rails versions**: Load `Railspress::CmsHelper` as explicit gem code instead of using the deprecated `require_dependency` API. This preserves the Rails 8.1 helper load-order fix, eliminates the Rails 8.2 deprecation warning, and avoids the API removal planned for Rails 9.
+
+### Upgrade Notes (target: 1.4.2)
+
+- Run `bundle update railspress-engine`. If Rails is directly pinned, run `bundle update rails railspress-engine`.
+- Vips hosts must verify that libvips `8.13+` is installed in every deployed environment.
+- No migrations, initializer changes, or host application code changes are required.
+
 ## [1.4.1] - 2026-07-15
 
 ### Changed

@@ -506,22 +506,20 @@ Configure your storage service in `config/storage.yml` and set `config.active_st
 
 ### Image variants
 
-When your application uses resized header images or passes a `variant:` option to `rp_featured_image_url`, Active Storage also needs an image-processing backend. This is a host-application dependency, so RailsPress does not add it automatically.
+When your application uses resized header images or passes a `variant:` option to `rp_featured_image_url`, Active Storage also needs an image-processing backend. RailsPress supplies `image_processing >= 2.0.3`; the host application chooses and installs the processor gem and native library.
 
 Choose one processor:
 
 ```ruby
 # Gemfile
-# Recommended for new Rails 8.1+ applications
-gem "image_processing", "~> 2.0"
-gem "ruby-vips", "~> 2.0"
+# Recommended for Rails 8.1.3.1+ applications
+gem "ruby-vips", "~> 2.2", ">= 2.2.1"
 
 # Or use ImageMagick instead
-# gem "image_processing", "~> 2.0"
 # gem "mini_magick", "~> 5.0"
 ```
 
-Install the matching system package in development, test, and production: libvips for `ruby-vips`, or ImageMagick for `mini_magick`. Rails selects a processor from your application defaults; set it explicitly when needed:
+Install the matching system package in development, test, and production: libvips `8.13+` for `ruby-vips`, or ImageMagick for `mini_magick`. Rails selects a processor from your application defaults; set it explicitly when needed:
 
 ```ruby
 # config/application.rb
@@ -529,7 +527,7 @@ config.active_storage.variant_processor = :vips       # libvips
 # config.active_storage.variant_processor = :mini_magick # ImageMagick
 ```
 
-The `image_processing` gem alone is not enough: it needs one of the processor gems and its native library. See the [Rails Active Storage guide](https://guides.rubyonrails.org/active_storage_overview.html#transforming-images) for platform-specific installation details.
+The `image_processing` gem alone is not enough: it needs one of the processor gems and its native library. Rails 8.1.3.1 disables unsafe libvips operations at boot; that protection requires ruby-vips `2.2.1+` and libvips `8.13+`. See the [Rails Active Storage guide](https://guides.rubyonrails.org/active_storage_overview.html#transforming-images) for platform-specific installation details.
 
 ## Customizing Views
 
@@ -647,7 +645,7 @@ See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 RailsPress uses [Lexxy](https://github.com/basecamp/lexxy), Basecamp's rich text editor built on Meta's Lexical framework. It replaces the default Trix editor that ships with ActionText.
 
-RailsPress depends on Lexxy and is tested with Lexxy `0.9.24`, its first stable release. To update Lexxy in your app:
+RailsPress depends on and auto-wires Lexxy and is tested with Lexxy `0.9.29`. Do not add a Lexxy dependency or importmap pin to the host application. To explicitly unlock the engine-managed dependency in an existing bundle:
 
 ```bash
 bundle update lexxy
@@ -681,14 +679,15 @@ If a Lexxy update introduces breaking changes to the editor, you can pin to a sp
 
 ```ruby
 # Gemfile
-gem "lexxy", "= 0.9.24"  # Example exact pin; choose a version tested in your app
+gem "lexxy", "= 0.9.29"  # Example exact pin; choose a version tested in your app
 ```
 
 ### Other Dependencies
 
 | Gem | Purpose |
 |-----|---------|
-| `rails >= 8.1` | Framework (includes ActionText, Active Storage, Turbo) |
-| `lexxy` | Rich text editor (replaces Trix) |
+| `rails >= 8.1.3.1` | Framework (includes the Active Storage security fix) |
+| `lexxy >= 0.9.29` | Rich text editor (replaces Trix) |
+| `image_processing >= 2.0.3, < 3` | Secure Active Storage transformation dispatch |
 | `rubyzip >= 2.3` | ZIP file handling for CMS import/export |
 | `redcarpet >= 3.6` | Markdown parsing for post import |

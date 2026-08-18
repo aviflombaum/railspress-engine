@@ -727,3 +727,4 @@ gem "lexxy", "= 0.9.29"  # Example exact pin; choose a version tested in your ap
 | `image_processing >= 2.0.3, < 3` | Secure Active Storage transformation dispatch |
 | `rubyzip >= 2.3` | ZIP file handling for CMS import/export |
 | `redcarpet >= 3.6` | Markdown parsing for post import |
+| `ssrf_filter ~> 1.5` | SSRF-safe remote post image fetching |

@@ -157,6 +157,16 @@ end
 
 See [CONFIGURING.md](docs/CONFIGURING.md) for more authentication patterns including Devise integration.
 
+## Import Security
+
+RailsPress stores imported files inside engine-owned temporary directories.
+
+ZIP image references cannot escape their extraction directory.
+
+Remote header images accept public HTTP and HTTPS destinations. Private and redirected destinations are rejected.
+
+Configure request and worker limits for additional availability protection.
+
 ## Quick Start
 
 Access the admin at `/railspress/admin`. From there you can manage posts, entities, and blocks.

@@ -1,8 +1,9 @@
 require "yaml"
 require "zip"
-require "open-uri"
 require "fileutils"
 require "redcarpet"
+require "ssrf_filter"
+require "stringio"
 
 module Railspress
   class PostImportProcessor
@@ -211,29 +212,20 @@ module Railspress
       filename = File.basename(uri.path)
       filename = "header_image#{File.extname(uri.path)}" if filename.blank?
 
-      downloaded = URI.open(url)
+      response = SsrfFilter.get(url, max_redirects: 0)
+      response.value
       post.header_image.attach(
-        io: downloaded,
+        io: StringIO.new(response.body),
         filename: filename,
-        content_type: downloaded.content_type
+        content_type: response.content_type
       )
-    rescue OpenURI::HTTPError, URI::InvalidURIError => e
+    rescue SsrfFilter::Error, URI::InvalidURIError, Net::HTTPError => e
       Rails.logger.warn "Failed to download header image from #{url}: #{e.message}"
     end
 
     def attach_image_from_zip(post, relative_path, source_path, base_dir)
-      # Resolve relative path from the markdown file's directory or from base_dir
-      source_dir = File.dirname(source_path)
-
-      # Try relative to the markdown file first
-      image_path = File.expand_path(relative_path, source_dir)
-
-      # If not found, try relative to base_dir
-      unless File.exist?(image_path)
-        image_path = File.expand_path(relative_path, base_dir)
-      end
-
-      return unless File.exist?(image_path)
+      image_path = imported_image_path(relative_path, source_path, base_dir)
+      return unless image_path
 
       ext = File.extname(image_path).downcase
       return unless IMAGE_EXTENSIONS.include?(ext)
@@ -251,6 +243,23 @@ module Railspress
         filename: File.basename(image_path),
         content_type: content_type
       )
+    end
+
+    def imported_image_path(relative_path, source_path, base_dir)
+      import_root = File.realpath(base_dir)
+      source_dir = File.dirname(source_path)
+
+      [ source_dir, import_root ].each do |directory|
+        candidate = File.expand_path(relative_path.to_s, directory)
+        next unless File.file?(candidate)
+
+        resolved_candidate = File.realpath(candidate)
+        return resolved_candidate if resolved_candidate.start_with?("#{import_root}#{File::SEPARATOR}")
+      end
+
+      nil
+    rescue Errno::EACCES, Errno::ENOENT
+      nil
     end
 
     def extract_title_from_body(body)

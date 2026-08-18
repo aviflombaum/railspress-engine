@@ -30,12 +30,15 @@ module Railspress
     end
 
     def cleanup_uploaded_files(file_paths)
-      tmp_dir = Rails.root.join("tmp").to_s
+      tmp_dir = File.realpath(Rails.root.join("tmp"))
 
       file_paths.each do |path|
-        # Only cleanup files in the tmp directory to avoid deleting source files
-        next unless path.start_with?(tmp_dir)
-        FileUtils.rm_f(path) if File.exist?(path)
+        next unless File.exist?(path)
+
+        resolved_path = File.realpath(path)
+        next unless resolved_path.start_with?("#{tmp_dir}#{File::SEPARATOR}")
+
+        FileUtils.rm_f(resolved_path)
       end
     rescue => e
       Rails.logger.warn "Failed to cleanup uploaded import files: #{e.message}"

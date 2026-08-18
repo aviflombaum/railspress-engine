@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-18
+
+### Added
+
+- **SSRF-safe remote images**: Added `ssrf_filter` as an engine dependency for remote post header-image imports.
+
+### Security
+
+- **Import upload containment**: Store admin uploads under server-generated names and canonicalize cleanup targets before removing files.
+- **ZIP image containment**: Reject absolute, traversal, and symlinked image references that resolve outside the extraction directory.
+- **Remote image destination validation**: Reject loopback, private, link-local, reserved, and other unsafe IPv4 and IPv6 destinations. Remote image redirects are rejected.
+- **Dependency maintenance**: Updated the development lockfile to patched `rails-html-sanitizer 1.7.1` and `json 2.21.2` releases.
+
+### Upgrade Notes (target: 1.5.0)
+
+- Run `bundle update railspress-engine`.
+- Remote post images must resolve directly to a public HTTP or HTTPS destination. Redirecting image URLs are no longer accepted.
+- No migrations, initializer changes, or host application code changes are required.
+
 ## [1.4.3] - 2026-08-18
 
 ### Added

@@ -252,6 +252,35 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
 
       expect(post_with_image.header_image).to be_attached
     end
+
+    it "does not attach an image outside the extracted archive" do
+      allow(Railspress).to receive(:post_images_enabled?).and_return(true)
+      external_image = Tempfile.new([ "external-header", ".png" ])
+      external_image.binmode
+      external_image.write(File.binread(fixtures_path.join("test_image.png")))
+      external_image.close
+      zip_file = Tempfile.new([ "external-image-import", ".zip" ])
+
+      Zip::File.open(zip_file.path, create: true) do |zip|
+        zip.get_output_stream("external-image.md") do |file|
+          file.write(<<~MARKDOWN)
+            ---
+            title: External Image Boundary
+            header_image: #{external_image.path.inspect}
+            ---
+            Imported content.
+          MARKDOWN
+        end
+      end
+
+      described_class.new(import: import, file_path: zip_file.path).process!
+      imported_post = Railspress::Post.find_by(title: "External Image Boundary")
+
+      expect(imported_post.header_image).not_to be_attached
+    ensure
+      external_image&.close!
+      zip_file&.close!
+    end
   end
 
   describe "header image handling" do
@@ -270,17 +299,57 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
     end
 
     context "with URL header image" do
-      let(:processor) { described_class.new(import: import, file_path: fixtures_path.join("valid_post.md")) }
+      let(:remote_image_url) { "https://images.example.com/header.png" }
+      let(:markdown_file) do
+        file = Tempfile.new([ "remote-image-import", ".md" ])
+        file.write(<<~MARKDOWN)
+          ---
+          title: Remote Image Import
+          header_image: #{remote_image_url}
+          ---
+          Imported content.
+        MARKDOWN
+        file.close
+        file
+      end
+      let(:processor) { described_class.new(import: import, file_path: markdown_file.path) }
 
       before do
         allow(Railspress).to receive(:post_images_enabled?).and_return(true)
       end
 
-      it "detects URLs correctly" do
-        expect(processor.send(:url?, "https://example.com/image.jpg")).to be true
-        expect(processor.send(:url?, "http://example.com/image.png")).to be true
-        expect(processor.send(:url?, "images/local.jpg")).to be false
-        expect(processor.send(:url?, "../relative/path.png")).to be false
+      after do
+        markdown_file.close!
+      end
+
+      it "attaches an image fetched through the SSRF-safe client" do
+        response = instance_double(
+          Net::HTTPOK,
+          body: File.binread(fixtures_path.join("test_image.png")),
+          content_type: "image/png",
+          value: nil
+        )
+        allow(SsrfFilter).to receive(:get).and_return(response)
+
+        processor.process!
+        post = Railspress::Post.find_by(title: "Remote Image Import")
+
+        expect(post.header_image).to be_attached
+        expect(SsrfFilter).to have_received(:get).with(remote_image_url, max_redirects: 0)
+      end
+
+      context "when the URL resolves to a loopback address" do
+        let(:remote_image_url) { "http://127.0.0.1/header.png" }
+
+        it "creates the post without attaching the image" do
+          allow(Rails.logger).to receive(:warn)
+
+          processor.process!
+          post = Railspress::Post.find_by(title: "Remote Image Import")
+
+          expect(post).to be_present
+          expect(post.header_image).not_to be_attached
+        end
       end
     end
   end

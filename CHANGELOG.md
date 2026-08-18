@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-08-18
+
+### Added
+
+- **Namespaced engine query APIs**: Added `rp_search`, `rp_page`, and `rp_per_page_count` as stable, dependency-free RailsPress defaults for engine-owned search and pagination.
+
+### Deprecated
+
+- **Generic query method compatibility**: `search`, `page`, and `per_page_count` remain conditional compatibility methods when a host has not defined them. They now warn in favor of the corresponding `rp_*` APIs and will be removed in RailsPress 2.0.
+
+### Fixed
+
+- **Database-agnostic post search**: Replaced the PostgreSQL-only title-search predicate with adapter-aware Arel so admin post search works with SQLite, MySQL, and PostgreSQL.
+- **Host query method collisions**: RailsPress admin and API code now use only namespaced query methods, leaving host applications free to use their own search and pagination stacks without require-order workarounds.
+
+### Upgrade Notes (target: 1.4.3)
+
+- Run `bundle update railspress-engine`.
+- Migrate direct uses of RailsPress's `search`, `page`, and `per_page_count` defaults to `rp_search`, `rp_page`, and `rp_per_page_count`; existing compatibility calls continue to work with warnings through RailsPress 1.x.
+- No migrations, initializer changes, or immediate host application code changes are required.
+
 ## [1.4.2] - 2026-08-17
 
 ### Changed

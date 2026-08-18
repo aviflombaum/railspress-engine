@@ -15,6 +15,13 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       get railspress.admin_posts_path
       expect(response.body).to include("Hello World")
     end
+
+    it "filters posts with the RailsPress title search" do
+      get railspress.admin_posts_path, params: { q: "hello" }
+
+      expect(response.body).to include("Hello World")
+      expect(response.body).not_to include("Draft Post")
+    end
   end
 
   describe "GET /admin/posts/:id" do

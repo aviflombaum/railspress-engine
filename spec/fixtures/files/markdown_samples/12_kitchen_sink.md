@@ -120,7 +120,9 @@ class Post < ApplicationRecord
   before_validation :generate_slug, if: -> { slug.blank? && title.present? }
 
   scope :published, -> { where(status: :published).where(published_at: ..Time.current) }
-  scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
+  scope :rp_search, ->(query) {
+    where(arel_table[:title].matches("%#{query}%", nil, false)) if query.present?
+  }
 
   def scheduled?
     published_at.present? && published_at > Time.current

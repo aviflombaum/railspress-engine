@@ -96,7 +96,7 @@ class BlogController < ApplicationController
     @posts = Railspress::Post.published
                              .includes(:category, :tags)
                              .ordered
-                             .page(params[:page])
+                             .rp_page(params[:page])
   end
 
   def show
@@ -114,7 +114,7 @@ class BlogController < ApplicationController
                       .published
                       .includes(:tags)
                       .ordered
-                      .page(params[:page])
+                      .rp_page(params[:page])
   end
 
   def tag
@@ -123,17 +123,17 @@ class BlogController < ApplicationController
                  .published
                  .includes(:category)
                  .ordered
-                 .page(params[:page])
+                 .rp_page(params[:page])
   end
 
   def search
     @query = params[:q].to_s.strip
     @posts = if @query.present?
                Railspress::Post.published
-                               .where("title ILIKE ? OR slug ILIKE ?", "%#{@query}%", "%#{@query}%")
+                               .rp_search(@query)
                                .includes(:category, :tags)
                                .ordered
-                               .page(params[:page])
+                               .rp_page(params[:page])
              else
                Railspress::Post.none
              end
@@ -141,14 +141,15 @@ class BlogController < ApplicationController
 end
 ```
 
-#### About `page` and pagination gems
+#### Search and pagination choices
 
-`Railspress::Post` ships a lightweight `page` scope: `page(n)` returns an ordinary Active Record relation
-offset to that page, 20 records per page. It has no `per` method and no page-metadata methods, so
-`.page(params[:page]).per(10)` raises `NoMethodError: undefined method 'per'`.
+`rp_search`, `rp_page`, and `rp_per_page_count` are RailsPress's dependency-free defaults. The engine
+admin uses these names so they do not compete with search or pagination APIs chosen by the host app.
+`rp_page(n)` returns an ordinary Active Record relation offset to that page, using 20 records per page
+by default. It intentionally has no `per` method or page-metadata methods.
 
-Every RailsPress scope returns a plain `ActiveRecord::Relation`, so any pagination gem works. Add the one
-you prefer and use its API instead of the built-in scope:
+Host controllers own their public search and pagination behavior. Every RailsPress scope returns a plain
+`ActiveRecord::Relation`, so use your preferred stack directly:
 
 ```ruby
 # Kaminari
@@ -159,27 +160,15 @@ you prefer and use its API instead of the built-in scope:
 @pagy, @posts = pagy(Railspress::Post.published.includes(:category, :tags).ordered, limit: 10)
 
 # No gem: use the built-in scope, 20 per page
-@posts = Railspress::Post.published.includes(:category, :tags).ordered.page(params[:page])
+@posts = Railspress::Post.published.includes(:category, :tags).ordered.rp_page(params[:page])
 ```
 
-Kaminari also defines `page`. If RailsPress loads first, its simpler `page` wins and `per` is still
-missing. Load Kaminari first by deferring the RailsPress require:
-
-```ruby
-# Gemfile
-gem "kaminari"
-gem "railspress-engine", require: false
-```
-
-```ruby
-# config/initializers/kaminari_config.rb
-Kaminari.configure { |config| }
-
-require "railspress" # force RailsPress to load after Kaminari
-```
+No require-order workaround is needed. During the RailsPress 1.x compatibility period, the older
+`search`, `page`, and `per_page_count` names are added only when those methods are otherwise absent.
+They are deprecated, will be removed in RailsPress 2.0, and should not be used in new application code.
 
 The `_pagination.html.erb` partial below uses `total_pages`, `current_page`, `prev_page`, and `next_page`.
-Those come from a pagination gem; with the built-in `page` scope the partial renders nothing.
+Those come from a pagination gem; with the built-in `rp_page` scope the partial renders nothing.
 
 ### Step 2: Add Routes
 
@@ -636,7 +625,7 @@ def search
                              .includes(:category, :tags)
                              .distinct
                              .ordered
-                             .page(params[:page])
+                             .rp_page(params[:page])
            else
              Railspress::Post.none
            end

@@ -216,6 +216,29 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
+### Upgrading to 1.4.3 (from 1.4.2)
+
+RailsPress 1.4.3 gives engine-owned search and pagination explicit names: `rp_search`, `rp_page`, and
+`rp_per_page_count`. The engine admin uses only these methods, leaving host applications free to use
+their own search scopes and pagination gems without relying on gem load order.
+
+The older `search`, `page`, and `per_page_count` methods remain available through RailsPress 1.x when
+the host model does not already provide them. Calls to these compatibility methods emit deprecation
+warnings and should migrate to the corresponding `rp_*` method or to the host application's preferred
+search and pagination API. The compatibility methods will be removed in RailsPress 2.0.
+
+The built-in title search is also database-agnostic in 1.4.3. It uses adapter-aware Arel instead of
+PostgreSQL-only `ILIKE` SQL.
+
+Recommended upgrade flow:
+
+```bash
+bundle update railspress-engine
+```
+
+No migrations, initializer changes, or host application code changes are required immediately. New code
+should avoid the deprecated generic method names.
+
 ### Upgrading to 1.4.2 (from 1.4.1)
 
 RailsPress 1.4.2 updates CMS helper loading for compatibility with newer Rails versions. It preserves the Rails 8.1 load-order behavior while removing the `require_dependency` call deprecated in Rails 8.2 and scheduled for removal in Rails 9.

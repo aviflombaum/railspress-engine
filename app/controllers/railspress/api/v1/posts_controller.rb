@@ -102,8 +102,8 @@ module Railspress
         end
 
         def per_page
-          requested = params.fetch(:per, Railspress::Post.per_page_count).to_i
-          requested = Railspress::Post.per_page_count if requested <= 0
+          requested = params.fetch(:per, Railspress::Post.rp_per_page_count).to_i
+          requested = Railspress::Post.rp_per_page_count if requested <= 0
           [ requested, 100 ].min
         end
 

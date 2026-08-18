@@ -149,6 +149,22 @@ module Railspress
       # Default scopes available to all entities
       scope :ordered, -> { order(created_at: :desc) }
       scope :recent, -> { ordered.limit(10) }
+
+      unless respond_to?(:page)
+        scope :page, ->(page_number) {
+          Railspress.deprecator.warn("page is deprecated and will be removed in RailsPress 2.0; use rp_page instead")
+          rp_page(page_number)
+        }
+      end
+
+      unless respond_to?(:per_page_count)
+        define_singleton_method(:per_page_count) do
+          Railspress.deprecator.warn(
+            "per_page_count is deprecated and will be removed in RailsPress 2.0; use rp_per_page_count instead"
+          )
+          rp_per_page_count
+        end
+      end
     end
 
     # Default pagination - can be overridden in model
@@ -156,13 +172,13 @@ module Railspress
 
     class_methods do
       # Simple pagination for index views
-      def page(page_number)
+      def rp_page(page_number)
         page_number = [ page_number.to_i, 1 ].max
-        offset((page_number - 1) * per_page_count).limit(per_page_count)
+        offset((page_number - 1) * rp_per_page_count).limit(rp_per_page_count)
       end
 
       # Allow models to override PER_PAGE
-      def per_page_count
+      def rp_per_page_count
         const_defined?(:PER_PAGE, false) ? const_get(:PER_PAGE) : Railspress::Entity::PER_PAGE
       end
 

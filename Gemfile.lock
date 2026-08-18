@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    railspress-engine (1.4.3)
+    railspress-engine (1.5.0)
       image_processing (~> 2.0, >= 2.0.3)
       lexxy (>= 0.9.29)
       rails (>= 8.1.3.1)

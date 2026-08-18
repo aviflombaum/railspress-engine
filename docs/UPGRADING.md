@@ -216,6 +216,20 @@ If you have duplicate migrations (same content, different timestamps):
 
 ## Version-Specific Notes
 
+### Upgrading to 1.5.0 (from 1.4.x)
+
+RailsPress 1.5.0 hardens post imports without changing their supported file formats. Admin uploads now use server-generated storage names, and cleanup only removes canonical paths beneath the Rails temporary directory. ZIP image references must remain within their extraction directory.
+
+Remote post header images now use `ssrf_filter`. Public HTTP and HTTPS images remain supported, but loopback, private, link-local, reserved, and redirected destinations are rejected.
+
+Recommended upgrade flow:
+
+```bash
+bundle update railspress-engine
+```
+
+The engine installs `ssrf_filter` automatically. No migrations, initializer changes, or host application changes are required.
+
 ### Upgrading to 1.4.3 (from 1.4.2)
 
 RailsPress 1.4.3 gives engine-owned search and pagination explicit names: `rp_search`, `rp_page`, and

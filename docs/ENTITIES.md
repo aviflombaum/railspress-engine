@@ -566,18 +566,18 @@ The Entity concern includes built-in pagination and common scopes.
 
 ### Pagination
 
-Entities support simple pagination with the `page` method:
+Entities support simple, dependency-free pagination with RailsPress-owned `rp_*` methods:
 
 ```ruby
 # In your controller
-@projects = Project.ordered.page(params[:page])
+@projects = Project.ordered.rp_page(params[:page])
 
 # Get paginated results with 20 per page (default)
-Project.page(1)   # First 20 records
-Project.page(2)   # Records 21-40
+Project.rp_page(1)   # First 20 records
+Project.rp_page(2)   # Records 21-40
 
 # Check pagination info
-Project.per_page_count  # => 20 (default)
+Project.rp_per_page_count  # => 20 (default)
 ```
 
 Override the default page size in your model:
@@ -600,15 +600,20 @@ Every Entity includes these scopes:
 |-------|-------------|
 | `ordered` | By `created_at` descending |
 | `recent` | First 10 records, ordered |
-| `page(n)` | Pagination helper (uses `PER_PAGE`) |
+| `rp_page(n)` | RailsPress pagination helper (uses `PER_PAGE`) |
+| `rp_per_page_count` | Resolved RailsPress page size |
 
 ```ruby
 # Examples
 Project.ordered                    # All projects, newest first
 Project.recent                     # Last 10 projects
-Project.ordered.page(2)            # Second page of projects
+Project.ordered.rp_page(2)         # Second page of projects
 Project.where(featured: true).recent  # Last 10 featured projects
 ```
+
+The `rp_*` names are reserved for RailsPress's admin and dependency-free defaults. Host controllers can
+use Kaminari, Pagy, will_paginate, or custom pagination instead. The older `page` and `per_page_count`
+names are conditional compatibility methods, deprecated until their removal in RailsPress 2.0.
 
 ### Custom Scopes
 

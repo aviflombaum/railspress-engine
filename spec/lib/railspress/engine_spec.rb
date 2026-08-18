@@ -4,6 +4,17 @@ require "rails_helper"
 require "open3"
 
 RSpec.describe Railspress::Engine do
+  describe "RailsPress deprecator" do
+    it "uses the RailsPress 2.0 removal horizon" do
+      expect(Railspress.deprecator.gem_name).to eq("RailsPress")
+      expect(Railspress.deprecator.deprecation_horizon).to eq("2.0")
+    end
+
+    it "registers with the host application" do
+      expect(Rails.application.deprecators[:railspress]).to equal(Railspress.deprecator)
+    end
+  end
+
   describe "CMS helper load hook" do
     it "does not depend on app helper autoload timing" do
       script = <<~RUBY

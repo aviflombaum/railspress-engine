@@ -9,15 +9,15 @@ module Railspress
         @direction = params[:direction].presence || "desc"
 
         @posts = Post.includes(:category, :tags)
-                     .search(params[:q])
+                     .rp_search(params[:q])
                      .by_category(params[:category_id])
                      .by_status(params[:status])
                      .sorted_by(@sort, @direction)
 
         @total_count = @posts.count
         @page = [ params[:page].to_i, 1 ].max
-        @total_pages = (@total_count.to_f / Post::PER_PAGE).ceil
-        @posts = @posts.page(@page)
+        @total_pages = (@total_count.to_f / Post.rp_per_page_count).ceil
+        @posts = @posts.rp_page(@page)
 
         @categories = Category.ordered
       end

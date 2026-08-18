@@ -40,6 +40,7 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body["data"]).to be_an(Array)
+        expect(body.dig("meta", "per")).to eq(Railspress::Post.rp_per_page_count)
         expect(body["meta"]["total_count"]).to be >= 1
       end
     end

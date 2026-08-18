@@ -74,14 +74,22 @@ module Railspress
     before_save :set_published_at
     before_save :set_reading_time, if: -> { reading_time.blank? && content.present? }
 
-    # Generic scopes (ordered, recent) and pagination (page) provided by Entity concern
+    # Generic scopes (ordered, recent) and pagination (rp_page) provided by Entity concern
     # Post-specific scopes below:
     scope :published, -> { where(status: :published).where(published_at: ..Time.current) }
     scope :drafts, -> { where(status: :draft) }
     scope :scheduled, -> { where(status: :published).where("published_at > ?", Time.current) }
     scope :live, -> { published }  # Alias for semantic clarity
     scope :by_author, ->(author) { where(author_id: author.id) }
-    scope :search, ->(query) { where("title ILIKE ?", "%#{query}%") if query.present? }
+    scope :rp_search, ->(query) {
+      query.present? ? where(arel_table[:title].matches("%#{query}%", nil, false)) : all
+    }
+    unless respond_to?(:search)
+      scope :search, ->(query) {
+        Railspress.deprecator.warn("search is deprecated and will be removed in RailsPress 2.0; use rp_search instead")
+        rp_search(query)
+      }
+    end
     scope :by_category, ->(category_id) { where(category_id: category_id) if category_id.present? }
     scope :by_status, ->(status) {
       case status.to_s

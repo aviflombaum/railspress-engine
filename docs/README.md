@@ -92,16 +92,23 @@ Access the admin at `/railspress/admin`:
 - `by_author(author)` - Filter by author (when authors enabled)
 - `by_category(category_or_id)` - Filter by category
 - `by_status(status)` - Filter by status enum value
-- `search(query)` - ILIKE search on title
+- `rp_search(query)` - RailsPress's case-insensitive substring search on title
+- `rp_page(page_number)` - RailsPress's lightweight pagination
+- `rp_per_page_count` - Resolved RailsPress page size (defaults to 20)
 - `sorted_by(column, direction)` - Multi-column sorting
 
 ```ruby
 # Examples
 Railspress::Post.published.ordered.limit(5)
 Railspress::Post.by_category(@category).published
-Railspress::Post.search("rails").published
+Railspress::Post.rp_search("rails").published
+Railspress::Post.published.rp_page(params[:page])
 Railspress::Post.sorted_by(:title, :asc)
 ```
+
+The `rp_*` query methods are dependency-free defaults used by the engine. Host applications can use
+their own search and pagination APIs instead. The older `search`, `page`, and `per_page_count` names
+remain as conditional compatibility methods until RailsPress 2.0 and should not be used in new code.
 
 **Instance Methods:**
 - `tag_list` / `tag_list=` - Get/set tags as CSV string

@@ -50,6 +50,122 @@ RSpec.describe Railspress::Entity do
     end
   end
 
+  describe ".rp_page" do
+    it "limits the first page to the RailsPress page size" do
+      relation = model_class.rp_page(1)
+
+      expect(relation.limit_value).to eq(Railspress::Entity::PER_PAGE)
+      expect(relation.offset_value).to eq(0)
+    end
+
+    it "offsets subsequent pages" do
+      expect(model_class.rp_page(2).offset_value).to eq(Railspress::Entity::PER_PAGE)
+    end
+
+    it "clamps invalid page numbers to the first page" do
+      expect(model_class.rp_page(0).offset_value).to eq(0)
+    end
+
+    it "uses a model-specific page size" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+        include Railspress::Entity
+      end
+      test_class.const_set(:PER_PAGE, 7)
+
+      expect(test_class.rp_page(2).limit_value).to eq(7)
+      expect(test_class.rp_page(2).offset_value).to eq(7)
+    end
+  end
+
+  describe ".rp_per_page_count" do
+    it "returns the RailsPress default page size" do
+      expect(model_class.rp_per_page_count).to eq(Railspress::Entity::PER_PAGE)
+    end
+
+    it "returns a model-specific page size" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+        include Railspress::Entity
+      end
+      test_class.const_set(:PER_PAGE, 7)
+
+      expect(test_class.rp_per_page_count).to eq(7)
+    end
+  end
+
+  describe "pagination compatibility methods" do
+    before do
+      allow(Railspress.deprecator).to receive(:warn)
+    end
+
+    it "delegates page to rp_page" do
+      expect(model_class.page(2).offset_value).to eq(Railspress::Entity::PER_PAGE)
+    end
+
+    it "warns when page is used" do
+      model_class.page(1)
+
+      expect(Railspress.deprecator).to have_received(:warn).with(/use rp_page instead/)
+    end
+
+    it "delegates per_page_count to rp_per_page_count" do
+      expect(model_class.per_page_count).to eq(model_class.rp_per_page_count)
+    end
+
+    it "warns when per_page_count is used" do
+      model_class.per_page_count
+
+      expect(Railspress.deprecator).to have_received(:warn).with(/use rp_per_page_count instead/)
+    end
+
+    it "preserves a page method defined before inclusion" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+
+        def self.page(_page_number) = :host_page
+
+        include Railspress::Entity
+      end
+
+      expect(test_class.page(1)).to eq(:host_page)
+    end
+
+    it "preserves an inherited page method" do
+      parent_class = Class.new(ApplicationRecord) do
+        def self.page(_page_number) = :inherited_page
+      end
+      test_class = Class.new(parent_class) do
+        self.table_name = "projects"
+        include Railspress::Entity
+      end
+
+      expect(test_class.page(1)).to eq(:inherited_page)
+    end
+
+    it "preserves a per_page_count method defined before inclusion" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+
+        def self.per_page_count = 7
+
+        include Railspress::Entity
+      end
+
+      expect(test_class.per_page_count).to eq(7)
+    end
+
+    it "allows a page method defined after inclusion to replace the fallback" do
+      test_class = Class.new(ApplicationRecord) do
+        self.table_name = "projects"
+        include Railspress::Entity
+      end
+      test_class.define_singleton_method(:page) { |_page_number| :host_page }
+
+      expect(test_class.page(1)).to eq(:host_page)
+    end
+  end
+
   describe ".railspress_config" do
     it "returns the EntityConfig" do
       expect(model_class.railspress_config).to be_a(Railspress::EntityConfig)

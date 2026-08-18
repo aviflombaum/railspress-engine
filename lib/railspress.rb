@@ -1,4 +1,5 @@
 require "railspress/version"
+require "active_support/deprecation"
 require "railspress/cms_helper"
 require "railspress/engine"
 require "railspress/entity"
@@ -195,6 +196,10 @@ module Railspress
   end
 
   class << self
+    def deprecator
+      @deprecator ||= ActiveSupport::Deprecation.new("2.0", "RailsPress")
+    end
+
     def configuration
       @configuration ||= Configuration.new
     end

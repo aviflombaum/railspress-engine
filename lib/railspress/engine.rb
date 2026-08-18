@@ -2,6 +2,10 @@ module Railspress
   class Engine < ::Rails::Engine
     isolate_namespace Railspress
 
+    initializer "railspress.deprecator" do |app|
+      app.deprecators[:railspress] = Railspress.deprecator
+    end
+
     # Register engine assets with the asset pipeline (Propshaft)
     initializer "railspress.assets" do |app|
       if app.config.respond_to?(:assets)

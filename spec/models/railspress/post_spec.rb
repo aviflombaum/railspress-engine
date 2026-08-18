@@ -97,6 +97,42 @@ RSpec.describe Railspress::Post, type: :model do
     end
   end
 
+  describe ".rp_search" do
+    it "finds posts by partial title" do
+      results = Railspress::Post.rp_search("Hello")
+      expect(results).to include(railspress_posts(:hello_world))
+      expect(results).not_to include(railspress_posts(:draft_post))
+    end
+
+    it "matches titles case-insensitively" do
+      expect(Railspress::Post.rp_search("hELLo")).to include(railspress_posts(:hello_world))
+    end
+
+    it "returns no posts when the title does not match" do
+      expect(Railspress::Post.rp_search("not-a-real-title")).to be_empty
+    end
+
+    it "leaves the relation unfiltered when the query is blank" do
+      expect(Railspress::Post.rp_search("")).to match_array(Railspress::Post.all)
+    end
+  end
+
+  describe ".search" do
+    it "delegates to the RailsPress search" do
+      allow(Railspress.deprecator).to receive(:warn)
+
+      expect(Railspress::Post.search("Hello")).to include(railspress_posts(:hello_world))
+    end
+
+    it "warns that the compatibility method is deprecated" do
+      allow(Railspress.deprecator).to receive(:warn)
+
+      Railspress::Post.search("Hello")
+
+      expect(Railspress.deprecator).to have_received(:warn).with(/use rp_search instead/)
+    end
+  end
+
   describe "#scheduled?" do
     it "returns true when published_at is in the future" do
       post = Railspress::Post.new(published_at: 1.day.from_now)

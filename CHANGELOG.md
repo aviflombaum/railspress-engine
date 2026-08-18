@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.5.0] - 2026-08-18
+## [1.4.4] - 2026-08-18
 
 ### Added
 
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Remote image destination validation**: Reject loopback, private, link-local, reserved, and other unsafe IPv4 and IPv6 destinations. Remote image redirects are rejected.
 - **Dependency maintenance**: Updated the development lockfile to patched `rails-html-sanitizer 1.7.1` and `json 2.21.2` releases.
 
-### Upgrade Notes (target: 1.5.0)
+### Upgrade Notes (target: 1.4.4)
 
 - Run `bundle update railspress-engine`.
 - Remote post images must resolve directly to a public HTTP or HTTPS destination. Redirecting image URLs are no longer accepted.

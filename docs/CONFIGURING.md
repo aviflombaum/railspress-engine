@@ -61,6 +61,42 @@ end
 
 **Default:** Disabled
 
+#### `post_image_variants`
+
+Declares named Active Storage variants for the post `header_image`, so views can request
+`@post.header_image.variant(:hero)` instead of repeating transformation options. Each variant is registered
+with `format: :webp` automatically.
+
+```ruby
+Railspress.configure do |config|
+  config.enable_post_images
+
+  config.post_image_variants = {
+    hero:  { resize_to_fill: [1920, 1080] },
+    card:  { resize_to_fill: [800, 600] },
+    thumb: { resize_to_fill: [400, 400] },
+    og:    { resize_to_limit: [1200, 630] }
+  }
+end
+```
+
+The hash keys become variant names; the values are passed straight through to Active Storage, so any
+transformation it accepts works here.
+
+```erb
+<%= image_tag @post.header_image.variant(:hero), alt: @post.title %>
+```
+
+**Default:** `{}` (no named variants; inline `variant(resize_to_limit: [...])` calls still work)
+
+Variants are generated on first request and cached as derived blobs. Editing an existing variant's options
+changes its key, so the new version is generated on the next request; the old derived file stays in storage
+until you purge it.
+
+Variants require an image processor. See [Image variants](#image-variants)
+for the gem and native library setup, and [Displaying the Header Image](BLOGGING.md#displaying-the-header-image)
+for view examples.
+
 #### `enable_focal_points`
 
 Enables focal point selection for header images. When enabled, editors can set the focal point (important area) of images to control cropping across different aspect ratios.

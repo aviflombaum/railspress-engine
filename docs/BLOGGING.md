@@ -97,7 +97,6 @@ class BlogController < ApplicationController
                              .includes(:category, :tags)
                              .ordered
                              .page(params[:page])
-                             .per(10)
   end
 
   def show
@@ -116,7 +115,6 @@ class BlogController < ApplicationController
                       .includes(:tags)
                       .ordered
                       .page(params[:page])
-                      .per(10)
   end
 
   def tag
@@ -126,7 +124,6 @@ class BlogController < ApplicationController
                  .includes(:category)
                  .ordered
                  .page(params[:page])
-                 .per(10)
   end
 
   def search
@@ -137,13 +134,52 @@ class BlogController < ApplicationController
                                .includes(:category, :tags)
                                .ordered
                                .page(params[:page])
-                               .per(10)
              else
                Railspress::Post.none
              end
   end
 end
 ```
+
+#### About `page` and pagination gems
+
+`Railspress::Post` ships a lightweight `page` scope: `page(n)` returns an ordinary Active Record relation
+offset to that page, 20 records per page. It has no `per` method and no page-metadata methods, so
+`.page(params[:page]).per(10)` raises `NoMethodError: undefined method 'per'`.
+
+Every RailsPress scope returns a plain `ActiveRecord::Relation`, so any pagination gem works. Add the one
+you prefer and use its API instead of the built-in scope:
+
+```ruby
+# Kaminari
+@posts = Railspress::Post.published.includes(:category, :tags).ordered
+                         .page(params[:page]).per(10)
+
+# Pagy (in the controller, with the Pagy::Backend concern included)
+@pagy, @posts = pagy(Railspress::Post.published.includes(:category, :tags).ordered, limit: 10)
+
+# No gem: use the built-in scope, 20 per page
+@posts = Railspress::Post.published.includes(:category, :tags).ordered.page(params[:page])
+```
+
+Kaminari also defines `page`. If RailsPress loads first, its simpler `page` wins and `per` is still
+missing. Load Kaminari first by deferring the RailsPress require:
+
+```ruby
+# Gemfile
+gem "kaminari"
+gem "railspress-engine", require: false
+```
+
+```ruby
+# config/initializers/kaminari_config.rb
+Kaminari.configure { |config| }
+
+require "railspress" # force RailsPress to load after Kaminari
+```
+
+The `_pagination.html.erb` partial below uses `total_pages`, `current_page`, `prev_page`, and `next_page`.
+Those come from a pagination gem; with the built-in `page` scope the partial renders nothing.
 
 ### Step 2: Add Routes
 
@@ -245,6 +281,14 @@ RailsPress provides these scopes out of the box:
 
 ```erb
 <article class="post">
+  <% if @post.header_image.attached? %>
+    <figure class="post-hero">
+      <%= image_tag @post.header_image.variant(resize_to_limit: [1200, 630]),
+                    alt: @post.title,
+                    style: @post.focal_point_css(:header_image) %>
+    </figure>
+  <% end %>
+
   <header class="post-header">
     <h1><%= @post.title %></h1>
 
@@ -295,6 +339,86 @@ RailsPress provides these scopes out of the box:
   </aside>
 <% end %>
 ```
+
+---
+
+### Displaying the Header Image
+
+When `enable_post_images` is on, each post has a `header_image` Active Storage attachment. Always guard on
+`attached?`, because posts without an image return an unattached proxy.
+
+There are three ways to render it:
+
+```erb
+<%# 1. The original, unprocessed upload %>
+<%= image_tag @post.header_image, alt: @post.title %>
+
+<%# 2. An inline variant — any Active Storage transformation %>
+<%= image_tag @post.header_image.variant(resize_to_limit: [1200, 630]), alt: @post.title %>
+
+<%# 3. A named variant declared in your initializer %>
+<%= image_tag @post.header_image.variant(:hero), alt: @post.title %>
+```
+
+Named variants are the ones worth reaching for. Declare them once with `post_image_variants` and refer to
+them by name everywhere; RailsPress adds `format: :webp` to each one automatically.
+
+```ruby
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.enable_post_images
+
+  config.post_image_variants = {
+    hero:  { resize_to_fill: [1920, 1080] },
+    card:  { resize_to_fill: [800, 600] },
+    thumb: { resize_to_fill: [400, 400] }
+  }
+end
+```
+
+See [Configuring: `post_image_variants`](CONFIGURING.md#post_image_variants) for the full option.
+
+#### Combining variants with focal points
+
+A variant that crops (`resize_to_fill`) decides *which* part of the image survives. The focal point decides
+where the browser anchors the image inside its box. Use both: pass the variant to `image_tag` and the focal
+point to `style`, with `object-fit: cover` in your CSS.
+
+```erb
+<% if @post.header_image.attached? %>
+  <figure class="post-hero" style="aspect-ratio: 16 / 9;">
+    <%= image_tag @post.header_image.variant(:hero),
+                  alt: @post.title,
+                  style: @post.focal_point_css(:header_image) %>
+  </figure>
+<% end %>
+```
+
+```css
+.post-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* focal_point_css sets object-position */
+}
+```
+
+`focal_point_css` returns an `object-position` declaration such as `object-position: 62% 30%`. For
+per-context crops and custom overrides, see [Image Focal Point System](image-focal-point-system.md).
+
+#### Open Graph and meta tags
+
+For meta tags you need a URL rather than an `<img>` tag. `rp_featured_image_url` returns one, and `nil`
+when post images are disabled or nothing is attached:
+
+```erb
+<% if (og_image = rp_featured_image_url(@post, variant: { resize_to_limit: [1200, 630] })) %>
+  <meta property="og:image" content="<%= og_image %>">
+<% end %>
+```
+
+> **Variants need an image processor.** Rendering the original attachment works out of the box. Generating
+> any variant requires an Active Storage processor gem and its native library in every environment. See
+> [Configuring: Active Storage & Image Variants](CONFIGURING.md#image-variants).
 
 ---
 
@@ -513,7 +637,6 @@ def search
                              .distinct
                              .ordered
                              .page(params[:page])
-                             .per(10)
            else
              Railspress::Post.none
            end

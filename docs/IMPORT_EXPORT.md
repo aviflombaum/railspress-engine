@@ -255,7 +255,7 @@ The processor looks for the file relative to the markdown file, then relative to
 header_image: https://example.com/image.jpg
 ```
 
-Downloads and attaches the image automatically.
+Downloads and attaches the image automatically when the hostname resolves to a public HTTP or HTTPS destination. RailsPress rejects loopback, private, link-local, reserved, and other unsafe network addresses. Redirect responses are rejected rather than followed.
 
 ### Zip Structure
 
@@ -406,8 +406,9 @@ has_one_attached :file
 
 - **rubyzip**: Zip file handling
 - **redcarpet**: Markdown to HTML conversion (import only)
+- **ssrf_filter**: Safe remote header-image fetching
 
-Both gems are included in the railspress gemspec.
+All three gems are included in the railspress gemspec.
 
 ## Job Queue Configuration
 

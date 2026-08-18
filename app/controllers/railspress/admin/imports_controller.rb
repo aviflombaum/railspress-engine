@@ -1,6 +1,8 @@
 module Railspress
   module Admin
     class ImportsController < BaseController
+      SUPPORTED_IMPORT_EXTENSIONS = %w[.md .markdown .txt .zip].freeze
+
       before_action :validate_import_type, only: [ :show ]
 
       def show
@@ -53,10 +55,17 @@ module Railspress
         FileUtils.mkdir_p(upload_dir)
 
         uploaded_files.map do |file|
-          path = upload_dir.join(file.original_filename)
+          path = upload_dir.join(stored_upload_name(file))
           File.open(path, "wb") { |f| f.write(file.read) }
           path.to_s
         end
+      end
+
+      def stored_upload_name(file)
+        extension = File.extname(file.original_filename.to_s).downcase
+        extension = "" unless SUPPORTED_IMPORT_EXTENSIONS.include?(extension)
+
+        "#{SecureRandom.hex(16)}#{extension}"
       end
     end
   end

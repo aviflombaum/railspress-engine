@@ -96,6 +96,20 @@ RSpec.describe Railspress::ImportPostsJob, type: :job do
         expect(import.reload.status).to eq("failed")
       end
     end
+
+    context "with a cleanup path outside the temporary directory" do
+      it "does not delete the resolved file" do
+        target = Rails.root.join("agent-rspec-cleanup-#{SecureRandom.hex(8)}.bin")
+        File.write(target, "preserve")
+        traversal_path = Rails.root.join("tmp", "..", target.basename).to_s
+
+        described_class.perform_now(import.id, traversal_path)
+
+        expect(target).to exist
+      ensure
+        FileUtils.rm_f(target) if target
+      end
+    end
   end
 
   describe "job enqueueing" do

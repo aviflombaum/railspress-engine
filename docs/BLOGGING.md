@@ -329,6 +329,34 @@ RailsPress provides these scopes out of the box:
 <% end %>
 ```
 
+### Styling Rich-Text Code Blocks
+
+The public blog view belongs to the host application, so its typography and code-block theme are also host-owned. RailsPress stores and renders the Action Text content but does not impose the admin theme on public pages.
+
+At minimum, contain `<pre>` elements so a long code line scrolls inside the block instead of widening the page:
+
+```css
+.post-content,
+.post-content .trix-content {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.post-content pre,
+.post-content .trix-content pre {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+```
+
+The dummy application demonstrates a complete responsive treatment. These selectors are intentionally structural; choose public colors, spacing, and typography in the host theme. Do not assume Lexxy's editor-only `language` attribute will be available here: Action Text's default renderer sanitizes that attribute. Syntax labels or highlighting therefore require an explicit host-owned rendering and sanitization strategy.
+
 ---
 
 ### Displaying the Header Image

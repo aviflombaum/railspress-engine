@@ -32,6 +32,7 @@ Blocks are implemented as `ContentGroup` and `ContentElement` models internally.
 - **[ADMIN_HELPERS.md](ADMIN_HELPERS.md)** - Reference for admin view helper methods (forms, layouts, display).
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions.
 - **[UPGRADING.md](UPGRADING.md)** - How to upgrade between versions and copy new migrations.
+- **[MAINTENANCE.md](MAINTENANCE.md)** - Doctor, upgrade, migration-copy, and legacy maintenance tasks.
 
 ## Quick Links
 
@@ -52,7 +53,8 @@ Access the admin at `/railspress/admin`:
 | `/railspress/admin/tags` | Manage tags |
 | `/railspress/admin/content_groups` | Manage block groups |
 | `/railspress/admin/content_elements` | Manage blocks (content elements) |
-| `/railspress/admin/cms_transfers` | Block export/import |
+| `/railspress/admin/cms_transfer` | Block export/import |
+| `/railspress/admin/api_keys` | Manage API and agent onboarding keys when Agents & API is enabled |
 
 ---
 
@@ -65,15 +67,13 @@ Access the admin at `/railspress/admin`:
 | `title` | string | Post title (required) |
 | `slug` | string | URL-friendly identifier (auto-generated) |
 | `content` | rich_text | Post body (Action Text) |
-| `excerpt` | text | Optional post summary/teaser |
 | `status` | enum | `draft` or `published` |
 | `published_at` | datetime | When post was published |
 | `reading_time` | integer | Estimated reading time in minutes (auto-calculated) |
 | `meta_title` | string | SEO title override |
 | `meta_description` | text | SEO description |
 | `category_id` | integer | Optional category |
-| `author_id` | integer | Author reference (when `enable_authors` is set) |
-| `author_type` | string | Author class name (polymorphic) |
+| `author_id` | bigint | ID in the configured author class (when `enable_authors` is set) |
 
 **Attachments (when `enable_post_images` is set):**
 - `header_image` - ActiveStorage single attachment
@@ -81,17 +81,20 @@ Access the admin at `/railspress/admin`:
 
 **Associations:**
 - `belongs_to :category` (optional)
-- `has_many :tags` (through post_tags)
+- `has_many :taggings, as: :taggable`
+- `has_many :tags, through: :taggings`
 - `has_rich_text :content`
-- `belongs_to :author, polymorphic: true` (when authors enabled)
+- `author` is resolved from `author_id` through `config.author_class_name` when authors are enabled; Post does not store an `author_type` column
 
 **Scopes:**
-- `published` - Posts with status "published" and a `published_at` date set
+- `published` - Published-status posts whose `published_at` is in the past or present
 - `drafts` - Posts with status "draft"
-- `ordered` - By `published_at` descending (published first, then created_at)
-- `recent` - Last 10 posts (combines `ordered.limit(10)`)
+- `scheduled` - Published-status posts whose `published_at` is in the future
+- `live` - Alias for the `published` scope
+- `ordered` - By `created_at` descending
+- `recent` - Last 10 posts by creation time (combines `ordered.limit(10)`)
 - `by_author(author)` - Filter by author (when authors enabled)
-- `by_category(category_or_id)` - Filter by category
+- `by_category(category_id)` - Filter by category ID
 - `by_status(status)` - Filter by status enum value
 - `rp_search(query)` - RailsPress's case-insensitive substring search on title
 - `rp_page(page_number)` - RailsPress's lightweight pagination
@@ -115,7 +118,9 @@ remain as conditional compatibility methods until RailsPress 2.0 and should not 
 - `tag_list` / `tag_list=` - Get/set tags as CSV string
 - `reading_time_display` - Returns `reading_time` or calculates from content
 - `calculate_reading_time` - Word count / `Railspress.words_per_minute`
-- `author` / `author=` - Get/set polymorphic author (when authors enabled)
+- `author` / `author=` - Resolve or assign an ID in the configured author class
+- `scheduled?` / `live?` - Compare `published_at` with the current time
+- `display_status` - Returns `scheduled` for future published-status posts, otherwise the stored status
 - `remove_header_image` / `remove_header_image=` - Virtual attribute for image removal
 
 ### Railspress::Category
@@ -124,6 +129,7 @@ remain as conditional compatibility methods until RailsPress 2.0 and should not 
 |-----------|------|-------------|
 | `name` | string | Category name (required, unique) |
 | `slug` | string | URL-friendly identifier (auto-generated) |
+| `description` | text | Optional category description |
 
 **Associations:**
 - `has_many :posts`
@@ -139,7 +145,8 @@ remain as conditional compatibility methods until RailsPress 2.0 and should not 
 | `slug` | string | URL-friendly identifier (auto-generated) |
 
 **Associations:**
-- `has_many :posts` (through post_tags)
+- `has_many :taggings`
+- `has_many :posts, through: :taggings` for the `Railspress::Post` taggable type
 
 **Scopes:**
 - `ordered` - Alphabetically by name
@@ -155,10 +162,15 @@ A group of related blocks (e.g., "Homepage Hero", "Contact Info").
 |-----------|------|-------------|
 | `name` | string | Group name (required, unique) |
 | `description` | text | Optional description |
-| `element_count` | integer | Counter cache of elements |
+| `author_id` | bigint | ID in the configured author class, when authors are enabled |
+| `deleted_at` | datetime | Soft-deletion timestamp |
 
 **Associations:**
 - `has_many :content_elements`
+
+**Computed methods:**
+- `element_count` - Counts active (not soft-deleted) content elements
+- `soft_delete` - Soft-deletes the group and its elements unless a required active element blocks deletion
 
 ### Railspress::ContentElement (Block)
 
@@ -174,6 +186,8 @@ An individual block — a piece of text or an image on your site.
 | `position` | integer | Sort order within group |
 | `required` | boolean | Required elements cannot be deleted |
 | `content_group_id` | integer | Parent group |
+| `author_id` | bigint | ID in the configured author class, when authors are enabled |
+| `deleted_at` | datetime | Soft-deletion timestamp |
 
 **Associations:**
 - `belongs_to :content_group`
@@ -194,11 +208,12 @@ cms_element("Hero Section", "headline")     # Returns value with inline editing 
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `changes_from_previous` | text | Previous content before the edit |
-| `author_id` | bigint | Who made the change |
 | `content_element_id` | integer | Parent element |
+| `author_id` | bigint | ID in the configured author class, when authors are enabled |
+| `text_content` | text | Text snapshot stored for this version |
+| `version_number` | integer | Sequence number unique within the content element |
 
-Auto-created on each content element update, storing the previous value for audit history.
+Versions are auto-created when text content changes. `changes_from_previous` is a computed hash that compares this snapshot with the preceding version; it is not a database column. `image_version` is an Active Storage attachment defined on the version model, although current automatic version creation records text changes only.
 
 ---
 
@@ -239,10 +254,17 @@ railspress.admin_content_elements_path            # => "/blog/admin/content_elem
 railspress.admin_content_element_path(element)    # => "/blog/admin/content_elements/123"
 
 # CMS Transfers (export/import)
-railspress.admin_cms_transfer_path                # => "/blog/admin/cms_transfers"
+railspress.admin_cms_transfer_path                # => "/blog/admin/cms_transfer"
+
+# Agents & API key management
+railspress.admin_api_keys_path                    # => "/blog/admin/api_keys"
+railspress.new_admin_api_key_path                 # => "/blog/admin/api_keys/new"
+railspress.new_admin_agent_bootstrap_key_path     # => "/blog/admin/agent_bootstrap_keys/new"
 ```
 
 ### Entity Routes
+
+The names below are host-callable helpers on the `railspress` route proxy. Inside the generic entity controller/views, RailsPress also exposes convenience helpers such as `entity_index_path`, `entity_show_path`, `entity_new_path`, and `entity_edit_path`; those are controller-local helpers and are not methods on the host route proxy.
 
 ```ruby
 # List entities
@@ -254,11 +276,11 @@ railspress.admin_entity_path(entity_type: "projects", id: 1)
 # => "/blog/admin/entities/projects/1"
 
 # New entity
-railspress.admin_entity_new_path(entity_type: "projects")
+railspress.admin_new_entity_path(entity_type: "projects")
 # => "/blog/admin/entities/projects/new"
 
 # Edit entity
-railspress.admin_entity_edit_path(entity_type: "projects", id: 1)
+railspress.admin_edit_entity_path(entity_type: "projects", id: 1)
 # => "/blog/admin/entities/projects/1/edit"
 ```
 

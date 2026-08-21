@@ -23,6 +23,8 @@ Request options:
 - multipart `file`
 - JSON `signed_blob_id` (Active Storage direct upload)
 
+Unlike the admin importer, which accepts multiple selected files in one operation, each API request accepts one file or signed blob. Submit multiple requests for multiple source files.
+
 ### Multipart example
 
 ```bash
@@ -79,3 +81,5 @@ Status values:
 - `processing`
 - `completed`
 - `failed`
+
+Import creation is asynchronous and is not idempotent. Retrying a request or a failed job can create duplicate posts because imports create new records rather than upserting by slug. Before retrying, inspect the import status and the posts it already created.

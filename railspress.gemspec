@@ -40,11 +40,17 @@ Gem::Specification.new do |spec|
       RailsPress installed/updated.
 
       New install:
-        $ rails generate railspress:install
+        $ bin/rails generate railspress:install
+        $ bin/rails db:migrate
+        $ bin/rails railspress:doctor
 
       Upgrading existing app:
-        $ rails railspress:install:migrations
-        $ rails db:migrate
+        $ DRY_RUN=1 bin/rails railspress:upgrade
+        $ bin/rails railspress:upgrade
+
+      The mutating upgrade task is for writable development checkouts and
+      runs all pending host migrations. Commit copied migrations and use the
+      host application's normal db:migrate release step in production.
 
       Enabling Agents & API requires host-managed Active Record Encryption
       credentials. If they are missing, generate the credentials snippet with:

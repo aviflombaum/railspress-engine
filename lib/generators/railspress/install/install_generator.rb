@@ -115,7 +115,7 @@ module Railspress
           say '     app/javascript/application.js includes: import "railspress"', :cyan
         else
           say "  1. Run migrations:"
-          say "     $ rails db:migrate", :cyan
+          say "     $ bin/rails db:migrate", :cyan
           say ""
           say "  2. Configure admin authentication before deployment:"
           say "     config.admin_authentication_method and config.current_admin_method", :cyan

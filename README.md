@@ -42,7 +42,7 @@ You define a regular ActiveRecord model, include `Railspress::Entity`, and Rails
 - Focal point image cropping for any attachment
 - Polymorphic tagging
 - Custom index columns, searchable fields, scopes
-- Generator: `rails generate railspress:entity Project title:string description:text`
+- Generator: `bin/rails generate railspress:entity Project title:string description:text`
 
 ### Blocks
 
@@ -99,8 +99,8 @@ RailsPress also depends on `stimulus-rails >= 1.2.2` and supplies a local `@hotw
 Ensure ActionText and Active Storage are installed:
 
 ```bash
-rails action_text:install
-rails active_storage:install
+bin/rails action_text:install
+bin/rails active_storage:install
 ```
 
 ### Image variants
@@ -136,11 +136,13 @@ Run the install generator:
 
 ```bash
 bundle install
-rails generate railspress:install
-rails db:migrate
+bin/rails generate railspress:install
+bin/rails db:migrate
 ```
 
-The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally.
+The generator copies RailsPress, Action Text, and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. It does not run migrations, enable optional features, or write encryption credentials. Existing files and registrations are skipped where possible.
+
+The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally. Existing installations should follow the [upgrade guide](docs/UPGRADING.md) rather than treating a generator rerun as a complete upgrade.
 
 Check the resolved installation at any time with the read-only doctor command:
 
@@ -226,7 +228,7 @@ Create posts with rich text, categories, tags, and header images. Build your own
 Generate a model and register it:
 
 ```bash
-rails generate railspress:entity Project title:string client:string description:text
+bin/rails generate railspress:entity Project title:string client:string description:text
 ```
 
 ```ruby
@@ -271,8 +273,8 @@ Create the "Homepage" group and its blocks in the admin at `/railspress/admin/co
 ## Generators
 
 ```bash
-rails generate railspress:install                    # Full setup
-rails generate railspress:entity Project title:string # Add a managed entity
+bin/rails generate railspress:install                     # Full setup
+bin/rails generate railspress:entity Project title:string # Add a managed entity
 ```
 
 ## Documentation
@@ -297,13 +299,14 @@ rails generate railspress:entity Project title:string # Add a managed entity
 | [Admin Helpers](docs/ADMIN_HELPERS.md) | View helper reference |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues |
 | [Upgrading](docs/UPGRADING.md) | Version upgrades and migrations |
+| [Maintenance Commands](docs/MAINTENANCE.md) | Doctor, upgrade, migration, and legacy tasks |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## Development
 
 ```bash
 bundle install
-cd spec/dummy && bundle exec rails db:migrate && cd ../..
+cd spec/dummy && bin/rails db:migrate && cd ../..
 bundle exec rspec
 ```
 

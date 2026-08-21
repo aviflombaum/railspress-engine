@@ -48,6 +48,7 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
         "rich_text_html": true,
         "content_formats": ["html", "markdown", "plain", "auto"],
         "read_content_format": "html",
+        "default_status": "draft",
         "publish_supported": true
       },
       "post_imports": {
@@ -61,6 +62,10 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
         "gallery_images": true,
         "focal_points": true,
         "context_overrides": true
+      },
+      "taxonomies": {
+        "categories": true,
+        "tags": true
       }
     },
     "endpoints": {
@@ -75,7 +80,9 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
     "key": {
       "id": 1,
       "name": "Agent Key",
-      "status": "active"
+      "status": "active",
+      "expires_at": null,
+      "last_used_at": null
     },
     "server_time": "2026-04-16T00:00:00.000Z"
   }
@@ -83,6 +90,8 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
 ```
 
 Media booleans reflect runtime configuration. Inline Action Text image uploads are available with the API; header images, galleries, focal points, and context overrides reflect their corresponding RailsPress feature flags.
+
+Endpoint values are generated from the engine mount and are intended to be used as returned. A host that mounts RailsPress somewhere other than `/railspress` receives paths with that mount prefix.
 
 ## Draft vs publish
 

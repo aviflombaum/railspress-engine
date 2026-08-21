@@ -53,7 +53,7 @@ module Railspress
         say "Next steps:", :yellow
         say ""
         say "  1. Run the migration:"
-        say "     $ rails db:migrate", :cyan
+        say "     $ bin/rails db:migrate", :cyan
         say ""
         say "  2. Restart your Rails server"
         say ""

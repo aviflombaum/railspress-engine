@@ -13,6 +13,7 @@ Base path (default mount): `/railspress/api/v1`
 - [Errors](errors.md)
 - [Posts](posts.md)
 - [Post Assets](post_assets.md)
+- [Post Media](post_media.md)
 - [Post Imports](post_imports.md)
 - [Categories](categories.md)
 - [Tags](tags.md)

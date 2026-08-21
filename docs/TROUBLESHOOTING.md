@@ -10,7 +10,24 @@ bin/rails railspress:doctor
 
 It can report RailsPress configuration failures even when normal RailsPress boot validation would stop the application. A failure exits nonzero; warnings identify conditions such as implicit authentication or route constraints that require operator verification.
 
+See [Maintenance Commands](MAINTENANCE.md) for the complete task contract.
+
 ## Installation Issues
+
+### Install Generator Was Interrupted or Rerun
+
+**Symptom**: The route or initializer exists, but migrations/importmap setup is incomplete; or a generator rerun reports a mixture of `skip` and `create` statuses.
+
+**Cause**: The install generator treats each target independently. It skips an existing engine mount, initializer, framework migration, or importmap pin instead of overwriting it. Detecting any existing RailsPress setup also switches the final message to the upgrade workflow.
+
+**Solution**:
+
+1. Review the generator target table in [Configuring](CONFIGURING.md#what-the-install-generator-changes).
+2. Run `bin/rails railspress:doctor` to identify uncopied or pending RailsPress migrations.
+3. Inspect `config/routes.rb`, `config/importmap.rb`, and `config/initializers/railspress.rb` rather than deleting working files.
+4. For an existing installation, use `DRY_RUN=1 bin/rails railspress:upgrade` and follow [Upgrading](UPGRADING.md).
+
+The generator never runs `db:migrate` and never writes Active Record Encryption credentials.
 
 ### "RailsPress Agents & API requires Active Record Encryption credentials"
 

@@ -11,10 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.
 - **Upgrade workflow**: Added `bin/rails railspress:upgrade` to run configuration preflight, copy RailsPress migrations, apply all pending host migrations, and verify the result. `DRY_RUN=1` previews the work without writes, and production environments retain their normal committed-migration deployment flow.
+- **Format-aware post writes**: Post create/update accepts HTML, Markdown, plain text, or automatic detection through `post[content_format]` or `X-Railspress-Content-Format`. Read responses remain canonical Action Text HTML.
+- **Inline post assets**: Added `POST /api/v1/post_assets`, which accepts an image upload or signed Active Storage blob and returns canonical Action Text attachment markup.
+- **Post galleries**: Added nested list/create/delete endpoints for gallery images when post images are enabled.
 
 ### Changed
 
 - **Upgrade guidance**: Moved browser-admin authentication settings out of the initializer's API-only section and made doctor/upgrade the canonical local workflow, including troubleshooting for constrained mounts that return either routing 404s or successful HTML login pages to API clients.
+- **Post serialization**: Post responses now include `content_format`, `gallery_images`, and signed blob metadata needed by API clients. Prime advertises content formats, inline assets, galleries, and taxonomy capabilities.
+- **Plain-text imports**: `.txt` post imports now escape HTML and preserve literal paragraphs and line breaks instead of interpreting Markdown syntax.
+
+### Upgrade Notes (target: Unreleased)
+
+- These API and import changes require no new RailsPress migrations or initializer changes.
+- API consumers should tolerate the additive post and Prime response fields. Post content reads are HTML even when writes supplied Markdown or plain text.
+- Post-image gallery capabilities remain gated by `config.enable_post_images`; inline Action Text asset uploads do not use that toggle.
+- Post import jobs are not idempotent. Inspect a partially processed import before retrying it.
 
 ## [1.4.5] - 2026-08-21
 
@@ -197,7 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Lexxy dependency policy**: RailsPress now requires `lexxy >= 0.9.0.beta` (no upper pin). Host apps can get newer Lexxy releases via normal Bundler updates (`bundle update lexxy` or `bundle update --all`), while still allowing explicit host-level pinning when needed.
 - **Lexxy auto-wiring**: Lexxy is now consistently wired through RailsPress internals (engine importmap + RailsPress JavaScript entrypoint). Host apps no longer need to manually pin `lexxy` in `config/importmap.rb`.
-- **Install generator behavior**: `rails generate railspress:install` no longer appends a host-level `lexxy` pin to importmap; the engine handles this.
+- **Install generator behavior**: `bin/rails generate railspress:install` no longer appends a host-level `lexxy` pin to importmap; the engine handles this.
 - **Admin editor UX**: Lexxy toolbar is now sticky in the admin editor for long-form editing workflows.
 
 ### Fixed
@@ -257,6 +269,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 If upgrading from a version that used `railspress_post_tags`:
 
-1. Run `rails railspress:install:migrations` to get the new taggings migration
-2. Run `rails db:migrate` to create the new polymorphic table
+1. Run `bin/rails railspress:install:migrations` to get the new taggings migration
+2. Run `bin/rails db:migrate` to create the new polymorphic table
 3. Existing post-tag relationships will need to be migrated (see UPGRADING.md)

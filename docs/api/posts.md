@@ -74,14 +74,21 @@ Collection response includes `meta`:
 
 ## Content Formats
 
-`post[content]` accepts HTML, Markdown, or plain text. Set the format with `post[content_format]`:
+`post[content]` accepts HTML, Markdown, or plain text. A missing or JSON `null` content value becomes an empty string. Set the format with `post[content_format]`:
 
 - `html`: stores HTML through Action Text sanitization
 - `markdown`: renders Markdown to rich HTML before Action Text assignment
 - `plain`: escapes HTML and preserves paragraphs/newlines without interpreting Markdown
 - `auto`: detects obvious HTML or Markdown and otherwise uses plain text
 
-The JSON field takes precedence over the `X-Railspress-Content-Format` request header. The header accepts the same names plus `text/html`, `text/markdown`, and `text/plain` MIME aliases.
+The JSON field takes precedence over the `X-Railspress-Content-Format` request header. Both inputs are case-insensitive and ignore surrounding whitespace. Accepted aliases are:
+
+| Canonical format | Aliases |
+| --- | --- |
+| `html` | `htm`, `text/html` |
+| `markdown` | `md`, `text/markdown` |
+| `plain` | `text`, `text/plain` |
+| `auto` | none |
 
 For backward compatibility, an omitted format means `html`. Auto detection only occurs when `auto` is explicitly requested.
 
@@ -97,7 +104,9 @@ Markdown example:
 }
 ```
 
-All read responses return canonical Action Text HTML and report `content_format: "html"`. The original Markdown/plain source is not persisted and therefore cannot be losslessly returned.
+Markdown enables autolinks, tables, fenced code blocks, strikethrough, highlight, superscript, hard line wrapping, and safe-link filtering. Inline HTML is allowed by the Markdown renderer. All generated or submitted HTML then passes through Action Text's sanitization when assigned to the post.
+
+All read responses return canonical Action Text HTML and report `content_format: "html"`. The original Markdown/plain source is not persisted and therefore cannot be losslessly returned. A post without content serializes `content` as `null`.
 
 For inline images, upload through [Post Assets](post_assets.md), insert the returned `attachment_html` into an HTML body, and submit that body with `content_format: "html"`.
 
@@ -199,6 +208,8 @@ curl -X DELETE \
 ```
 
 ## Nested Header Image Resources
+
+The complete media contract, feature flags, request shapes, and error cases are collected in [Post Media](post_media.md). The summary below lists the available routes.
 
 ### `GET /posts/:post_id/header_image`
 

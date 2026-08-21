@@ -1,383 +1,136 @@
 # Theming RailsPress
 
-RailsPress uses CSS custom properties (variables) for theming. Override these variables in your application's stylesheet to customize the admin interface appearance.
+RailsPress exposes CSS custom properties for the admin interface. Override them after the engine stylesheet has loaded.
 
-## Quick Start
+## Add an Override Stylesheet
 
-Add to your application CSS (after loading RailsPress styles):
+The admin layout loads `railspress/application`. A host application stylesheet is not added automatically, so either override the admin layout or append a stylesheet through your asset setup.
+
+For example, copy the engine layout into `app/views/layouts/railspress/admin.html.erb`, preserve its existing tags, and add this after the RailsPress stylesheet:
+
+```erb
+<%= stylesheet_link_tag "railspress/application", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag "railspress_overrides", "data-turbo-track": "reload" %>
+```
+
+Then define overrides in `app/assets/stylesheets/railspress_overrides.css`:
 
 ```css
-/* app/assets/stylesheets/railspress_overrides.css */
 :root {
   --rp-primary: #2563eb;
   --rp-sidebar-bg: #1e293b;
 }
 ```
 
-Or in your application layout:
+Dynamic values can instead be placed in a style block in the overridden layout. Sanitize or validate tenant-provided color values before emitting them into CSS.
 
-```erb
-<style>
-  :root {
-    --rp-primary: <%= current_tenant.brand_color %>;
-  }
-</style>
-```
+## Design Tokens
 
----
+These are all of the custom properties currently defined by RailsPress. Component-specific values that are not represented here require a selector override.
 
-## Color Variables
+### Typography
 
-### Brand Colors
+| Variable | Default | Use |
+| --- | --- | --- |
+| `--rp-font-display` | `Georgia, "Times New Roman", serif` | Headings and display text |
+| `--rp-font-body` | `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` | Interface text |
+| `--rp-font-mono` | `'SF Mono', Consolas, monospace` | Code and monospaced text |
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-primary` | `#2563eb` | Primary action color (buttons, links) |
-| `--rp-primary-hover` | `#1d4ed8` | Primary hover state |
-| `--rp-primary-light` | `#dbeafe` | Primary background tint |
+### Colors
 
-### Semantic Colors
+| Variable | Default | Use |
+| --- | --- | --- |
+| `--rp-sidebar-bg` | `#1a1d21` | Sidebar background |
+| `--rp-sidebar-hover` | `#2a2e33` | Sidebar hover background |
+| `--rp-sidebar-text` | `#a8adb3` | Sidebar text |
+| `--rp-sidebar-text-active` | `#ffffff` | Active sidebar text |
+| `--rp-bg` | `#f8f7f5` | Admin page background |
+| `--rp-bg-elevated` | `#ffffff` | Cards and elevated surfaces |
+| `--rp-border` | `#e5e2dc` | Standard borders |
+| `--rp-border-light` | `#f0ede8` | Subtle borders |
+| `--rp-text` | `#2c2a27` | Primary text |
+| `--rp-text-muted` | `#6b6860` | Secondary text |
+| `--rp-text-light` | `#9a958c` | Tertiary text and placeholders |
+| `--rp-primary` | `#3d5a80` | Primary actions and links |
+| `--rp-primary-hover` | `#2c4a6e` | Primary hover state |
+| `--rp-primary-light` | `#e8eef4` | Primary tinted background |
+| `--rp-success` | `#4a7c59` | Success states |
+| `--rp-success-light` | `#e8f2eb` | Success tinted background |
+| `--rp-danger` | `#a63d40` | Destructive and error states |
+| `--rp-danger-light` | `#f9ebeb` | Error tinted background |
+| `--rp-info-light` | `#f0f7fb` | Informational tinted background |
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-success` | `#16a34a` | Success states, published badges |
-| `--rp-warning` | `#ca8a04` | Warning states, draft badges |
-| `--rp-danger` | `#dc2626` | Error states, delete buttons |
-| `--rp-info` | `#0891b2` | Informational elements |
+### Spacing and Sizing
 
-### Background Colors
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-bg` | `#f8fafc` | Page background |
-| `--rp-bg-card` | `#ffffff` | Card/panel background |
-| `--rp-bg-muted` | `#f1f5f9` | Muted/secondary backgrounds |
-
-### Text Colors
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-text` | `#1e293b` | Primary text |
-| `--rp-text-muted` | `#64748b` | Secondary/muted text |
-| `--rp-text-light` | `#94a3b8` | Light text (placeholders) |
-
-### Border Colors
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-border` | `#e2e8f0` | Default borders |
-| `--rp-border-dark` | `#cbd5e1` | Darker borders |
-
----
-
-## Sidebar Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-sidebar-bg` | `#1e293b` | Sidebar background |
-| `--rp-sidebar-text` | `#e2e8f0` | Sidebar text color |
-| `--rp-sidebar-text-muted` | `#94a3b8` | Sidebar muted text |
-| `--rp-sidebar-hover` | `#334155` | Sidebar item hover background |
-| `--rp-sidebar-active` | `#0f172a` | Active sidebar item background |
-| `--rp-sidebar-width` | `260px` | Sidebar width |
-
----
-
-## Typography Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-font-display` | `system-ui, sans-serif` | Headings font |
-| `--rp-font-body` | `system-ui, sans-serif` | Body text font |
-| `--rp-font-mono` | `ui-monospace, monospace` | Code/mono font |
-| `--rp-font-size-base` | `1rem` | Base font size |
-| `--rp-font-size-sm` | `0.875rem` | Small text |
-| `--rp-font-size-lg` | `1.125rem` | Large text |
-| `--rp-line-height` | `1.5` | Default line height |
-
----
-
-## Spacing Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-space-xs` | `0.25rem` | Extra small spacing |
+| Variable | Default | Use |
+| --- | --- | --- |
+| `--rp-space-xs` | `0.25rem` | Extra-small spacing |
 | `--rp-space-sm` | `0.5rem` | Small spacing |
-| `--rp-space-md` | `1rem` | Medium spacing (default) |
+| `--rp-space-md` | `1rem` | Standard spacing |
 | `--rp-space-lg` | `1.5rem` | Large spacing |
-| `--rp-space-xl` | `2rem` | Extra large spacing |
+| `--rp-space-xl` | `2rem` | Extra-large spacing |
+| `--rp-space-2xl` | `3rem` | Largest spacing step |
+| `--rp-sidebar-width` | `240px` | Expanded desktop sidebar width |
+| `--rp-sidebar-width-collapsed` | `64px` | Collapsed desktop sidebar width |
+| `--rp-header-height` | `56px` | Mobile header height |
+| `--rp-radius` | `6px` | Shared corner radius |
 
----
+### Shadows
 
-## Component Variables
+| Variable | Default |
+| --- | --- |
+| `--rp-shadow-sm` | `0 1px 3px rgba(44, 42, 39, 0.06), 0 1px 2px rgba(44, 42, 39, 0.04)` |
+| `--rp-shadow-md` | `0 4px 16px rgba(44, 42, 39, 0.1), 0 2px 4px rgba(44, 42, 39, 0.06)` |
+| `--rp-shadow-lg` | `0 8px 24px rgba(44, 42, 39, 0.12), 0 4px 8px rgba(44, 42, 39, 0.08)` |
 
-### Buttons
+## Selector Overrides
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-btn-radius` | `0.375rem` | Button border radius |
-| `--rp-btn-padding-x` | `1rem` | Horizontal padding |
-| `--rp-btn-padding-y` | `0.5rem` | Vertical padding |
-
-### Cards
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-card-radius` | `0.5rem` | Card border radius |
-| `--rp-card-shadow` | `0 1px 3px rgba(0,0,0,0.1)` | Card shadow |
-| `--rp-card-padding` | `1.5rem` | Card internal padding |
-
-### Forms
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-input-radius` | `0.375rem` | Input border radius |
-| `--rp-input-border` | `1px solid var(--rp-border)` | Input border |
-| `--rp-input-padding` | `0.5rem 0.75rem` | Input padding |
-| `--rp-input-focus-ring` | `0 0 0 3px var(--rp-primary-light)` | Focus ring |
-
-### Badges
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--rp-badge-radius` | `9999px` | Badge border radius (pill shape) |
-| `--rp-badge-padding` | `0.25rem 0.75rem` | Badge padding |
-
----
-
-## Theme Examples
-
-### Dark Sidebar with Blue Primary
+RailsPress uses `rp-`-prefixed, BEM-like classes. Inspect the rendered component before overriding it; not every component detail has a custom property.
 
 ```css
-:root {
-  --rp-primary: #3b82f6;
-  --rp-primary-hover: #2563eb;
-  --rp-primary-light: #dbeafe;
-
-  --rp-sidebar-bg: #0f172a;
-  --rp-sidebar-text: #f1f5f9;
-  --rp-sidebar-hover: #1e293b;
-  --rp-sidebar-active: #1e40af;
-}
-```
-
-### Light Theme with Green Accent
-
-```css
-:root {
-  --rp-primary: #059669;
-  --rp-primary-hover: #047857;
-  --rp-primary-light: #d1fae5;
-
-  --rp-sidebar-bg: #f8fafc;
-  --rp-sidebar-text: #1e293b;
-  --rp-sidebar-hover: #e2e8f0;
-  --rp-sidebar-active: #dcfce7;
-
-  --rp-success: #059669;
-}
-```
-
-### Purple/Indigo Theme
-
-```css
-:root {
-  --rp-primary: #7c3aed;
-  --rp-primary-hover: #6d28d9;
-  --rp-primary-light: #ede9fe;
-
-  --rp-sidebar-bg: #1e1b4b;
-  --rp-sidebar-text: #e0e7ff;
-  --rp-sidebar-hover: #312e81;
-  --rp-sidebar-active: #4338ca;
-}
-```
-
-### Warm/Orange Theme
-
-```css
-:root {
-  --rp-primary: #ea580c;
-  --rp-primary-hover: #c2410c;
-  --rp-primary-light: #ffedd5;
-
-  --rp-sidebar-bg: #1c1917;
-  --rp-sidebar-text: #fafaf9;
-  --rp-sidebar-hover: #292524;
-}
-```
-
----
-
-## Dynamic Theming
-
-For multi-tenant applications, set variables dynamically:
-
-```erb
-<%# app/views/layouts/railspress/admin.html.erb (override) %>
-<!DOCTYPE html>
-<html>
-<head>
-  <%= csrf_meta_tags %>
-  <%= stylesheet_link_tag "railspress/admin" %>
-
-  <style>
-    :root {
-      --rp-primary: <%= current_organization.primary_color || '#2563eb' %>;
-      --rp-sidebar-bg: <%= current_organization.sidebar_color || '#1e293b' %>;
-    }
-  </style>
-</head>
-<body class="rp-admin">
-  <!-- ... -->
-</body>
-</html>
-```
-
----
-
-## BEM Naming Convention
-
-RailsPress uses BEM-style CSS class naming with the `rp-` prefix:
-
-- **Block**: `.rp-card`, `.rp-form`, `.rp-sidebar`
-- **Element**: `.rp-card__header`, `.rp-form__actions`, `.rp-sidebar__nav`
-- **Modifier**: `.rp-btn--primary`, `.rp-badge--success`, `.rp-card--compact`
-
-### Key Class Patterns
-
-```css
-/* Blocks */
-.rp-sidebar { }
+/* Examples of current component selectors. */
 .rp-card { }
-.rp-form { }
-.rp-table { }
-.rp-btn { }
-.rp-badge { }
-
-/* Elements */
-.rp-sidebar__header { }
-.rp-sidebar__nav { }
-.rp-sidebar__link { }
-
-.rp-card__header { }
-.rp-card__body { }
-.rp-card__footer { }
-
-.rp-form__layout { }
-.rp-form__main { }
-.rp-form__sidebar { }
-.rp-form__actions { }
-
-/* Modifiers */
 .rp-btn--primary { }
-.rp-btn--secondary { }
-.rp-btn--danger { }
-.rp-btn--ghost { }
-
-.rp-badge--success { }
-.rp-badge--warning { }
-.rp-badge--danger { }
+.rp-table { }
+.rp-form-group { }
 ```
 
----
+Keep host overrides narrowly scoped to `.rp-admin-layout` where possible. Engine markup can evolve between releases, while the token list above is the preferred customization surface.
 
-## Overriding Specific Components
+## Sidebar Behavior
 
-To override specific components without changing variables:
+The desktop sidebar uses these current selectors:
 
-```css
-/* Custom card styling */
-.rp-card {
-  border: 2px solid var(--rp-primary);
-  box-shadow: none;
-}
+- `.rp-sidebar` is the sidebar container.
+- `.rp-sidebar-toggle` is the collapse button.
+- `.rp-nav-link` and `.rp-nav-link--active` style navigation links.
+- `.rp-nav-icon` and `.rp-nav-text` identify the icon and label.
+- `.rp-sidebar--collapsed` marks a collapsed sidebar.
+- `.rp-admin-layout--sidebar-collapsed` adjusts the main content area.
 
-/* Custom button styling */
-.rp-btn--primary {
-  background: linear-gradient(135deg, var(--rp-primary) 0%, #6366f1 100%);
-}
+The browser stores the desktop preference under the `rp-sidebar-collapsed` local-storage key. On mobile, RailsPress instead uses its hamburger control and overlay; the persisted desktop collapse state is not the mobile open state.
 
-/* Custom sidebar styling */
-.rp-sidebar {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-}
-```
-
----
-
-## Browser Support
-
-CSS custom properties are supported in all modern browsers. For older browser support, provide fallback values:
-
-```css
-.rp-btn--primary {
-  background: #2563eb; /* Fallback */
-  background: var(--rp-primary);
-}
-```
-
----
-
-## Collapsible Sidebar
-
-The admin sidebar can be collapsed by clicking the toggle button in the sidebar header. The collapsed state persists across page loads and browser sessions via localStorage.
-
-### How It Works
-
-- Click the toggle button (hamburger icon) to collapse/expand the sidebar
-- When collapsed, only icons are visible (if using icon navigation)
-- State is stored in `localStorage` under the key `rp-sidebar-collapsed`
-- Persists per-browser, not per-user account
-
-### CSS Classes
-
-```css
-/* Sidebar in collapsed state */
-.rp-sidebar--collapsed {
-  width: var(--rp-sidebar-collapsed-width, 60px);
-}
-
-/* Toggle button */
-.rp-sidebar__toggle {
-  /* Styles for the hamburger/close button */
-}
-
-/* Hide text labels when collapsed */
-.rp-sidebar--collapsed .rp-sidebar__link-text {
-  display: none;
-}
-```
-
-### Customizing Collapsed Width
-
-Override the collapsed width via CSS variable:
+To change sidebar widths, override the two sizing tokens:
 
 ```css
 :root {
-  --rp-sidebar-collapsed-width: 80px;
+  --rp-sidebar-width: 280px;
+  --rp-sidebar-width-collapsed: 72px;
 }
 ```
 
-### Disabling Collapse
-
-If you don't want the collapsible sidebar, hide the toggle button:
+## Example Theme
 
 ```css
-.rp-sidebar__toggle {
-  display: none;
+:root {
+  --rp-primary: #047857;
+  --rp-primary-hover: #065f46;
+  --rp-primary-light: #d1fae5;
+  --rp-sidebar-bg: #111827;
+  --rp-sidebar-hover: #1f2937;
+  --rp-sidebar-text: #d1d5db;
+  --rp-sidebar-text-active: #ffffff;
 }
 ```
 
----
-
-## Finding All Variables
-
-The complete list of CSS variables is defined in:
-
-```
-app/assets/stylesheets/railspress/admin/variables.css
-```
-
-View the source file for the full list of available customization points.
+After upgrading RailsPress, compare custom selector overrides with the current admin markup and review this token list for additions or removals.

@@ -34,7 +34,58 @@ Railspress.configure do |config|
 end
 ```
 
+### What the Install Generator Changes
+
+For a new host application, the generator performs the setup steps above and fills in framework prerequisites when they are missing:
+
+```bash
+bin/rails generate railspress:install
+```
+
+| Target | Generator behavior |
+|--------|--------------------|
+| RailsPress migrations | Invokes `railspress:install:migrations` to copy missing engine migrations |
+| Action Text migrations | Copies them only when no `create_action_text_tables` migration exists |
+| Active Storage migrations | Copies them only when no `create_active_storage_tables` migration exists |
+| `config/routes.rb` | Adds `mount Railspress::Engine => "/railspress"` unless an engine mount already exists |
+| `config/importmap.rb` | Adds the Active Storage ESM pin when importmap is installed and the pin is absent |
+| RailsPress initializer | Creates the documented template only when the file is absent |
+
+The generator copies migrations but does not run `db:migrate`. It does not enable optional RailsPress features or generate/write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
+
+The generator detects an existing RailsPress route, initializer, or copied migration and changes its final message to the upgrade workflow. Rerunning it can fill in missing setup, but it is not a replacement for reviewing [Upgrading](UPGRADING.md) and the installed version's release notes.
+
 ## Configuration Options
+
+### Feature Dependency Matrix
+
+Core Post, Category, and Tag models and their admin CRUD are always available. The following settings add optional behavior:
+
+| Setting | Default | Prerequisites | What it enables | Disabled behavior |
+|---------|---------|---------------|-----------------|-------------------|
+| `enable_authors` | Off | Configured author class and current-author method/proc | Author selection and `author_id` lookup for Posts/CMS records | Author accessors return no author and admin author inputs are omitted; API response keys remain stable |
+| `enable_post_images` | Off | Active Storage; processor gem/native library only when variants are requested | Post header/gallery attachments in admin and API | Post media API returns `404`; serialized media values are `null` |
+| `enable_focal_points` | Off | Focal-point migration; Post focal UI/API also requires post images | Post header focal point and context API/UI | Post focal/context API returns `404` |
+| `enable_cms` | Off | CMS migrations | Content groups/elements, CMS transfer routes, and host CMS helpers | CMS routes are not drawn; disabled helper stubs raise `ConfigurationError` |
+| `inline_editing_check` | `nil` | CMS, `import "railspress"`, `yield :head`, and a proc returning true | Right-click inline editing for text blocks | No inline wrapper/menu is rendered |
+| `enable_api` | Off | API migrations and all three Active Record Encryption values | Bearer API and admin key-management navigation | API and key-management requests answer `404`, navigation is hidden, and encryption validation is skipped |
+
+The focal-point model concern is reusable outside Post feature gating. Entities declared with `focal_point_image` and CMS image elements use the shared focal-point table and editor directly. `enable_focal_points` specifically gates the optional Post header-image focal-point UI and API serialization/endpoints.
+
+Routes behave differently by subsystem: CMS routes are conditionally drawn when the engine route set loads, while versioned API routes remain recognizable and the API base controller returns `404` when Agents & API is disabled.
+
+Configuration validation runs after the host initializer block. An inline-editing proc without CMS raises `Railspress::ConfigurationError`; enabling Agents & API without complete encryption configuration raises during normal application boot.
+
+#### Common Feature Recipes
+
+| Goal | Configuration and host setup |
+| --- | --- |
+| Blog only | No feature toggle is required; install migrations and protect the admin |
+| Blog with header/gallery media | `config.enable_post_images`, Active Storage, and an image processor only when requesting variants |
+| CMS blocks | `config.enable_cms` and the CMS migrations |
+| CMS with inline editing | CMS plus `config.inline_editing_check`, `import "railspress"`, and `yield :head` in the public layout |
+| Entity focal images | Declare `focal_point_image` on an entity and install the focal-point migration; the Post image toggle is not required |
+| Agents & API | `config.enable_api`, API-key migrations, all three encryption values, normal engine mount, and protected browser admin routes |
 
 ### Feature Toggles
 
@@ -64,7 +115,7 @@ end
 
 #### `post_image_variants`
 
-Declares named Active Storage variants for the post `header_image`, so views can request
+Declares named Active Storage variants for the post `header_image` and `gallery_images`, so views can request
 `@post.header_image.variant(:hero)` instead of repeating transformation options. Each variant is registered
 with `format: :webp` automatically.
 
@@ -81,8 +132,7 @@ Railspress.configure do |config|
 end
 ```
 
-The hash keys become variant names; the values are passed straight through to Active Storage, so any
-transformation it accepts works here.
+The hash keys become variant names; the values are passed to Active Storage and RailsPress adds `format: :webp`. Any transformation accepted by the configured processor can be used.
 
 ```erb
 <%= image_tag @post.header_image.variant(:hero), alt: @post.title %>
@@ -111,9 +161,23 @@ end
 
 **Default:** Disabled
 
-**Requirements:** Must also enable `enable_post_images`. Requires running migrations for the `railspress_focal_points` table.
+**Post requirement:** Post header-image focal points require `enable_post_images`. Entity focal-point fields and CMS image elements use the same focal-point model support without reading the Post image toggle. All uses require the `railspress_focal_points` migration.
 
 See [Image Focal Point System](image-focal-point-system.md) for full documentation including image contexts, per-context overrides, and view helpers.
+
+#### `image_contexts`, `add_image_context`, and `remove_image_context`
+
+Image contexts describe the aspect ratios and output sizes used by focal-point overrides. The defaults are `hero` (`16:9`), `card` (`4:3`), and `thumb` (`1:1`). Replace the full hash or modify it through the configuration helpers:
+
+```ruby
+config.image_contexts = {
+  hero: { aspect: [16, 9], label: "Hero", sizes: [1920, 1280] }
+}
+config.add_image_context :portrait, aspect: [3, 4], label: "Portrait", sizes: [900]
+config.remove_image_context :hero
+```
+
+Replacing the hash normalizes its top-level keys to symbols. Each context should supply an `aspect` pair; `label` and `sizes` are used in the admin/API presentation. Changing contexts does not rewrite stored overrides, so remove or rename a context only after checking existing focal-point data and clients.
 
 #### `enable_cms`
 
@@ -135,9 +199,20 @@ end
 
 When CMS is disabled, calling `cms_element` or `cms_value` in a view raises `Railspress::ConfigurationError` with a helpful message. CMS routes are not mounted and CMS links do not appear in the admin sidebar.
 
-**Image content elements** support drag-and-drop uploads via the dropzone UI, per-element focal points (when `enable_focal_points` is also active), and an `image_hint` field for documenting recommended dimensions. Content type is locked after creation. In views, `cms_element` automatically outputs an `<img>` tag with `object-position` CSS derived from the focal point.
+**Image content elements** support drag-and-drop uploads via the dropzone UI, per-element focal points, and an `image_hint` field for documenting recommended dimensions. Content type is locked after creation. In views, `cms_element` automatically outputs an `<img>` tag with `object-position` CSS derived from the focal point.
 
 **Inline editing** builds on top of CMS. See [Inline Editing](INLINE_EDITING.md) for how to enable right-click editing of CMS content on public pages.
+
+#### `inline_editing_check`
+
+Assign a proc that receives the helper context and returns whether inline CMS editing should render for the current request:
+
+```ruby
+config.enable_cms
+config.inline_editing_check = ->(context) { context.controller.current_user&.admin? }
+```
+
+Setting this without enabling CMS raises `Railspress::ConfigurationError` after the configure block. Public layouts using inline editing must also import `railspress` JavaScript and include `yield :head`; see [Inline Editing](INLINE_EDITING.md) for the full setup. The default is `nil`, which disables inline editing.
 
 #### `enable_api`
 
@@ -388,6 +463,31 @@ Access programmatically:
 Railspress.blog_path  # => "/blog"
 ```
 
+### Entity Index Defaults
+
+#### `default_index_columns`
+
+Sets the fallback columns for registered entities that do not define `RAILSPRESS_INDEX_COLUMNS` or `railspress_index_columns`:
+
+```ruby
+config.default_index_columns = %i[id title name created_at]
+```
+
+RailsPress keeps only columns the entity actually has. Entity-level configuration takes precedence. The default is `%i[id title name created_at]`; see [Entities](ENTITIES.md) for model registration and per-model field/index configuration.
+
+### Entity Registration
+
+#### `register_entity`
+
+Registers a host model for the generic admin entity UI. String or symbol registration is preferred because it resolves the class again after Rails reloads:
+
+```ruby
+config.register_entity "Project"
+config.register_entity :admin_portfolio, label: "Work Samples"
+```
+
+The model must include `Railspress::Entity`. Use `Railspress.registered_entities`, `Railspress.entity_for(route_key)`, and `Railspress.entity_registered?(route_key)` for read-only registry access. See [Entities](ENTITIES.md) for generator and model setup.
+
 ## Example Configurations
 
 ### Minimal Setup (No Authors)
@@ -460,6 +560,10 @@ Railspress.current_author_method   # => :current_user
 Railspress.admin_authentication_method # => :require_admin!
 Railspress.current_admin_method    # => :current_user
 Railspress.blog_path               # => "/blog"
+Railspress.public_base_url         # => nil or configured canonical URL
+Railspress.post_image_variants     # => configured named-variant hash
+Railspress.image_contexts          # => hero/card/thumb definitions by default
+Railspress.inline_editing_check    # => nil or configured Proc
 ```
 
 ## Adding Authentication
@@ -556,7 +660,7 @@ RailsPress uses standard Rails engine view overrides. Copy engine views to your 
 ```bash
 # Copy a specific view
 mkdir -p app/views/railspress/admin/posts
-cp $(bundle show railspress)/app/views/railspress/admin/posts/_form.html.erb \
+cp "$(bundle info --path railspress-engine)/app/views/railspress/admin/posts/_form.html.erb" \
    app/views/railspress/admin/posts/
 
 # Your app's views take precedence over engine views
@@ -574,31 +678,7 @@ cp $(bundle show railspress)/app/views/railspress/admin/posts/_form.html.erb \
 
 ### Override the Admin Layout
 
-```erb
-<!-- app/views/layouts/railspress/admin.html.erb -->
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Custom Admin</title>
-  <%= csrf_meta_tags %>
-  <%= stylesheet_link_tag "railspress/admin", "data-turbo-track": "reload" %>
-  <%= yield :head %>
-</head>
-<body class="rp-admin">
-  <div class="rp-layout">
-    <!-- Your custom sidebar -->
-    <%= render "railspress/admin/shared/sidebar" %>
-
-    <main class="rp-main">
-      <%= render "railspress/admin/shared/flash" %>
-      <%= yield %>
-    </main>
-  </div>
-
-  <%= javascript_importmap_tags %>
-</body>
-</html>
-```
+Copy the current engine layout before modifying it. Preserve the Lexxy and `railspress/application` stylesheet tags, CSRF/CSP tags, importmap tags, `import "railspress"`, and the two packaged admin/Markdown scripts. The current layout uses `.rp-admin-layout`, `.rp-sidebar`, and `.rp-main`; compare an override with the engine copy during each upgrade.
 
 ### Adding Custom Sidebar Links
 
@@ -606,22 +686,15 @@ Override the sidebar partial to add your own navigation:
 
 ```erb
 <!-- app/views/railspress/admin/shared/_sidebar.html.erb -->
-<aside class="rp-sidebar">
-  <div class="rp-sidebar__header">
-    <h1 class="rp-sidebar__title">My Blog</h1>
-  </div>
-
-  <nav class="rp-sidebar__nav">
-    <%= link_to "Dashboard", railspress.admin_root_path, class: "rp-sidebar__link" %>
-    <%= link_to "Posts", railspress.admin_posts_path, class: "rp-sidebar__link" %>
-    <%= link_to "Categories", railspress.admin_categories_path, class: "rp-sidebar__link" %>
-    <%= link_to "Tags", railspress.admin_tags_path, class: "rp-sidebar__link" %>
-
-    <!-- Your custom links -->
-    <%= link_to "Analytics", main_app.analytics_path, class: "rp-sidebar__link" %>
-    <%= link_to "Settings", main_app.settings_path, class: "rp-sidebar__link" %>
+<div class="rp-sidebar-content">
+  <!-- Preserve the current engine header and standard navigation links. -->
+  <nav class="rp-nav">
+    <%= link_to main_app.analytics_path, class: "rp-nav-link" do %>
+      <span class="rp-nav-icon" aria-hidden="true">A</span>
+      <span class="rp-nav-text">Analytics</span>
+    <% end %>
   </nav>
-</aside>
+</div>
 ```
 
 ### Customizing Form Fields
@@ -633,8 +706,8 @@ Override the post form to add custom fields or change layout:
 <%= form_with model: [:admin, @post], local: true, class: "rp-form" do |f| %>
   <%= rp_form_errors(@post) %>
 
-  <div class="rp-form__layout">
-    <div class="rp-form__main">
+  <div class="rp-form-layout">
+    <div class="rp-form-main">
       <%= rp_string_field f, :title, autofocus: true %>
       <%= rp_rich_text_field f, :content %>
 
@@ -642,14 +715,14 @@ Override the post form to add custom fields or change layout:
       <%= rp_string_field f, :custom_field %>
     </div>
 
-    <div class="rp-form__sidebar">
+    <div class="rp-form-sidebar">
       <%= rp_sidebar_section "Publishing" do %>
         <%= rp_select_field f, :status, choices: Railspress::Post.statuses.keys %>
       <% end %>
     </div>
   </div>
 
-  <div class="rp-form__actions">
+  <div class="rp-form-actions">
     <%= f.submit "Save", class: "rp-btn rp-btn--primary" %>
   </div>
 <% end %>

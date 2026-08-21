@@ -30,6 +30,24 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       get railspress.admin_post_path(post)
       expect(response).to have_http_status(:success)
     end
+
+    it "links a live post to the configured public blog path" do
+      Railspress.configure { |config| config.blog_path = "/posts" }
+      post = railspress_posts(:hello_world)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).to include('href="/posts/hello-world"')
+    end
+
+    it "does not link a draft that retains an earlier publication date" do
+      post = railspress_posts(:hello_world)
+      post.update!(status: :draft)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).not_to include('href="/blog/hello-world"')
+    end
   end
 
   describe "GET /admin/posts/new" do

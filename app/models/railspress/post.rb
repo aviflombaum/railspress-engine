@@ -63,7 +63,7 @@ module Railspress
 
     # Predicate: post is live (published_at in past or present)
     def live?
-      published_at.present? && published_at <= Time.current
+      published? && published_at.present? && published_at <= Time.current
     end
 
     # Returns the status to display in UI (accounts for scheduled state)

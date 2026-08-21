@@ -47,7 +47,7 @@ Railspress.configure do |config|
 
   # Public path used by the admin's "View post" links. This is separate from
   # the RailsPress engine mount path. Default: "/blog"
-  # config.blog_path = "/articles"
+  # config.blog_path = "/posts"
 
   # Reading speed used for estimated reading time. Default: 200
   # config.words_per_minute = 250

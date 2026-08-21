@@ -458,6 +458,7 @@ The public URL path where your blog posts are displayed on your site. This is us
 
 ```ruby
 config.blog_path = "/blog"       # default
+config.blog_path = "/posts"      # posts route
 config.blog_path = "/articles"   # custom path
 config.blog_path = "/news"       # news section
 config.blog_path = ""            # posts at root (e.g., /my-post-slug)
@@ -465,7 +466,9 @@ config.blog_path = ""            # posts at root (e.g., /my-post-slug)
 
 **Default:** `"/blog"`
 
-The admin post show page displays a "View" button for published posts that links to `#{blog_path}/#{post.slug}`.
+The admin post show page displays a "View" button for posts that are published and whose `published_at` time has arrived. The button links to `#{blog_path}/#{post.slug}`. Draft and scheduled posts do not display this public link.
+
+RailsPress does not provide a host-site draft preview route. The public frontend belongs to the host application, including its authentication and rendering. Applications that need site-rendered draft previews should add an authenticated host route that loads the requested post without using the `published` scope.
 
 Access programmatically:
 

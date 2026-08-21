@@ -42,6 +42,16 @@ RailsPress provides a full admin interface at `/railspress/admin`. Here you can:
 5. Set status to "Published" when ready
 6. Click "Create Post"
 
+Once the post is published and its `published_at` time has arrived, the admin show page displays a "View" link to `#{Railspress.blog_path}/#{post.slug}`. Configure the public path in `config/initializers/railspress.rb` when your frontend uses a path other than `/blog`:
+
+```ruby
+Railspress.configure do |config|
+  config.blog_path = "/posts"
+end
+```
+
+Draft and scheduled posts do not display the public link. RailsPress does not provide a host-site draft preview route; applications that need one should add an authenticated route in the host application so unpublished content is never exposed publicly.
+
 ### Markdown Mode
 
 The post editor supports switching between rich text and markdown editing modes. Click the toggle button in the editor toolbar to switch modes.

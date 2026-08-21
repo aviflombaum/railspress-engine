@@ -152,23 +152,28 @@ RSpec.describe Railspress::Post, type: :model do
 
   describe "#live?" do
     it "returns true when published_at is in the past" do
-      post = Railspress::Post.new(published_at: 1.day.ago)
-      expect(post.live?).to be true
+      post = Railspress::Post.new(status: :published, published_at: 1.day.ago)
+      expect(post).to be_live
     end
 
     it "returns true when published_at is now" do
-      post = Railspress::Post.new(published_at: Time.current)
-      expect(post.live?).to be true
+      post = Railspress::Post.new(status: :published, published_at: Time.current)
+      expect(post).to be_live
     end
 
     it "returns false when published_at is nil" do
-      post = Railspress::Post.new(published_at: nil)
-      expect(post.live?).to be false
+      post = Railspress::Post.new(status: :published, published_at: nil)
+      expect(post).not_to be_live
     end
 
     it "returns false when published_at is in the future" do
-      post = Railspress::Post.new(published_at: 1.day.from_now)
-      expect(post.live?).to be false
+      post = Railspress::Post.new(status: :published, published_at: 1.day.from_now)
+      expect(post).not_to be_live
+    end
+
+    it "returns false for a draft that retains a past published_at" do
+      post = Railspress::Post.new(status: :draft, published_at: 1.day.ago)
+      expect(post).not_to be_live
     end
   end
 

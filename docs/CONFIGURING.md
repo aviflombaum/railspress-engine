@@ -486,7 +486,7 @@ Follow the complete [host-controller integration](BLOGGING.md#shareable-draft-pr
 config.enable_post_previews
 ```
 
-Preview URLs use the configured `blog_path`, the post slug, and a `railspress_preview` query parameter. Live posts continue displaying the ordinary "View" link.
+Preview URLs use the configured `blog_path`, the post slug, and a compact, signed `railspress_preview` query parameter. Live posts continue displaying the ordinary "View" link.
 
 #### `post_preview_expires_in`
 

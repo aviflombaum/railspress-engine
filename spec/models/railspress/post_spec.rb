@@ -155,9 +155,9 @@ RSpec.describe Railspress::Post, type: :model do
       }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    it "raises not found when the token has a different purpose" do
+    it "raises not found when the token has been altered" do
       post = railspress_posts(:draft_post)
-      token = post.signed_id(purpose: :another_purpose, expires_in: 1.hour)
+      token = post.preview_token.succ
 
       expect {
         described_class.find_preview!(slug: post.slug, token: token)
@@ -195,6 +195,13 @@ RSpec.describe Railspress::Post, type: :model do
   end
 
   describe "#preview_token" do
+    it "returns a compact URL-safe token" do
+      token = railspress_posts(:draft_post).preview_token
+
+      expect(token).to match(/\A[A-Za-z0-9._-]+\z/)
+      expect(token.length).to be <= 40
+    end
+
     it "uses the configured expiration" do
       Railspress.configure do |config|
         config.enable_post_previews

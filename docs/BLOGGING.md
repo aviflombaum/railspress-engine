@@ -55,7 +55,7 @@ Draft and scheduled posts do not display the ordinary public link. They can disp
 
 ### Shareable Draft Previews
 
-RailsPress can generate signed, expiring preview URLs using the same `blog_path` and slug as the live post:
+RailsPress can generate compact, signed, expiring preview URLs using the same `blog_path` and slug as the live post:
 
 ```text
 /posts/my-draft?railspress_preview=<signed-token>

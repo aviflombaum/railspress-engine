@@ -6,6 +6,9 @@ module Railspress
   class Diagnostics
     Finding = Data.define(:code, :severity, :label, :message, :remediation)
 
+    LEXXY_PIN_PATTERN = /^\s*pin\s+["']lexxy["'](?:\s*,|\s*$)/
+    LEXXY_IMPORT_PATTERN = /^\s*import\s+(?:.+?\s+from\s+)?["']lexxy["']\s*;?(?:\s*\/\/.*)?$/
+
     class Report
       ANSI = {
         bold: "\e[1m",
@@ -119,6 +122,7 @@ module Railspress
       findings.concat(current_admin_findings)
       findings.concat(encryption_findings)
       findings.concat(mount_findings)
+      findings.concat(lexxy_wiring_findings)
       findings.concat(deprecation_findings)
       findings.concat(migration_findings) if include_migrations
       Report.new(findings)
@@ -341,6 +345,48 @@ module Railspress
     def admin_path
       mount = application.routes.routes.filter_map { |route| mount_details(route) }.first
       "#{mount ? mount[:path].delete_suffix("/") : "/railspress"}/admin"
+    end
+
+    def lexxy_wiring_findings
+      importmap_path = app_root.join("config/importmap.rb")
+      return [] unless importmap_path.file?
+
+      references = []
+      references << "config/importmap.rb" if file_contains?(importmap_path, LEXXY_PIN_PATTERN)
+
+      application_js_path = app_root.join("app/javascript/application.js")
+      if application_js_path.file? && file_contains?(application_js_path, LEXXY_IMPORT_PATTERN)
+        references << "app/javascript/application.js"
+      end
+
+      if references.empty?
+        [ finding(:lexxy_wiring, :pass, "Lexxy wiring", "managed by RailsPress") ]
+      else
+        paths = references.to_sentence
+        [
+          finding(
+            :lexxy_wiring_redundant,
+            :warning,
+            "Lexxy wiring",
+            "host references engine-managed Lexxy in #{paths}",
+            "Remove the redundant Lexxy reference from #{paths}; keep a host pin only when intentionally overriding the engine-managed asset."
+          )
+        ]
+      end
+    rescue SystemCallError => error
+      [
+        finding(
+          :lexxy_wiring_unreadable,
+          :warning,
+          "Lexxy wiring",
+          "could not inspect host JavaScript configuration: #{error.message}",
+          "Verify that config/importmap.rb and app/javascript/application.js are readable, then rerun doctor."
+        )
+      ]
+    end
+
+    def file_contains?(path, pattern)
+      path.each_line.any? { |line| line.match?(pattern) }
     end
 
     def deprecation_findings

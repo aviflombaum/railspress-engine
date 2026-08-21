@@ -206,6 +206,73 @@ RSpec.describe Railspress::Diagnostics do
     expect(finding.message.scan("config.current_api_actor_method").length).to eq(1)
   end
 
+  it "reports engine-managed Lexxy wiring for a clean importmap host" do
+    with_host_javascript(importmap: %(pin "application"\n), application_js: %(import "railspress"\n)) do |app_root|
+      report = described_class.new(app_root:, migration_context:).call(include_migrations: false)
+
+      expect(report.findings).to include(
+        have_attributes(code: :lexxy_wiring, severity: :pass, message: "managed by RailsPress")
+      )
+    end
+  end
+
+  it "warns about a redundant host Lexxy pin without changing the file" do
+    importmap = <<~RUBY
+      pin "application"
+      pin "lexxy", to: "lexxy.js"
+    RUBY
+
+    with_host_javascript(importmap:) do |app_root|
+      report = described_class.new(app_root:, migration_context:).call(include_migrations: false)
+      finding = report.findings.find { |item| item.code == :lexxy_wiring_redundant }
+
+      expect(finding).to have_attributes(severity: :warning)
+      expect(finding.message).to include("config/importmap.rb")
+      expect(finding.remediation).to include("intentionally overriding")
+      expect(app_root.join("config/importmap.rb").read).to eq(importmap)
+      expect(report.exit_status).to eq(0)
+    end
+  end
+
+  it "warns about a redundant host Lexxy import" do
+    with_host_javascript(
+      importmap: %(pin "application"\n),
+      application_js: %(import "lexxy"; // legacy RailsPress import\n)
+    ) do |app_root|
+      report = described_class.new(app_root:, migration_context:).call(include_migrations: false)
+
+      expect(report.findings).to include(
+        have_attributes(
+          code: :lexxy_wiring_redundant,
+          severity: :warning,
+          message: include("app/javascript/application.js")
+        )
+      )
+    end
+  end
+
+  it "combines redundant Lexxy pin and import paths into one warning" do
+    with_host_javascript(
+      importmap: %(pin 'lexxy', to: "lexxy.js"\n),
+      application_js: %(import Lexxy from 'lexxy'\n)
+    ) do |app_root|
+      report = described_class.new(app_root:, migration_context:).call(include_migrations: false)
+      findings = report.findings.select { |item| item.code == :lexxy_wiring_redundant }
+
+      expect(findings.length).to eq(1)
+      expect(findings.first.message).to include("config/importmap.rb", "app/javascript/application.js")
+    end
+  end
+
+  it "skips Lexxy wiring checks for hosts without importmap" do
+    with_host_javascript(application_js: %(import "lexxy"\n)) do |app_root|
+      report = described_class.new(app_root:, migration_context:).call(include_migrations: false)
+
+      expect(report.findings).not_to include(have_attributes(code: :lexxy_wiring))
+      expect(report.findings).not_to include(have_attributes(code: :lexxy_wiring_redundant))
+    end
+  end
+
   def with_migration_roots(copied:)
     Dir.mktmpdir do |directory|
       root = Pathname(directory)
@@ -219,6 +286,25 @@ RSpec.describe Railspress::Diagnostics do
       FileUtils.touch(copied_path) if copied
 
       yield engine_root, app_root, copied_path
+    end
+  end
+
+  def with_host_javascript(importmap: nil, application_js: nil)
+    Dir.mktmpdir do |directory|
+      app_root = Pathname(directory)
+      files = {
+        app_root.join("config/importmap.rb") => importmap,
+        app_root.join("app/javascript/application.js") => application_js
+      }
+
+      files.each do |path, contents|
+        next if contents.nil?
+
+        FileUtils.mkdir_p(path.dirname)
+        path.write(contents)
+      end
+
+      yield app_root
     end
   end
 end

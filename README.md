@@ -150,7 +150,7 @@ Check the resolved installation at any time with the read-only doctor command:
 bin/rails railspress:doctor
 ```
 
-Doctor prints color-coded `PASS`, `WARN`, and `FAIL` findings in an interactive terminal, with a suggested action for every warning or failure. Warnings return status `0`; definite configuration or migration failures return status `1` as a normal report rather than a Rake exception. It also verifies that every migration shipped by the installed RailsPress version has been copied and applied, regardless of enabled features. See [Maintenance Commands](docs/MAINTENANCE.md#railspressdoctor) for the full output and error contract.
+Doctor prints color-coded `PASS`, `WARN`, and `FAIL` findings in an interactive terminal, with a suggested action for every warning or failure. Warnings return status `0`; definite configuration or migration failures return status `1` as a normal report rather than a Rake exception. It verifies that every migration shipped by the installed RailsPress version has been copied and applied regardless of enabled features, and warns importmap hosts about redundant Lexxy pins/imports without editing host files. See [Maintenance Commands](docs/MAINTENANCE.md#railspressdoctor) for the full output and error contract.
 
 For upgrades, run `bundle update railspress-engine`, optionally preview with `DRY_RUN=1 bin/rails railspress:upgrade`, then run `bin/rails railspress:upgrade`. The upgrade task copies every missing RailsPress migration and runs all pending host migrations; production deployments should commit copied migrations and use the host's normal `db:migrate` release step.
 

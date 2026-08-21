@@ -45,6 +45,7 @@ Current checks cover:
 - current-admin method/proc when an enabled feature needs an administrator identity;
 - all three Active Record Encryption values when Agents & API is enabled;
 - engine mount count, path, and outer route wrappers/constraints;
+- redundant host-owned Lexxy pins/imports when the host uses importmap;
 - deprecated initializer settings used during boot;
 - RailsPress migrations missing from the host application, including migrations for currently disabled optional features; and
 - copied RailsPress migrations that remain pending in the current database.
@@ -52,6 +53,8 @@ Current checks cover:
 Doctor can verify that an explicitly configured method exists. It cannot prove the authorization semantics of inherited callbacks, Rack middleware, a reverse proxy, or an arbitrary route constraint. When it warns about implicit admin protection, make a signed-out request to the reported admin URL. When it warns about an outer mount constraint and the API is enabled, verify that a bearer-token request reaches RailsPress rather than returning a routing `404` or an HTML login page.
 
 All migrations shipped by the installed RailsPress version are part of a healthy installation. Feature flags control runtime behavior; they do not make migration files optional. When doctor reports uncopied migrations, copy all of them, review the files, apply pending migrations through the host's normal workflow, and rerun doctor.
+
+RailsPress pins and imports Lexxy through the engine. On importmap hosts, Doctor warns when `config/importmap.rb` still pins `lexxy` or `app/javascript/application.js` still imports it. Remove obsolete references manually. Keep a host pin when it intentionally overrides the engine-managed Lexxy asset. Doctor never edits either file, and this hygiene warning does not make the command fail.
 
 Doctor uses a narrow report-only RailsPress validation mode so it can report RailsPress configuration failures that would otherwise stop boot. Unrelated host application boot failures are treated as unexpected errors: doctor logs the exception, prints the concise `[ERROR]` message and recovery suggestion described above, and exits `1`.
 

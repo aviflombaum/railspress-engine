@@ -37,6 +37,20 @@ RailsPress does not generate, persist, or overwrite these secrets. A missing val
 
 RailsPress now depends on `stimulus-rails >= 1.2.2` and serves its default Stimulus import locally instead of loading Stimulus from JSPM. Bundler will reuse a compatible host installation; applications pinned below 1.2.2 must upgrade that pin. Existing host importmap pins remain authoritative because the host map loads after the engine map. The Google Fonts import was also removed, so RailsPress admin display text now uses the local Georgia/system-serif stack.
 
+RailsPress also pins and imports Lexxy through the engine. Importmap hosts no longer need either of these legacy references:
+
+```ruby
+# config/importmap.rb
+pin "lexxy", to: "lexxy.js"
+```
+
+```javascript
+// app/javascript/application.js
+import "lexxy"
+```
+
+`bin/rails railspress:doctor` reports these references as a non-failing warning and names the affected files. Remove them manually when obsolete; do not remove a host pin that intentionally overrides the engine-managed Lexxy asset. Doctor is read-only and never rewrites host JavaScript configuration.
+
 No host importmap edit is required. Remove an old RailsPress-specific JSPM pin if the host does not intentionally manage Stimulus itself:
 
 ```ruby

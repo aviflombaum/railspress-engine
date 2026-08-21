@@ -261,7 +261,32 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       expect(template).to include("config.admin_authentication_method = :require_admin!")
       expect(template).to include("config.current_admin_method = :current_user")
       expect(template).to include("API controllers do not inherit ApplicationController")
-      expect(template.index("=== Admin Authentication ===")).to be < template.index("=== API (opt-in) ===")
+      expect(template.index("=== Admin Authentication ===")).to be < template.index("=== Agents & API (opt-in) ===")
+    end
+
+    it "enables the recommended post-image, focal-point, and CMS defaults" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+
+      expect(template).to match(/^  config\.enable_post_images$/)
+      expect(template).to match(/^  config\.enable_focal_points$/)
+      expect(template).to match(/^  config\.enable_cms$/)
+      expect(template).not_to match(/^  config\.enable_authors$/)
+      expect(template).not_to match(/^  config\.enable_api$/)
+    end
+
+    it "documents every supported initializer setting" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+      settings = %w[
+        admin_authentication_method current_admin_method current_admin_proc admin_auth_concern
+        enable_post_images enable_focal_points post_image_variants blog_path words_per_minute
+        enable_authors author_class_name author_scope author_display_method current_author_method
+        current_author_proc enable_cms inline_editing_check add_image_context remove_image_context
+        image_contexts register_entity default_index_columns enable_api public_base_url
+      ]
+
+      settings.each do |setting|
+        expect(template).to include("config.#{setting}")
+      end
     end
   end
 end

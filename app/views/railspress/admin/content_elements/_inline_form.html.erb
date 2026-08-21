@@ -24,7 +24,7 @@
   <div class="rp-inline-actions">
     <%= f.submit "Save", class: "rp-inline-actions__save" %>
     <button type="button" class="rp-inline-actions__cancel"
-            data-action="rp--cms-inline-editor#close">Cancel</button>
+            data-rp-inline-editor-close>Cancel</button>
     <%= link_to "Open in admin",
         railspress.edit_admin_content_element_path(content_element),
         target: "_blank", class: "rp-inline-actions__admin-link" %>

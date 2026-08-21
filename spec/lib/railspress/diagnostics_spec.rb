@@ -25,6 +25,45 @@ RSpec.describe Railspress::Diagnostics do
     Railspress.reset_configuration!
   end
 
+  describe Railspress::Diagnostics::InitializerCheck do
+    it "passes when the initializer contains valid Ruby" do
+      with_initializer("Railspress.configure { |config| config.enable_cms }\n") do |app_root|
+        report = described_class.new(app_root:).call
+
+        expect(report).not_to be_failures
+        expect(report.findings).to include(
+          have_attributes(code: :initializer, severity: :pass)
+        )
+      end
+    end
+
+    it "warns when the initializer is missing" do
+      Dir.mktmpdir do |directory|
+        report = described_class.new(app_root: directory).call
+
+        expect(report).not_to be_failures
+        expect(report.findings).to include(
+          have_attributes(code: :initializer_missing, severity: :warning)
+        )
+      end
+    end
+
+    it "fails when the initializer contains invalid Ruby" do
+      with_initializer("Railspress.configure do |config|\n") do |app_root|
+        report = described_class.new(app_root:).call
+
+        expect(report).to be_failures
+        expect(report.findings).to include(
+          have_attributes(
+            code: :initializer_invalid,
+            severity: :failure,
+            message: include("invalid Ruby syntax")
+          )
+        )
+      end
+    end
+  end
+
   it "reports a healthy explicit auth and migration configuration" do
     with_migration_roots(copied: true) do |engine_root, app_root|
       report = described_class.new(
@@ -303,6 +342,17 @@ RSpec.describe Railspress::Diagnostics do
         FileUtils.mkdir_p(path.dirname)
         path.write(contents)
       end
+
+      yield app_root
+    end
+  end
+
+  def with_initializer(contents)
+    Dir.mktmpdir do |directory|
+      app_root = Pathname(directory)
+      initializer_path = app_root.join("config/initializers/railspress.rb")
+      FileUtils.mkdir_p(initializer_path.dirname)
+      initializer_path.write(contents)
 
       yield app_root
     end

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Initializer validation**: Doctor now checks for a missing initializer and invalid Ruby syntax before application boot, reports settings that raise while the initializer is evaluated, and continues to surface RailsPress validation errors and deprecated settings after boot.
 - **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.
 - **Upgrade workflow**: Added `bin/rails railspress:upgrade` to run configuration preflight, copy RailsPress migrations, apply all pending host migrations, and verify the result. `DRY_RUN=1` previews the work without writes, and production environments retain their normal committed-migration deployment flow.
 - **Format-aware post writes**: Post create/update accepts HTML, Markdown, plain text, or automatic detection through `post[content_format]` or `X-Railspress-Content-Format`. Read responses remain canonical Action Text HTML.
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Generated initializer defaults**: New installations receive a documented initializer covering every supported setting, with post images, post focal points, and CMS blocks enabled. Authors, inline editing, entities, and Agents & API remain opt-in; existing initializers are never overwritten.
 - **Upgrade guidance**: Moved browser-admin authentication settings out of the initializer's API-only section and made doctor/upgrade the canonical local workflow, including troubleshooting for constrained mounts that return either routing 404s or successful HTML login pages to API clients.
 - **Doctor output and exits**: Colorized interactive PASS/WARN/FAIL output, added explicit suggestions and conclusions, and replaced exception-style failure findings with a clean nonzero exit. Unexpected doctor exceptions are logged and rendered once as `[ERROR] railspress:doctor threw ErrorType - message`, with terminal backtraces available through `--trace`.
 - **Lexxy upgrade diagnostics**: Doctor now warns importmap hosts about redundant host-owned Lexxy pins/imports, names the affected files, and recommends manual cleanup while preserving intentional host overrides.
@@ -30,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade Notes (target: Unreleased)
 
-- These API and import changes require no new RailsPress migrations or initializer changes.
+- These changes require no new RailsPress migrations. Existing initializers keep their current behavior; the new recommended feature defaults apply only when the install generator creates an initializer.
 - API consumers should tolerate the additive post and Prime response fields. Post content reads are HTML even when writes supplied Markdown or plain text.
 - Post-image gallery capabilities remain gated by `config.enable_post_images`; inline Action Text asset uploads do not use that toggle.
 - Post import jobs are not idempotent. Inspect a partially processed import before retrying it.

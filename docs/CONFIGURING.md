@@ -32,9 +32,13 @@ Create `config/initializers/railspress.rb`:
 
 ```ruby
 Railspress.configure do |config|
-  # Configuration options go here
+  config.enable_post_images
+  config.enable_focal_points
+  config.enable_cms
 end
 ```
+
+Those three features are the recommended defaults written by the install generator for new applications. The library defaults remain disabled, so existing applications and applications with a hand-written initializer do not change behavior during an upgrade. The generated initializer also includes concise defaults and examples for every supported setting.
 
 ### What the Install Generator Changes
 
@@ -51,9 +55,9 @@ bin/rails generate railspress:install
 | Active Storage migrations | Copies them only when no `create_active_storage_tables` migration exists |
 | `config/routes.rb` | Adds `mount Railspress::Engine => "/railspress"` unless an engine mount already exists |
 | `config/importmap.rb` | Adds the Active Storage ESM pin when importmap is installed and the pin is absent |
-| RailsPress initializer | Creates the documented template only when the file is absent |
+| RailsPress initializer | Creates the documented template, with post images, post focal points, and CMS enabled, only when the file is absent |
 
-The generator copies every missing RailsPress migration but does not run `db:migrate`. It does not enable optional RailsPress features or generate/write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
+The generator copies every missing RailsPress migration but does not run `db:migrate`. Its initializer enables the recommended post-image, focal-point, and CMS features for new installations; host-dependent features remain opt-in. It does not generate or write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
 
 The generator detects an existing RailsPress route, initializer, or copied migration and changes its final message to the upgrade workflow. Rerunning it can fill in missing setup, but it is not a replacement for reviewing [Upgrading](UPGRADING.md) and the installed version's release notes.
 
@@ -79,6 +83,8 @@ The focal-point model concern is reusable outside Post feature gating. Entities 
 Routes behave differently by subsystem: CMS routes are conditionally drawn when the engine route set loads, while versioned API routes remain recognizable and the API base controller returns `404` when Agents & API is disabled.
 
 Configuration validation runs after the host initializer block. An inline-editing proc without CMS raises `Railspress::ConfigurationError`; enabling Agents & API without complete encryption configuration raises during normal application boot.
+
+The defaults in the matrix above are library defaults. The install generator explicitly enables post images, post focal points, and CMS in a newly generated initializer. It never overwrites an existing initializer.
 
 #### Common Feature Recipes
 
@@ -604,7 +610,7 @@ end
 
 Do not put the whole engine behind a session-only route constraint. Route constraints run before controllers, so they prevent bearer-token requests from reaching `/railspress/api/*`. The normal mount is safe when `admin_authentication_method` (or an inherited callback) protects browser routes: API routes use their separate bearer-authenticated controller stack.
 
-Run `bin/rails railspress:doctor` after changing authentication or API configuration. It verifies explicit method/concern resolution, encryption settings, the resolved mount, and that every shipped RailsPress migration is copied and applied. Warnings and failures include suggested next actions. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out. See [Maintenance Commands](MAINTENANCE.md#railspressdoctor) for exit statuses, terminal colors, `NO_COLOR`, and unexpected-error handling.
+Run `bin/rails railspress:doctor` after changing the initializer, authentication, or API configuration. Before boot, it checks that `config/initializers/railspress.rb` exists and parses as Ruby. During boot it identifies settings that raise; afterward it reports RailsPress validation errors and deprecated settings. It also verifies explicit method/concern resolution, encryption settings, the resolved mount, and that every shipped RailsPress migration is copied and applied. Warnings and failures include suggested next actions. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out. See [Maintenance Commands](MAINTENANCE.md#railspressdoctor) for exit statuses, terminal colors, `NO_COLOR`, and unexpected-error handling.
 
 ## Required Model Methods
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "pathname"
+require "ripper"
 
 module Railspress
   class Diagnostics
@@ -104,6 +105,79 @@ module Railspress
 
       def pluralize(count, singular, plural = nil)
         "#{count} #{count == 1 ? singular : (plural || "#{singular}s")}"
+      end
+    end
+
+    class InitializerCheck
+      attr_reader :path, :logger
+
+      def initialize(app_root: Rails.root, logger: Rails.logger)
+        @path = Pathname(app_root).join("config/initializers/railspress.rb")
+        @logger = logger
+      end
+
+      def call
+        return Report.new([ missing_finding ]) unless path.file?
+
+        source = path.read
+        syntax_error = syntax_error_for(source)
+        return Report.new([ invalid_finding(syntax_error) ]) if syntax_error
+
+        Report.new([
+          Finding.new(
+            code: :initializer,
+            severity: :pass,
+            label: "Initializer",
+            message: "config/initializers/railspress.rb is present and valid Ruby",
+            remediation: nil
+          )
+        ])
+      rescue SystemCallError => error
+        logger.error "RailsPress doctor could not read #{path}: #{error.message}"
+        Report.new([
+          Finding.new(
+            code: :initializer_unreadable,
+            severity: :failure,
+            label: "Initializer",
+            message: "could not read config/initializers/railspress.rb: #{error.message}",
+            remediation: "Fix the file permissions and rerun bin/rails railspress:doctor."
+          )
+        ])
+      end
+
+      private
+
+      def syntax_error_for(source)
+        if defined?(RubyVM::InstructionSequence)
+          RubyVM::InstructionSequence.compile(source, path.to_s)
+        elsif Ripper.sexp(source).nil?
+          return "Ruby could not parse the file"
+        end
+
+        nil
+      rescue SyntaxError => error
+        logger.error "RailsPress doctor found invalid initializer syntax in #{path}: #{error.message}"
+        error.message.lines.first.to_s.strip
+      end
+
+      def missing_finding
+        Finding.new(
+          code: :initializer_missing,
+          severity: :warning,
+          label: "Initializer",
+          message: "config/initializers/railspress.rb is missing; RailsPress is using library defaults",
+          remediation: "Run bin/rails generate railspress:install or create the initializer from the configuration guide."
+        )
+      end
+
+      def invalid_finding(message)
+        Finding.new(
+          code: :initializer_invalid,
+          severity: :failure,
+          label: "Initializer",
+          message: "config/initializers/railspress.rb has invalid Ruby syntax: #{message}",
+          remediation: "Correct the initializer syntax and rerun bin/rails railspress:doctor."
+        )
       end
     end
 

@@ -40,6 +40,8 @@ It follows with a recovery suggestion and exits `1`. Add `--trace` to the comman
 
 Current checks cover:
 
+- presence and Ruby syntax of `config/initializers/railspress.rb` before the host application boots;
+- exceptions raised while the RailsPress initializer is evaluated;
 - enabled features and configuration validation;
 - configured admin authentication method and optional authentication concern;
 - current-admin method/proc when an enabled feature needs an administrator identity;
@@ -56,7 +58,7 @@ All migrations shipped by the installed RailsPress version are part of a healthy
 
 RailsPress pins and imports Lexxy through the engine. On importmap hosts, Doctor warns when `config/importmap.rb` still pins `lexxy` or `app/javascript/application.js` still imports it. Remove obsolete references manually. Keep a host pin when it intentionally overrides the engine-managed Lexxy asset. Doctor never edits either file, and this hygiene warning does not make the command fail.
 
-Doctor uses a narrow report-only RailsPress validation mode so it can report RailsPress configuration failures that would otherwise stop boot. Unrelated host application boot failures are treated as unexpected errors: doctor logs the exception, prints the concise `[ERROR]` message and recovery suggestion described above, and exits `1`.
+Doctor checks initializer syntax before boot so a malformed file produces a normal `FAIL` finding instead of a Ruby/Rake crash. A missing initializer is a warning because RailsPress can use its library defaults. Doctor then uses a narrow report-only RailsPress validation mode so it can report configuration dependency failures that would otherwise stop boot. Exceptions whose backtrace points to the RailsPress initializer are reported as initializer failures; unrelated host application boot failures remain unexpected errors that are logged and printed with the concise `[ERROR]` message above.
 
 ### CI use
 

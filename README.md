@@ -140,7 +140,7 @@ bin/rails generate railspress:install
 bin/rails db:migrate
 ```
 
-The generator copies the complete RailsPress migration history, plus Action Text and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. RailsPress migrations are installed even when the feature that uses their tables is disabled. The generator does not run migrations, enable optional features, or write encryption credentials. Existing files and registrations are skipped where possible.
+The generator copies the complete RailsPress migration history, plus Action Text and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. The generated initializer enables post images, post focal points, and CMS blocks for new installations while leaving authors, inline editing, entities, and Agents & API opt-in. RailsPress migrations are installed even when the feature that uses their tables is disabled. The generator does not run migrations or write encryption credentials. Existing files and registrations are skipped where possible.
 
 The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally. Existing installations should follow the [upgrade guide](docs/UPGRADING.md) rather than treating a generator rerun as a complete upgrade.
 
@@ -150,7 +150,7 @@ Check the resolved installation at any time with the read-only doctor command:
 bin/rails railspress:doctor
 ```
 
-Doctor prints color-coded `PASS`, `WARN`, and `FAIL` findings in an interactive terminal, with a suggested action for every warning or failure. Warnings return status `0`; definite configuration or migration failures return status `1` as a normal report rather than a Rake exception. It verifies that every migration shipped by the installed RailsPress version has been copied and applied regardless of enabled features, and warns importmap hosts about redundant Lexxy pins/imports without editing host files. See [Maintenance Commands](docs/MAINTENANCE.md#railspressdoctor) for the full output and error contract.
+Doctor prints color-coded `PASS`, `WARN`, and `FAIL` findings in an interactive terminal, with a suggested action for every warning or failure. Warnings return status `0`; definite configuration or migration failures return status `1` as a normal report rather than a Rake exception. It checks that the RailsPress initializer exists and contains valid Ruby before boot, reports settings that raise during initializer evaluation, and detects RailsPress validation errors and deprecated settings after boot. It also verifies every shipped migration and warns importmap hosts about redundant Lexxy pins/imports without editing host files. See [Maintenance Commands](docs/MAINTENANCE.md#railspressdoctor) for the full output and error contract.
 
 For upgrades, run `bundle update railspress-engine`, optionally preview with `DRY_RUN=1 bin/rails railspress:upgrade`, then run `bin/rails railspress:upgrade`. The upgrade task copies every missing RailsPress migration and runs all pending host migrations; production deployments should commit copied migrations and use the host's normal `db:migrate` release step.
 

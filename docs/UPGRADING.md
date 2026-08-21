@@ -80,7 +80,7 @@ RAILS_ENV=production bin/rails db:migrate
 RAILS_ENV=production bin/rails railspress:doctor
 ```
 
-The doctor command is read-only. It returns nonzero for definite configuration or migration failures and zero when it finds only warnings. Warnings about implicit authentication or route constraints require an operator to verify signed-out browser access and API behavior.
+The doctor command is read-only. It returns status `1` for definite configuration or migration failures and zero when it finds only warnings. Every warning and failure includes a suggested next action, and expected findings end as a normal report rather than a Rake exception. An `[ERROR] railspress:doctor threw ...` line is reserved for an unexpected failure inside the command itself; rerun with `--trace` to print its backtrace. Warnings about implicit authentication or route constraints require an operator to verify signed-out browser access and API behavior.
 
 ## Step-by-Step Guide
 
@@ -120,7 +120,7 @@ RailsPress includes a rake task to copy engine migrations to your application:
 bin/rails railspress:install:migrations
 ```
 
-This copies any new migrations from the engine to your `db/migrate/` folder. Existing migrations are skipped (matched by migration name, not timestamp).
+This copies every new migration from the engine to your `db/migrate/` folder, including migrations for optional features that are disabled. Existing migrations are skipped (matched by migration name, not timestamp). Feature toggles never filter the migration-copy step.
 
 **Check what was copied:**
 

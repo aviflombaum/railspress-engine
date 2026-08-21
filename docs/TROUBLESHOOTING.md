@@ -8,7 +8,9 @@ Start with the read-only diagnostic command:
 bin/rails railspress:doctor
 ```
 
-It can report RailsPress configuration failures even when normal RailsPress boot validation would stop the application. A failure exits nonzero; warnings identify conditions such as implicit authentication or route constraints that require operator verification.
+It can report RailsPress configuration failures even when normal RailsPress boot validation would stop the application. Warnings and failures include a `Suggestion:` line. Failures return status `1` without an exception banner; warnings identify conditions such as implicit authentication or route constraints and return `0`.
+
+An `[ERROR] railspress:doctor threw ...` line means the diagnostic command itself encountered an unexpected exception. Check the Rails log or rerun with `--trace` for the terminal backtrace.
 
 See [Maintenance Commands](MAINTENANCE.md) for the complete task contract.
 
@@ -28,6 +30,22 @@ See [Maintenance Commands](MAINTENANCE.md) for the complete task contract.
 4. For an existing installation, use `DRY_RUN=1 bin/rails railspress:upgrade` and follow [Upgrading](UPGRADING.md).
 
 The generator never runs `db:migrate` and never writes Active Record Encryption credentials.
+
+### Doctor Reports API Migrations While Agents & API Is Disabled
+
+**Symptom**: Doctor reports `create_railspress_api_keys` or `create_railspress_agent_bootstrap_keys` as not copied even though `config.enable_api` is absent.
+
+**Cause**: This is an installation failure, not a false positive. RailsPress requires the complete migration history in every host application. Feature flags control runtime behavior and prerequisites such as encryption; they do not make migration files optional.
+
+**Solution**:
+
+```bash
+bin/rails railspress:install:migrations
+bin/rails db:migrate
+bin/rails railspress:doctor
+```
+
+Review and commit the copied `.railspress.rb` files before deployment. In production, deploy those files and use the host application's normal migration release step rather than running the mutating `railspress:upgrade` task.
 
 ### "RailsPress Agents & API requires Active Record Encryption credentials"
 

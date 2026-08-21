@@ -419,4 +419,5 @@ module Railspress
 end
 
 require "railspress/diagnostics"
+require "railspress/doctor"
 require "railspress/upgrade"

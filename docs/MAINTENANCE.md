@@ -6,7 +6,7 @@ RailsPress ships diagnostic, upgrade, migration-copy, and legacy data-migration 
 
 | Command | Owner | Writes files | Writes database | Production behavior | Failure behavior |
 |---------|-------|--------------|-----------------|---------------------|------------------|
-| `bin/rails railspress:doctor` | RailsPress | No | No | Supported | Exits nonzero for definite failures; warnings alone succeed |
+| `bin/rails railspress:doctor` | RailsPress | No | No | Supported | Exits cleanly with status `1` for definite findings; warnings alone succeed |
 | `DRY_RUN=1 bin/rails railspress:upgrade` | RailsPress | No | No | Supported as an inspection command | Exits nonzero when preflight fails |
 | `bin/rails railspress:upgrade` | RailsPress | Yes | Yes | Refuses to mutate production | Stops on preflight, copy, migration, or postflight failure |
 | `bin/rails railspress:install:migrations` | Rails engine tooling | Yes | No | Copies files when the source tree is writable | Fails if Rails cannot copy migrations |
@@ -26,6 +26,18 @@ Doctor inspects the resolved installation and prints structured findings:
 - `WARN` means the result needs operator review but does not make the command fail.
 - `FAIL` means the installation has a definite configuration or migration problem and the task exits nonzero.
 
+On an interactive terminal, PASS is green, WARN is yellow, and FAIL is red. Set the standard `NO_COLOR` environment variable to disable ANSI colors. Redirected output and test/CI streams are plain text automatically.
+
+Every warning and failure prints a `Suggestion:` line. Doctor ends with a count and a plain-language conclusion, then returns status `1` when failures require attention. Expected health findings do not raise an exception or print `rake aborted!`; this keeps output readable while preserving a useful CI exit status.
+
+If doctor itself unexpectedly cannot boot or inspect the application, it logs the exception and prints one concise line:
+
+```text
+[ERROR] railspress:doctor threw ErrorType - message
+```
+
+It follows with a recovery suggestion and exits `1`. Add `--trace` to the command to print the backtrace in the terminal; otherwise the backtrace remains in the Rails log.
+
 Current checks cover:
 
 - enabled features and configuration validation;
@@ -34,12 +46,14 @@ Current checks cover:
 - all three Active Record Encryption values when Agents & API is enabled;
 - engine mount count, path, and outer route wrappers/constraints;
 - deprecated initializer settings used during boot;
-- RailsPress migrations missing from the host application; and
+- RailsPress migrations missing from the host application, including migrations for currently disabled optional features; and
 - copied RailsPress migrations that remain pending in the current database.
 
 Doctor can verify that an explicitly configured method exists. It cannot prove the authorization semantics of inherited callbacks, Rack middleware, a reverse proxy, or an arbitrary route constraint. When it warns about implicit admin protection, make a signed-out request to the reported admin URL. When it warns about an outer mount constraint and the API is enabled, verify that a bearer-token request reaches RailsPress rather than returning a routing `404` or an HTML login page.
 
-Doctor uses a narrow report-only RailsPress validation mode so it can report RailsPress configuration failures that would otherwise stop boot. It does not suppress unrelated host application boot failures.
+All migrations shipped by the installed RailsPress version are part of a healthy installation. Feature flags control runtime behavior; they do not make migration files optional. When doctor reports uncopied migrations, copy all of them, review the files, apply pending migrations through the host's normal workflow, and rerun doctor.
+
+Doctor uses a narrow report-only RailsPress validation mode so it can report RailsPress configuration failures that would otherwise stop boot. Unrelated host application boot failures are treated as unexpected errors: doctor logs the exception, prints the concise `[ERROR]` message and recovery suggestion described above, and exits `1`.
 
 ### CI use
 
@@ -97,7 +111,7 @@ The production doctor remains read-only.
 bin/rails railspress:install:migrations
 ```
 
-This task is provided by Rails engine tooling. It copies migrations from the installed RailsPress engine into the host application's `db/migrate/` directory. Rails assigns host timestamps and appends the `.railspress.rb` origin suffix. Existing migrations are matched by semantic migration name rather than timestamp and are skipped.
+This task is provided by Rails engine tooling. It copies every missing migration from the installed RailsPress engine into the host application's `db/migrate/` directory, without consulting feature toggles. Rails assigns host timestamps and appends the `.railspress.rb` origin suffix. Existing migrations are matched by semantic migration name rather than timestamp and are skipped.
 
 Copying does not apply a migration. Review and commit copied files, then run the host application's normal `bin/rails db:migrate` workflow.
 
@@ -131,4 +145,3 @@ bin/rails -T railspress
 Use this command after upgrading to confirm which tasks the installed gem version provides.
 
 See [Upgrading](UPGRADING.md) for the version-by-version workflow and [Troubleshooting](TROUBLESHOOTING.md) for failure-specific remediation.
-

@@ -1,13 +1,13 @@
 namespace :railspress do
   desc "Inspect RailsPress configuration, mount, encryption, and migrations"
   task :doctor do
-    Railspress.with_validation_reporting do
-      Rake::Task["environment"].invoke
+    boot = lambda do
+      Railspress.with_validation_reporting do
+        Rake::Task["environment"].invoke
+      end
     end
-
-    report = Railspress::Diagnostics.new.call
-    report.render
-    raise Railspress::ConfigurationError, "RailsPress doctor found failures" if report.failures?
+    status = Railspress::Doctor.new(boot:, trace: Rake.application.options.trace).call
+    Kernel.exit(status) unless status.zero?
   end
 
   desc "Copy RailsPress migrations, migrate the host database, and verify the upgrade"

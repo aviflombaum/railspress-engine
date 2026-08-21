@@ -24,6 +24,8 @@ bin/rails db:migrate
 bin/rails railspress:doctor
 ```
 
+Install and apply the complete migration history, including migrations for optional features that are currently disabled. Feature toggles control runtime routes and behavior; they do not select which RailsPress migrations belong in the host application.
+
 ### 3. Create Initializer
 
 Create `config/initializers/railspress.rb`:
@@ -51,7 +53,7 @@ bin/rails generate railspress:install
 | `config/importmap.rb` | Adds the Active Storage ESM pin when importmap is installed and the pin is absent |
 | RailsPress initializer | Creates the documented template only when the file is absent |
 
-The generator copies migrations but does not run `db:migrate`. It does not enable optional RailsPress features or generate/write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
+The generator copies every missing RailsPress migration but does not run `db:migrate`. It does not enable optional RailsPress features or generate/write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
 
 The generator detects an existing RailsPress route, initializer, or copied migration and changes its final message to the upgrade workflow. Rerunning it can fill in missing setup, but it is not a replacement for reviewing [Upgrading](UPGRADING.md) and the installed version's release notes.
 
@@ -61,14 +63,16 @@ The generator detects an existing RailsPress route, initializer, or copied migra
 
 Core Post, Category, and Tag models and their admin CRUD are always available. The following settings add optional behavior:
 
+The prerequisites column describes what an enabled feature uses at runtime. It is not a migration-installation matrix: every shipped RailsPress migration should be copied and applied in every host, including migrations for disabled features.
+
 | Setting | Default | Prerequisites | What it enables | Disabled behavior |
 |---------|---------|---------------|-----------------|-------------------|
 | `enable_authors` | Off | Configured author class and current-author method/proc | Author selection and `author_id` lookup for Posts/CMS records | Author accessors return no author and admin author inputs are omitted; API response keys remain stable |
 | `enable_post_images` | Off | Active Storage; processor gem/native library only when variants are requested | Post header/gallery attachments in admin and API | Post media API returns `404`; serialized media values are `null` |
-| `enable_focal_points` | Off | Focal-point migration; Post focal UI/API also requires post images | Post header focal point and context API/UI | Post focal/context API returns `404` |
-| `enable_cms` | Off | CMS migrations | Content groups/elements, CMS transfer routes, and host CMS helpers | CMS routes are not drawn; disabled helper stubs raise `ConfigurationError` |
+| `enable_focal_points` | Off | Standard complete migration install; Post focal UI/API also requires post images | Post header focal point and context API/UI | Post focal/context API returns `404` |
+| `enable_cms` | Off | Standard complete migration install | Content groups/elements, CMS transfer routes, and host CMS helpers | CMS routes are not drawn; disabled helper stubs raise `ConfigurationError` |
 | `inline_editing_check` | `nil` | CMS, `import "railspress"`, `yield :head`, and a proc returning true | Right-click inline editing for text blocks | No inline wrapper/menu is rendered |
-| `enable_api` | Off | API migrations and all three Active Record Encryption values | Bearer API and admin key-management navigation | API and key-management requests answer `404`, navigation is hidden, and encryption validation is skipped |
+| `enable_api` | Off | Standard complete migration install and all three Active Record Encryption values | Bearer API and admin key-management navigation | API and key-management requests answer `404`, navigation is hidden, and encryption validation is skipped |
 
 The focal-point model concern is reusable outside Post feature gating. Entities declared with `focal_point_image` and CMS image elements use the shared focal-point table and editor directly. `enable_focal_points` specifically gates the optional Post header-image focal-point UI and API serialization/endpoints.
 
@@ -82,10 +86,10 @@ Configuration validation runs after the host initializer block. An inline-editin
 | --- | --- |
 | Blog only | No feature toggle is required; install migrations and protect the admin |
 | Blog with header/gallery media | `config.enable_post_images`, Active Storage, and an image processor only when requesting variants |
-| CMS blocks | `config.enable_cms` and the CMS migrations |
+| CMS blocks | Complete the standard migration install, then set `config.enable_cms` |
 | CMS with inline editing | CMS plus `config.inline_editing_check`, `import "railspress"`, and `yield :head` in the public layout |
-| Entity focal images | Declare `focal_point_image` on an entity and install the focal-point migration; the Post image toggle is not required |
-| Agents & API | `config.enable_api`, API-key migrations, all three encryption values, normal engine mount, and protected browser admin routes |
+| Entity focal images | Complete the standard migration install and declare `focal_point_image` on an entity; the Post image toggle is not required |
+| Agents & API | Complete the standard migration install, set `config.enable_api`, provide all three encryption values, use a normal engine mount, and protect browser admin routes |
 
 ### Feature Toggles
 
@@ -600,7 +604,7 @@ end
 
 Do not put the whole engine behind a session-only route constraint. Route constraints run before controllers, so they prevent bearer-token requests from reaching `/railspress/api/*`. The normal mount is safe when `admin_authentication_method` (or an inherited callback) protects browser routes: API routes use their separate bearer-authenticated controller stack.
 
-Run `bin/rails railspress:doctor` after changing authentication or API configuration. It verifies explicit method/concern resolution, encryption settings, the resolved mount, and RailsPress migration state. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out.
+Run `bin/rails railspress:doctor` after changing authentication or API configuration. It verifies explicit method/concern resolution, encryption settings, the resolved mount, and that every shipped RailsPress migration is copied and applied. Warnings and failures include suggested next actions. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out. See [Maintenance Commands](MAINTENANCE.md#railspressdoctor) for exit statuses, terminal colors, `NO_COLOR`, and unexpected-error handling.
 
 ## Required Model Methods
 

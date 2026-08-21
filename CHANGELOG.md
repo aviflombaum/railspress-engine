@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Upgrade guidance**: Moved browser-admin authentication settings out of the initializer's API-only section and made doctor/upgrade the canonical local workflow, including troubleshooting for constrained mounts that return either routing 404s or successful HTML login pages to API clients.
+- **Doctor output and exits**: Colorized interactive PASS/WARN/FAIL output, added explicit suggestions and conclusions, and replaced exception-style failure findings with a clean nonzero exit. Unexpected doctor exceptions are logged and rendered once as `[ERROR] railspress:doctor threw ErrorType - message`, with terminal backtraces available through `--trace`.
+- **Migration completeness**: Clarified in doctor output that every migration shipped by the installed RailsPress version must be copied and applied even when its optional feature is disabled.
 - **Post serialization**: Post responses now include `content_format`, `gallery_images`, and signed blob metadata needed by API clients. Prime advertises content formats, inline assets, galleries, and taxonomy capabilities.
 - **Plain-text imports**: `.txt` post imports now escape HTML and preserve literal paragraphs and line breaks instead of interpreting Markdown syntax.
 

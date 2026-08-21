@@ -7,6 +7,14 @@ module Railspress
     Finding = Data.define(:code, :severity, :label, :message, :remediation)
 
     class Report
+      ANSI = {
+        bold: "\e[1m",
+        pass: "\e[32m",
+        warning: "\e[33m",
+        failure: "\e[31m",
+        reset: "\e[0m"
+      }.freeze
+
       attr_reader :findings
 
       def initialize(findings)
@@ -21,21 +29,65 @@ module Railspress
         failures? ? 1 : 0
       end
 
-      def render(io: $stdout, title: "RailsPress doctor #{Railspress::VERSION}")
-        io.puts title
+      def render(io: $stdout, title: "RailsPress doctor #{Railspress::VERSION}", color: nil)
+        color = color_output?(io) if color.nil?
+
+        io.puts colorize(title, :bold, color:)
         io.puts
         findings.each do |finding|
-          io.puts "[#{status_label(finding.severity)}] #{finding.label}: #{finding.message}"
-          io.puts "       #{finding.remediation}" if finding.remediation.present?
+          status = colorize("[#{status_label(finding.severity)}]", finding.severity, color:)
+          io.puts "#{status} #{finding.label}: #{finding.message}"
+          render_suggestion(io, finding) unless finding.severity == :pass
         end
         io.puts
-        io.puts summary
+        io.puts colorize(summary, summary_severity, color:)
+        io.puts conclusion
       end
 
       private
 
       def status_label(severity)
         { pass: "PASS", warning: "WARN", failure: "FAIL" }.fetch(severity)
+      end
+
+      def render_suggestion(io, finding)
+        suggestion = finding.remediation.presence || default_suggestion(finding.severity)
+        io.puts "       Suggestion: #{suggestion}"
+      end
+
+      def default_suggestion(severity)
+        if severity == :failure
+          "Correct this failure and rerun bin/rails railspress:doctor."
+        else
+          "Review this warning and confirm the behavior is intentional."
+        end
+      end
+
+      def color_output?(io)
+        ENV["NO_COLOR"].blank? && io.respond_to?(:tty?) && io.tty?
+      end
+
+      def colorize(text, style, color:)
+        return text unless color
+
+        "#{ANSI.fetch(style)}#{text}#{ANSI.fetch(:reset)}"
+      end
+
+      def summary_severity
+        return :failure if failures?
+        return :warning if findings.any? { |finding| finding.severity == :warning }
+
+        :pass
+      end
+
+      def conclusion
+        if failures?
+          "Doctor found failures that require action. Apply the suggestions above and rerun the command."
+        elsif findings.any? { |finding| finding.severity == :warning }
+          "Doctor completed without failures. Review the warnings above."
+        else
+          "Doctor found no problems."
+        end
       end
 
       def summary
@@ -315,8 +367,8 @@ module Railspress
             :migrations_uncopied,
             :failure,
             "Migrations",
-            "not copied: #{uncopied_migrations.join(", ")}",
-            "Run bin/rails railspress:install:migrations."
+            "not copied (all shipped migrations are required, even for disabled features): #{uncopied_migrations.join(", ")}",
+            "Run bin/rails railspress:install:migrations, review the copied files, run bin/rails db:migrate, then rerun doctor."
           )
         ]
       end
@@ -330,7 +382,7 @@ module Railspress
           :failure,
           "Database",
           "pending RailsPress migrations: #{pending.map { |migration| migration.name.underscore }.join(", ")}",
-          "Run bin/rails db:migrate."
+          "Review the pending migrations, run bin/rails db:migrate, then rerun doctor."
         )
       end
       findings

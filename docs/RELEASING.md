@@ -29,7 +29,7 @@ bin/rails routes -g railspress
 
 Run focused specs for changed areas before the full suite. Also run the documentation contract spec, which checks local Markdown links and selected code/documentation inventories.
 
-The doctor command may report authentication warnings in the dummy app; investigate definite failures and confirm its exit status matches the report. Review the route output for the documented admin and API helpers.
+The doctor command may report authentication warnings in the dummy app; investigate definite failures and confirm its exit status matches the report. Confirm interactive output uses the documented colors, redirected output contains no ANSI escapes, and each warning or failure includes a suggestion. Review the route output for the documented admin and API helpers.
 
 ## 3. Build Artifact
 
@@ -71,7 +71,7 @@ git push origin v<version>
 ## 7. Post-Release
 
 - Create GitHub release notes from `CHANGELOG.md`.
-- Verify installation in a fresh Rails app using the built gem, including a boot, migration, signed-out admin-auth check, and any enabled API encryption setup:
+- Verify installation in a fresh Rails app using the built gem, including a boot, the complete RailsPress migration history, signed-out admin-auth check, and any enabled API encryption setup. Keep Agents & API disabled for one verification run and confirm its migrations are still copied, applied, and accepted by doctor:
 
 ```bash
 bundle add railspress-engine --version <version>

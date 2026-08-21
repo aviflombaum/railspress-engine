@@ -6,7 +6,7 @@ module Railspress
       DEFAULT_BOOTSTRAP_TTL = 1.hour
 
       before_action :ensure_api_enabled!
-      before_action :require_api_actor!
+      before_action :require_current_admin!
       before_action :set_agent_bootstrap_key, only: [ :revoke ]
 
       def new
@@ -16,8 +16,8 @@ module Railspress
       def create
         @agent_bootstrap_key, @plain_bootstrap_token = AgentBootstrapKey.issue!(
           name: agent_bootstrap_key_params[:name],
-          actor: current_api_actor,
-          owner: current_api_actor,
+          actor: current_railspress_admin,
+          owner: current_railspress_admin,
           expires_at: parsed_expires_at || default_bootstrap_expires_at
         )
         set_bootstrap_instructions
@@ -30,7 +30,7 @@ module Railspress
 
       def revoke
         @agent_bootstrap_key.revoke!(
-          actor: current_api_actor,
+          actor: current_railspress_admin,
           reason: params[:reason].presence || "revoked"
         )
 
@@ -43,8 +43,8 @@ module Railspress
         raise ActionController::RoutingError, "Not Found" unless Railspress.api_enabled?
       end
 
-      def require_api_actor!
-        return if current_api_actor.present?
+      def require_current_admin!
+        return if current_railspress_admin.present?
 
         redirect_to admin_root_path, alert: "You must be signed in to manage API keys."
       end
@@ -72,12 +72,15 @@ module Railspress
 
       def set_bootstrap_instructions
         base_url = instruction_base_url
+        token_file = instruction_token_file(base_url)
 
         @bootstrap_quick_start = <<~TEXT
           export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
           export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
-          printf '%s\n' "$RAILSPRESS_TOKEN" > ~/.railspress_token
-          chmod 600 ~/.railspress_token
+          export RAILSPRESS_TOKEN_FILE="#{token_file}"
+          install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
+          printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
+          chmod 600 "$RAILSPRESS_TOKEN_FILE"
           curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
         TEXT
 
@@ -92,10 +95,12 @@ module Railspress
             export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
             export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
 
-          2) Optional local token file:
-            printf '%s\n' "$RAILSPRESS_TOKEN" > ~/.railspress_token
-            chmod 600 ~/.railspress_token
-            export RAILSPRESS_TOKEN="$(cat ~/.railspress_token)"
+          2) Optional site-scoped local token file:
+            export RAILSPRESS_TOKEN_FILE="#{token_file}"
+            install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
+            printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
+            chmod 600 "$RAILSPRESS_TOKEN_FILE"
+            export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
 
           3) Verify connectivity:
             curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}

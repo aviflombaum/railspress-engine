@@ -8,10 +8,11 @@ Use this API when you want to create posts from markdown/text/zip attachments in
 
 Supported file types:
 
-- `.md`
-- `.markdown`
-- `.txt`
+- `.md` and `.markdown` (rendered as Markdown)
+- `.txt` (escaped and preserved as literal plain text)
 - `.zip` (for batch imports)
+
+ZIP imports process Markdown and text files recursively. A `header_image` frontmatter value can reference an image inside the archive when post images are enabled. Relative inline Markdown images are not ingested as Action Text attachments; use the [Post Assets API](post_assets.md) when constructing rich content through the API.
 
 ## `POST /posts/imports`
 

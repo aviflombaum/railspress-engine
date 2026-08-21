@@ -21,6 +21,7 @@ The admin interface will be available at `/blog/admin`.
 ```bash
 bin/rails railspress:install:migrations
 bin/rails db:migrate
+bin/rails railspress:doctor
 ```
 
 ### 3. Create Initializer
@@ -154,13 +155,32 @@ When enabled:
 - API endpoints are available under `/blog/api/v1/*` (assuming engine mounted at `/blog`)
 - API key management is available at `/blog/admin/api_keys`
 
-**Requirements:** Active Record Encryption keys must be configured in your host app.
+**Requirement:** all three Active Record Encryption credentials must be configured by the host application. When `config.enable_api` is enabled, RailsPress checks the effective Rails credentials/configuration during boot and raises `Railspress::ConfigurationError` if any value is missing. RailsPress never generates or writes these secrets.
+
+Generate the standard Rails credentials snippet:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` in the host application's Rails credentials or secret-management/deployment system. Rails automatically reads this credentials shape:
+
+```yaml
+active_record_encryption:
+  primary_key: ...
+  deterministic_key: ...
+  key_derivation_salt: ...
+```
+
+Explicit environment-backed Rails configuration is also supported when the deployment platform owns the values:
 
 ```ruby
 Rails.application.config.active_record.encryption.primary_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY")
 Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY")
 Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT")
 ```
+
+The install generator detects both forms. It confirms when configuration is present and prints `bin/rails db:encryption:init` only when values are missing.
 
 ### Author Configuration
 
@@ -188,7 +208,7 @@ config.current_author_method = :current_admin  # admin-specific
 config.current_author_method = :logged_in_user # custom auth
 ```
 
-This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_author_proc`.
+This method must be available on the host `ApplicationController`. RailsPress browser controllers inherit from it, so Devise-style `current_user` helpers work without extra integration. For non-method lookup flows, use `current_author_proc`.
 
 **Default:** `:current_user`
 
@@ -234,41 +254,50 @@ config.current_author_proc = -> {
 
 **Default:** `nil` (uses `current_author_method` instead)
 
-### API Actor Configuration
+### Admin Authentication
 
-These options are used when creating/rotating/revoking API keys in the admin.
+RailsPress browser controllers inherit the host application's `ApplicationController`. RailsPress API controllers deliberately do not: they inherit from `ActionController::API` and enforce RailsPress bearer-token authentication.
 
-#### `current_api_actor_method`
+#### `admin_authentication_method`
 
-The controller method used to identify the currently signed-in actor for API key lifecycle actions.
+The host controller method RailsPress calls before every admin action. This can be any private or public method already defined by the host authentication system.
 
 ```ruby
-config.current_api_actor_method = :current_user    # default
-config.current_api_actor_method = :current_admin   # custom auth
+config.admin_authentication_method = :require_admin!
+# or Devise:
+config.admin_authentication_method = :authenticate_user!
 ```
 
-This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_api_actor_proc`.
+Leave this unset only if an inherited `ApplicationController` callback already protects RailsPress admin requests. RailsPress raises `Railspress::ConfigurationError` with the configured method name if the method is unavailable.
+
+**Default:** `nil`
+
+#### `current_admin_method`
+
+The host controller method that returns the signed-in administrator. RailsPress uses this identity to own and audit API key lifecycle actions; it is separate from the authentication method because many auth systems expose these as separate methods.
+
+```ruby
+config.current_admin_method = :current_user  # default
+config.current_admin_method = :current_admin
+```
 
 **Default:** `:current_user`
 
-#### `current_api_actor_proc`
+#### `current_admin_proc`
 
-Alternative to `current_api_actor_method` for custom request-scoped auth logic.
+Alternative to `current_admin_method` for request-scoped `Current`, session, or custom authentication state.
 
 ```ruby
-config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
-config.current_api_actor_proc = -> {
-  user = Session.find_by(id: cookies.signed[:session_id])&.user
-  user if user&.admin?
-}
+config.current_admin_proc = -> { Current.user }
 ```
 
-**Default:** `nil` (uses `current_api_actor_method` instead)
+**Default:** `nil` (uses `current_admin_method` instead)
+
+`current_api_actor_method`, `current_api_actor_proc`, and the `current_api_actor` controller helper remain compatibility aliases in RailsPress 1.x. They emit deprecation warnings and will be removed in RailsPress 2.0; use `current_admin_method`, `current_admin_proc`, and `current_railspress_admin` instead.
 
 #### `admin_auth_concern`
 
-Optional host-app concern to include into `Railspress::Admin::BaseController`.
-Use this when your auth stack defines helpers like `current_user` in app concerns and you want method-based config (`current_author_method`, `current_api_actor_method`) to work cleanly.
+Optional host-app concern to include directly into `Railspress::Admin::BaseController`. Most applications no longer need this because RailsPress browser controllers inherit the host `ApplicationController`. It remains available for auth behavior intentionally isolated in a concern that is not included by `ApplicationController`.
 
 Set this to a concern constant name (String/Symbol) or Module.
 
@@ -302,6 +331,8 @@ end
 #### `public_base_url`
 
 Optional canonical base URL used in admin-generated API/agent instructions.
+
+RailsPress also uses this URL to derive site-scoped local token filenames in those instructions. The full hostname, non-default port, and base path are retained, so separate RailsPress applications do not share a token file.
 
 If not set, RailsPress resolves the URL in this order:
 
@@ -426,95 +457,46 @@ Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name
 Railspress.current_author_method   # => :current_user
-Railspress.current_api_actor_method # => :current_user
+Railspress.admin_authentication_method # => :require_admin!
+Railspress.current_admin_method    # => :current_user
 Railspress.blog_path               # => "/blog"
 ```
 
 ## Adding Authentication
 
-RailsPress does not include authentication. The preferred pattern is to keep auth logic in a host concern and have RailsPress include it via `admin_auth_concern`:
+RailsPress does not impose an authentication library. Its browser controllers inherit the host `ApplicationController`, and the initializer names the host methods RailsPress should use:
 
 ```ruby
-# app/controllers/concerns/railspress_admin_auth.rb
-module RailspressAdminAuth
-  extend ActiveSupport::Concern
-
-  included do
-    before_action :authenticate_user!
-    before_action :require_admin!
-  end
-
-  private
-
-  def require_admin!
-    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
-  end
-end
-
 # config/initializers/railspress.rb
 Railspress.configure do |config|
-  config.admin_auth_concern = "RailspressAdminAuth"
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
   config.current_author_method = :current_user
-  config.current_api_actor_method = :current_user
 end
 ```
 
-If your app already handles authentication and you only need RailsPress to resolve the current author/API actor, configure proc hooks:
+`require_admin!` and `current_user` belong to the host application and may be private. RailsPress makes no assumptions about whether they come from Devise, another gem, or custom controller code. If your host already has a global inherited callback that protects RailsPress, omit `admin_authentication_method` to avoid calling it twice.
+
+For `Current` or custom request-scoped identity, configure proc hooks:
 
 ```ruby
 Railspress.configure do |config|
   config.current_author_proc = -> { Current.user }
-  config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
+  config.current_admin_proc = -> { Current.user }
 end
 ```
 
-If RailsPress is mounted behind a host route constraint, allow API paths through so bearer-token auth can execute:
+Mount RailsPress normally:
 
 ```ruby
-class AdminConstraint
-  def self.matches?(request)
-    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
-
-    session_id = request.cookie_jar.signed[:session_id]
-    return false if session_id.blank?
-
-    Session.includes(:user).find_by(id: session_id)&.user&.admin?
-  end
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
 end
 ```
 
-Alternative: protect the admin path from your application controller:
+Do not put the whole engine behind a session-only route constraint. Route constraints run before controllers, so they prevent bearer-token requests from reaching `/railspress/api/*`. The normal mount is safe when `admin_authentication_method` (or an inherited callback) protects browser routes: API routes use their separate bearer-authenticated controller stack.
 
-```ruby
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, if: :railspress_admin?
-
-  private
-
-  def railspress_admin?
-    request.path.start_with?("/blog/admin")
-  end
-end
-```
-
-Alternative: override the RailsPress base controller directly:
-
-```ruby
-# config/initializers/railspress.rb
-Rails.application.config.to_prepare do
-  Railspress::Admin::BaseController.class_eval do
-    before_action :authenticate_user!
-    before_action :require_admin!
-
-    private
-
-    def require_admin!
-      redirect_to root_path unless current_user&.admin?
-    end
-  end
-end
-```
+Run `bin/rails railspress:doctor` after changing authentication or API configuration. It verifies explicit method/concern resolution, encryption settings, the resolved mount, and RailsPress migration state. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out.
 
 ## Required Model Methods
 
@@ -676,6 +658,20 @@ Override the post form to add custom fields or change layout:
 See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 ## Dependencies
+
+### Stimulus
+
+RailsPress depends on `stimulus-rails >= 1.2.2`, the first gem release that packages Stimulus 3.2.2. This preserves the Stimulus runtime RailsPress previously loaded from JSPM while serving it locally through the host asset pipeline.
+
+For importmap applications, the engine supplies:
+
+```ruby
+pin "@hotwired/stimulus", to: "stimulus.min.js"
+```
+
+No host CDN pin is required. Engine importmaps load before the host's `config/importmap.rb`, so an intentional host `@hotwired/stimulus` pin overrides the RailsPress default. RailsPress does not start a second Stimulus application; continue starting Stimulus in the host JavaScript entrypoint and importing `railspress` to register its controllers.
+
+RailsPress admin CSS also uses a system serif stack rather than downloading Google Fonts. The default admin interface therefore makes no runtime JavaScript or font CDN requests.
 
 ### Lexxy (Rich Text Editor)
 

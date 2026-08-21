@@ -1,6 +1,7 @@
 require "railspress/version"
 require "active_support/deprecation"
 require "railspress/cms_helper"
+require "railspress/active_record_encryption_configuration"
 require "railspress/engine"
 require "railspress/entity"
 require "lexxy"
@@ -14,8 +15,9 @@ module Railspress
     attr_accessor :author_class_name,
                   :current_author_method,
                   :current_author_proc,
-                  :current_api_actor_method,
-                  :current_api_actor_proc,
+                  :admin_authentication_method,
+                  :current_admin_method,
+                  :current_admin_proc,
                   :admin_auth_concern,
                   :public_base_url,
                   :author_scope,
@@ -26,7 +28,8 @@ module Railspress
                   :post_image_variants,
                   :inline_editing_check
 
-    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :api_enabled, :image_contexts
+    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :api_enabled, :image_contexts,
+      :deprecated_settings
 
     def initialize
       @authors_enabled = false
@@ -40,8 +43,9 @@ module Railspress
       @author_class_name = "User"
       @current_author_method = :current_user
       @current_author_proc = nil
-      @current_api_actor_method = :current_user
-      @current_api_actor_proc = nil
+      @admin_authentication_method = nil
+      @current_admin_method = :current_user
+      @current_admin_proc = nil
       @admin_auth_concern = nil
       @public_base_url = nil
       @author_scope = nil
@@ -49,6 +53,27 @@ module Railspress
       @words_per_minute = 200
       @blog_path = "/blog"
       @default_index_columns = [ :id, :title, :name, :created_at ]
+      @deprecated_settings = []
+    end
+
+    def current_api_actor_method
+      deprecate_current_api_actor_setting(:current_api_actor_method, :current_admin_method)
+      current_admin_method
+    end
+
+    def current_api_actor_method=(method_name)
+      deprecate_current_api_actor_setting(:current_api_actor_method, :current_admin_method)
+      self.current_admin_method = method_name
+    end
+
+    def current_api_actor_proc
+      deprecate_current_api_actor_setting(:current_api_actor_proc, :current_admin_proc)
+      current_admin_proc
+    end
+
+    def current_api_actor_proc=(actor_proc)
+      deprecate_current_api_actor_setting(:current_api_actor_proc, :current_admin_proc)
+      self.current_admin_proc = actor_proc
     end
 
     # Declarative setter: config.enable_authors
@@ -79,10 +104,17 @@ module Railspress
     # Validate configuration after the configure block completes.
     # This keeps the configure block order-independent.
     def validate!
+      return if validation_errors.empty?
+
+      raise Railspress::ConfigurationError, validation_errors.first
+    end
+
+    def validation_errors
+      errors = []
       if @inline_editing_check && !@cms_enabled
-        raise Railspress::ConfigurationError,
-          "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
+        errors << "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
       end
+      errors
     end
 
     # Set custom image contexts
@@ -175,6 +207,14 @@ module Railspress
 
     private
 
+    def deprecate_current_api_actor_setting(old_name, new_name)
+      @deprecated_settings << old_name unless @deprecated_settings.include?(old_name)
+      Railspress.deprecator.warn(
+        "config.#{old_name} is deprecated and will be removed in RailsPress 2.0; " \
+        "use config.#{new_name} instead."
+      )
+    end
+
     def default_image_contexts
       {
         hero:  { aspect: [ 16, 9 ], label: "Hero", sizes: [ 1920, 1280 ] },
@@ -206,11 +246,23 @@ module Railspress
 
     def configure
       yield(configuration)
-      configuration.validate!
+      configuration.validate! unless validation_reporting?
     end
 
     def reset_configuration!
       @configuration = Configuration.new
+    end
+
+    def with_validation_reporting
+      previous_value = @validation_reporting
+      @validation_reporting = true
+      yield
+    ensure
+      @validation_reporting = previous_value
+    end
+
+    def validation_reporting?
+      @validation_reporting == true
     end
 
     # Convenience accessors
@@ -293,6 +345,18 @@ module Railspress
       configuration.current_api_actor_proc
     end
 
+    def admin_authentication_method
+      configuration.admin_authentication_method
+    end
+
+    def current_admin_method
+      configuration.current_admin_method
+    end
+
+    def current_admin_proc
+      configuration.current_admin_proc
+    end
+
     def admin_auth_concern
       configuration.admin_auth_concern
     end
@@ -353,3 +417,6 @@ module Railspress
     end
   end
 end
+
+require "railspress/diagnostics"
+require "railspress/upgrade"

@@ -11,6 +11,9 @@
 # Lexxy rich text editor (hard dependency — auto-pinned so host apps don't need to)
 pin "lexxy", to: "lexxy.js"
 
+# Stimulus is provided by stimulus-rails and served through the host asset pipeline.
+pin "@hotwired/stimulus", to: "stimulus.min.js"
+
 # Turbo for Turbo Frames support
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 

@@ -2,16 +2,16 @@ require "uri"
 
 module Railspress
   module Admin
-    class BaseController < ActionController::Base
+    class BaseController < Railspress::ApplicationController
       protect_from_forgery with: :exception
 
       layout "railspress/admin"
       helper Railspress::AdminHelper
 
-      helper_method :current_author, :available_authors, :authors_enabled?, :post_images_enabled?, :current_api_actor
+      before_action :authenticate_railspress_admin!
 
-      # Authentication hook - to be configured later
-      # before_action :authenticate_admin!
+      helper_method :current_author, :available_authors, :authors_enabled?, :post_images_enabled?, :current_railspress_admin,
+        :current_api_actor
 
       private
 
@@ -44,12 +44,34 @@ module Railspress
         Railspress.available_authors
       end
 
-      def current_api_actor
-        if Railspress.current_api_actor_proc
-          instance_exec(&Railspress.current_api_actor_proc)
-        elsif respond_to?(Railspress.current_api_actor_method, true)
-          send(Railspress.current_api_actor_method)
+      def authenticate_railspress_admin!
+        method_name = Railspress.admin_authentication_method
+        return if method_name.blank?
+
+        unless respond_to?(method_name, true)
+          raise Railspress::ConfigurationError,
+            "config.admin_authentication_method is set to #{method_name.inspect}, " \
+            "but Railspress::Admin::BaseController cannot call that method. " \
+            "Define it on your host ApplicationController or change the setting."
         end
+
+        send(method_name)
+      end
+
+      def current_railspress_admin
+        if Railspress.current_admin_proc
+          instance_exec(&Railspress.current_admin_proc)
+        elsif respond_to?(Railspress.current_admin_method, true)
+          send(Railspress.current_admin_method)
+        end
+      end
+
+      def current_api_actor
+        Railspress.deprecator.warn(
+          "current_api_actor is deprecated and will be removed in RailsPress 2.0; " \
+          "use current_railspress_admin instead."
+        )
+        current_railspress_admin
       end
 
       def instruction_base_url
@@ -57,6 +79,23 @@ module Railspress
         return configured.delete_suffix("/") if configured.present?
 
         route_default_base_url || request.base_url
+      end
+
+      def instruction_token_file(base_url = instruction_base_url)
+        "$HOME/.railspress/tokens/#{instruction_token_scope(base_url)}"
+      end
+
+      def instruction_token_scope(base_url)
+        uri = URI.parse(base_url)
+        return "railspress-app" if uri.host.blank?
+
+        parts = [ uri.host&.downcase ]
+        parts << uri.port if non_default_port?(uri.scheme, uri.port)
+        parts << uri.path.split("/").compact_blank.join("-") if uri.path.present? && uri.path != "/"
+
+        parts.compact.join("-").downcase.gsub(/[^a-z0-9.-]+/, "-").gsub(/\A[-.]+|[-.]+\z/, "").presence || "railspress-app"
+      rescue URI::InvalidURIError
+        "railspress-app"
       end
 
       def route_default_base_url

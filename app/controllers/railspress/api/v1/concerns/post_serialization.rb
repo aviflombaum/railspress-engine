@@ -21,8 +21,10 @@ module Railspress
               author_id: post.author_id,
               author_display: serialize_author_display(post),
               tag_list: post.tag_list,
-              content: post.content&.to_s,
+              content: post.content&.body&.to_html,
+              content_format: "html",
               header_image: serialize_header_image(post),
+              gallery_images: serialize_gallery_images(post),
               header_image_focal_point: serialize_header_image_focal_point(post),
               created_at: post.created_at,
               updated_at: post.updated_at
@@ -52,6 +54,25 @@ module Railspress
               focal_x: focal_point.focal_x.to_f,
               focal_y: focal_point.focal_y.to_f,
               overrides: focal_point.overrides || {}
+            }
+          end
+
+          def serialize_gallery_images(post)
+            return nil unless Railspress.post_images_enabled?
+
+            post.gallery_images.attachments.map { |attachment| serialize_gallery_image(attachment) }
+          end
+
+          def serialize_gallery_image(attachment)
+            blob = attachment.blob
+
+            {
+              id: attachment.id,
+              blob_id: blob.id,
+              signed_blob_id: blob.signed_id,
+              filename: blob.filename.to_s,
+              byte_size: blob.byte_size,
+              content_type: blob.content_type
             }
           end
 

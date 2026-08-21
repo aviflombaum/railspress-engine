@@ -34,17 +34,26 @@ Railspress.configure do |config|
   #   context.controller.current_user&.admin?
   # }
 
+  # === Admin Authentication ===
+  # RailsPress browser controllers inherit your host ApplicationController.
+  # Set the host method that protects /railspress/admin. Leave unset only when
+  # an inherited ApplicationController callback already protects the admin UI.
+  # config.admin_authentication_method = :require_admin!
+  # Set the host method that returns the signed-in administrator. The default
+  # is :current_user; a proc supports Current/session based lookup instead.
+  # config.current_admin_method = :current_user
+  # config.current_admin_proc = -> { Current.user }
+
   # === API (opt-in) ===
   # Enables API endpoints under /railspress/api/v1 and admin API key management.
-  # Requires Active Record Encryption keys in your host app config.
+  # Requires all three Active Record Encryption credentials in the host app.
+  # Generate a credentials snippet (RailsPress never writes these secrets):
+  #   bin/rails db:encryption:init
   # Uncomment to enable:
   # config.enable_api
-  # Optional: include a host auth concern into Railspress::Admin::BaseController.
-  # Define your concern in app/controllers/concerns/railspress_admin_auth.rb
-  # and set this to its constant name (String or Symbol).
-  # config.admin_auth_concern = "RailspressAdminAuth"
-  # config.current_api_actor_method = :current_user
-  # config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
+  # The current-admin strategy above audits API key management actions.
+  # API controllers do not inherit ApplicationController and always use their
+  # own bearer-token authentication.
   # Optional: force a canonical public base URL in generated API instructions.
   # Falls back to Rails.application.routes.default_url_options, then request host.
   # config.public_base_url = "https://blog.example.com"

@@ -88,7 +88,9 @@ Railspress::Engine.routes.draw do
         end
       end
       resources :post_imports, path: "posts/imports", only: [ :create, :show ]
+      resources :post_assets, only: [ :create ]
       resources :posts, only: [ :index, :show, :create, :update, :destroy ] do
+        resources :gallery_images, only: [ :index, :create, :destroy ], controller: "post_gallery_images"
         resource :header_image, only: [ :show, :update, :destroy ], controller: "post_header_images" do
           resource :focal_point, only: [ :show, :update ], controller: "post_header_image_focal_points"
           resources :contexts, only: [ :index, :show, :update, :destroy ],

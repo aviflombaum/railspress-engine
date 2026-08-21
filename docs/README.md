@@ -77,6 +77,7 @@ Access the admin at `/railspress/admin`:
 
 **Attachments (when `enable_post_images` is set):**
 - `header_image` - ActiveStorage single attachment
+- `gallery_images` - ActiveStorage multiple attachments
 
 **Associations:**
 - `belongs_to :category` (optional)

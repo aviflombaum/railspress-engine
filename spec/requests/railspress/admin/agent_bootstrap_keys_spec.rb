@@ -11,7 +11,7 @@ RSpec.describe "Railspress::Admin::AgentBootstrapKeys", type: :request do
     actor_id = actor.id
     Railspress.configure do |config|
       config.enable_api
-      config.current_api_actor_proc = -> { User.find_by(id: actor_id) }
+      config.current_admin_proc = -> { User.find_by(id: actor_id) }
     end
   end
 
@@ -47,14 +47,16 @@ RSpec.describe "Railspress::Admin::AgentBootstrapKeys", type: :request do
     end
 
     it "uses configured public_base_url in bootstrap instructions" do
-      Railspress.configuration.public_base_url = "https://public.example.org"
+      Railspress.configuration.public_base_url = "https://public.example.org/publishing"
       host! "request-host.test"
 
       post railspress.admin_agent_bootstrap_keys_path,
            params: { agent_bootstrap_key: { name: "Public URL Key" } }
 
       expect(response).to have_http_status(:created)
-      expect(response.body).to include("https://public.example.org")
+      expect(response.body).to include("https://public.example.org/publishing")
+      expect(response.body).to include("$HOME/.railspress/tokens/public.example.org-publishing")
+      expect(response.body).not_to include("~/.railspress_token")
       expect(response.body).not_to include("http://request-host.test")
     end
   end

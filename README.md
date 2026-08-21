@@ -75,6 +75,7 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 - Focal point image concern for any model: `focal_point_image :cover_photo`
 - CSS variable theming
 - Generators for installation and custom entities
+- Engine-managed browser assets with no runtime JavaScript or font CDN dependency
 
 ## Requirements
 
@@ -82,6 +83,16 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 - Ruby 3.3+
 - ActionText
 - Active Storage
+
+The optional Agents & API feature also requires all three Active Record Encryption credentials. RailsPress checks for them when `config.enable_api` is enabled, but never generates or writes them. Generate the standard Rails credentials snippet with:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` values in the host application's Rails credentials or deployment secret-management system.
+
+RailsPress also depends on `stimulus-rails >= 1.2.2` and supplies a local `@hotwired/stimulus` importmap pin. Hosts do not need a CDN pin. A host importmap pin with the same package name loads after the engine map and therefore remains authoritative when an application intentionally manages its own Stimulus asset.
 
 ## Installation
 
@@ -129,6 +140,16 @@ rails generate railspress:install
 rails db:migrate
 ```
 
+The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally.
+
+Check the resolved installation at any time with the read-only doctor command:
+
+```bash
+bin/rails railspress:doctor
+```
+
+For upgrades, run `bundle update railspress-engine`, optionally preview with `DRY_RUN=1 bin/rails railspress:upgrade`, then run `bin/rails railspress:upgrade`. The upgrade task copies RailsPress migrations and runs all pending host migrations; production deployments should commit copied migrations and use the host's normal `db:migrate` release step.
+
 Mount the engine (the install generator does this automatically):
 
 ```ruby
@@ -138,22 +159,47 @@ Rails.application.routes.draw do
 end
 ```
 
-## Authentication
+### Enabling Agents & API
 
-The admin interface is publicly accessible by default. Add authentication before deploying:
+After Active Record Encryption is configured, enable the API in the host initializer:
 
 ```ruby
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, if: :railspress_admin?
-
-  private
-
-  def railspress_admin?
-    request.path.start_with?("/railspress/admin")
-  end
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.enable_api
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
 end
 ```
+
+RailsPress then exposes bearer-authenticated endpoints under the engine mount, such as `/railspress/api/v1/prime`, and key management under `/railspress/admin/api_keys`.
+
+Mount the engine normally, without a host authentication route constraint. RailsPress browser controllers inherit the host application's `ApplicationController`, so they can call host authentication methods and run inherited callbacks. RailsPress API controllers use a separate `ActionController::API` stack and authenticate bearer tokens themselves.
+
+For example, if the host already defines `require_admin!` and `current_user`, the two settings above protect all `/railspress/admin/*` requests and identify the administrator responsible for API key changes. If an inherited `ApplicationController` callback already protects RailsPress, `admin_authentication_method` may be omitted.
+
+Do not wrap the mount in a session-only route constraint:
+
+```ruby
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
+end
+```
+
+An outer session constraint runs before RailsPress and makes token-only API requests return `404`. See [API authentication](docs/api/authentication.md) for key creation and bootstrap exchange.
+
+## Authentication
+
+The admin interface is publicly accessible by default. RailsPress admin controllers inherit your host `ApplicationController`; configure the host authentication method RailsPress should invoke before every admin action:
+
+```ruby
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
+end
+```
+
+Both methods are defined by the host application. RailsPress does not assume Devise, Warden, or any particular session model. The API controller stack does not inherit these browser callbacks and always requires its own bearer token.
 
 See [CONFIGURING.md](docs/CONFIGURING.md) for more authentication patterns including Devise integration.
 

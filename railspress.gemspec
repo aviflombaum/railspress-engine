@@ -18,11 +18,12 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
+    Dir["{app,config,db,docs,lib}/**/*", "CHANGELOG.md", "LICENSE", "Rakefile", "README.md"]
   end
 
   spec.add_dependency "rails", ">= 8.1.3.1"
   spec.add_dependency "lexxy", ">= 0.9.29"
+  spec.add_dependency "stimulus-rails", ">= 1.2.2"
   spec.add_dependency "image_processing", "~> 2.0", ">= 2.0.3"
   spec.add_dependency "rubyzip", ">= 2.3"
   spec.add_dependency "redcarpet", ">= 3.6"
@@ -45,9 +46,15 @@ Gem::Specification.new do |spec|
         $ rails railspress:install:migrations
         $ rails db:migrate
 
+      Enabling Agents & API requires host-managed Active Record Encryption
+      credentials. If they are missing, generate the credentials snippet with:
+        $ bin/rails db:encryption:init
+
+      RailsPress never generates or writes these credentials.
+
       Guides:
-        - Install/setup: README.md + docs/CONFIGURING.md
-        - Upgrading: docs/UPGRADING.md
+        - Install/setup: packaged README.md + docs/CONFIGURING.md
+        - Upgrading: packaged docs/UPGRADING.md
         - Full docs: https://railspress.org
     ============================================================
 

@@ -8,22 +8,17 @@ RailsPress API uses bearer tokens managed from admin.
 # config/initializers/railspress.rb
 Railspress.configure do |config|
   config.enable_api
-  # Optional: include a host concern into Railspress::Admin::BaseController
-  # so current_user and auth guards are available in RailsPress admin.
-  # config.admin_auth_concern = "RailspressAdminAuth"
-  config.current_api_actor_method = :current_user
-  # Alternative for host-app auth helpers that rely on Current/session/cookies:
-  # config.current_api_actor_proc = -> {
-  #   user = Session.find_by(id: cookies.signed[:session_id])&.user
-  #   user if user&.admin?
-  # }
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
+  # Alternative for Current or other request-scoped identity:
+  # config.current_admin_proc = -> { Current.user }
   # config.public_base_url = "https://blog.example.com"
 end
 ```
 
-If `current_user` is already available in RailsPress admin controllers (Devise-style or via `config.admin_auth_concern`), `current_api_actor_method = :current_user` is the clean default.
+RailsPress admin controllers inherit your host `ApplicationController`. `admin_authentication_method` names the host method that protects the browser UI, while `current_admin_method` names the host method that returns the administrator recorded on key lifecycle actions. If an inherited host callback already protects RailsPress, leave `admin_authentication_method` unset.
 
-Use `current_api_actor_proc` when your auth helper is not directly available on `Railspress::Admin::BaseController`.
+The former `current_api_actor_method` and `current_api_actor_proc` settings are deprecated compatibility aliases. They will be removed in RailsPress 2.0.
 
 When generating admin API/agent instruction snippets, RailsPress resolves the base URL in this order:
 
@@ -31,37 +26,38 @@ When generating admin API/agent instruction snippets, RailsPress resolves the ba
 2. `Rails.application.routes.default_url_options`
 3. current request base URL
 
-## Route Constraints
+RailsPress also derives the optional local token filename from that resolved URL. It uses the full hostname, any non-default port, and any configured base path so credentials for separate applications do not overwrite one another. For example, `http://127.0.0.1:3129` uses `$HOME/.railspress/tokens/127.0.0.1-3129`, while `https://blog.example.com` uses `$HOME/.railspress/tokens/blog.example.com`.
 
-If your host app mounts RailsPress behind an admin route constraint, ensure API paths are allowed through the constraint. Otherwise agents will see `404` before RailsPress API auth runs.
+## Mounting and Authentication Boundaries
+
+Mount RailsPress normally, without wrapping the entire engine in a session or admin route constraint:
 
 ```ruby
-class AdminConstraint
-  def self.matches?(request)
-    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
-
-    session_id = request.cookie_jar.signed[:session_id]
-    return false if session_id.blank?
-
-    Session.includes(:user).find_by(id: session_id)&.user&.admin?
-  end
-end
-
 Rails.application.routes.draw do
-  constraints AdminConstraint do
-    mount Railspress::Engine => "/railspress"
-  end
+  mount Railspress::Engine => "/railspress"
 end
 ```
 
-Expected behavior:
+RailsPress deliberately has two controller stacks:
 
-- `/railspress/admin/*` remains host-auth protected.
-- `/railspress/api/*` reaches RailsPress and then enforces bearer token auth (`401` without a token).
+- `/railspress/admin/*` inherits the host `ApplicationController` and invokes the configured host admin authentication method.
+- `/railspress/api/*` inherits from `ActionController::API`, does not run host browser authentication callbacks, and enforces RailsPress bearer tokens (`401` without a valid token).
+
+An outer route constraint executes before either controller stack and commonly rejects token-only API requests with `404`. Remove that constraint and use `config.admin_authentication_method` for the browser side instead.
 
 ## Active Record Encryption Requirement
 
 `Railspress::ApiKey` and `Railspress::AgentBootstrapKey` store key secret material with Active Record Encryption.
+
+RailsPress validates this requirement during boot whenever `config.enable_api` is enabled. It raises `Railspress::ConfigurationError` with the missing setting names and setup command, but never generates or writes credentials itself.
+
+Generate the standard Rails credentials snippet:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated values in the host application's environment credentials or deployment secret manager. Do not rotate existing encryption credentials merely to enable RailsPress; changing them can make existing encrypted data unreadable.
 
 Configure encryption keys in your application:
 
@@ -99,13 +95,17 @@ export RAILSPRESS_TOKEN=$(curl -s -X POST \
   | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
 ```
 
-3. Optional local token file:
+3. Optional site-scoped local token file:
 
 ```bash
-printf '%s\n' "$RAILSPRESS_TOKEN" > ~/.railspress_token
-chmod 600 ~/.railspress_token
-export RAILSPRESS_TOKEN="$(cat ~/.railspress_token)"
+export RAILSPRESS_TOKEN_FILE="$HOME/.railspress/tokens/localhost-3000"
+install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
+printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
+chmod 600 "$RAILSPRESS_TOKEN_FILE"
+export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
 ```
+
+The **Agents & API** admin page generates the correct scoped path for the configured public URL or current request, so prefer its copy-ready instructions over constructing this filename manually.
 
 4. Verify connectivity:
 

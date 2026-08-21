@@ -9,7 +9,7 @@ Railspress.configure do |config|
   # Specs reset Railspress configuration between examples, so they opt in explicitly.
   unless Rails.env.test?
     config.enable_api
-    config.current_api_actor_proc = -> {
+    config.current_admin_proc = -> {
       User.first || User.create!(email_address: "demo@railspress.local")
     }
   end

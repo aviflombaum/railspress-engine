@@ -211,7 +211,7 @@ Background-processed import and export for posts, enabling bulk content migratio
 ### Supported File Types
 
 - **Markdown** (`.md`, `.markdown`): Parsed with YAML frontmatter
-- **Plain text** (`.txt`): Title derived from filename
+- **Plain text** (`.txt`): Title derived from filename; HTML is escaped and Markdown syntax remains literal
 - **Zip archives** (`.zip`): Processes all markdown/text files recursively
 
 ### Frontmatter Fields
@@ -289,7 +289,7 @@ The import processor strips Obsidian-specific metadata:
 4. `PostImportProcessor` processes each file:
    - Extracts zip to `tmp/imports/{id}_{timestamp}/`
    - Parses frontmatter and content
-   - Converts markdown to HTML via Redcarpet
+   - Converts Markdown to HTML via Redcarpet or plain text to escaped paragraphs
    - Creates post with associations
    - Attaches header image
 5. Cleans up temp files

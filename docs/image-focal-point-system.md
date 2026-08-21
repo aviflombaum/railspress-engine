@@ -469,12 +469,14 @@ window.Stimulus = application  // Required for auto-registration
 register(application)  // Or register manually
 ```
 
-Also ensure Stimulus is properly pinned in your importmap:
+RailsPress provides Stimulus locally through its `stimulus-rails >= 1.2.2` dependency and engine importmap:
 
 ```ruby
-# config/importmap.rb
-pin "@hotwired/stimulus", to: "https://ga.jspm.io/npm:@hotwired/stimulus@3.2.2/dist/stimulus.js"
+# Supplied by the RailsPress engine; no host or CDN pin is required.
+pin "@hotwired/stimulus", to: "stimulus.min.js"
 ```
+
+If the host intentionally pins `@hotwired/stimulus`, its importmap entry overrides the engine default.
 
 ### Images Not Cropping Correctly
 

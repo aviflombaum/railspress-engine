@@ -111,6 +111,10 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       output = messages.join("\n")
       expect(output).to include("RailsPress installed successfully")
       expect(output).to include("http://localhost:3000/railspress/admin")
+      expect(output).to include("config.admin_authentication_method and config.current_admin_method")
+      expect(output).to include("bin/rails railspress:doctor")
+      expect(output).to include("API bypasses host controller auth and uses bearer tokens")
+      expect(output).to include("config.enable_api; requires Active Record Encryption")
       expect(output).to include("https://railspress.org")
     end
 
@@ -124,8 +128,42 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       output = messages.join("\n")
       expect(output).to include("RailsPress upgrade setup completed")
       expect(output).to include("docs/UPGRADING.md")
+      expect(output).to include("DRY_RUN=1 bin/rails railspress:upgrade")
+      expect(output).to include("bin/rails railspress:upgrade")
       expect(output).to include('import "railspress"')
+      expect(output).to include("config.admin_authentication_method and config.current_admin_method")
+      expect(output).to include("API bypasses host controller auth and uses bearer tokens")
+      expect(output).to include("config.enable_api; requires Active Record Encryption")
       expect(output).to include("https://railspress.org")
+    end
+  end
+
+  describe "#check_active_record_encryption" do
+    it "confirms when credentials are already configured" do
+      encryption = instance_double(Railspress::ActiveRecordEncryptionConfiguration, configured?: true)
+      allow(Railspress::ActiveRecordEncryptionConfiguration).to receive(:new).and_return(encryption)
+      allow(generator).to receive(:say_status)
+
+      generator.check_active_record_encryption
+
+      expect(generator).to have_received(:say_status).with(
+        :ok,
+        "Active Record Encryption credentials detected (Agents & API ready)",
+        :green
+      )
+    end
+
+    it "prints the exact setup command when credentials are missing" do
+      encryption = instance_double(Railspress::ActiveRecordEncryptionConfiguration, configured?: false)
+      messages = []
+      allow(Railspress::ActiveRecordEncryptionConfiguration).to receive(:new).and_return(encryption)
+      allow(generator).to receive(:say_status)
+      allow(generator).to receive(:say) { |message, *| messages << message.to_s }
+
+      generator.check_active_record_encryption
+
+      expect(messages.join("\n")).to include("bin/rails db:encryption:init")
+      expect(messages.join("\n")).to include("host credentials or secret-management system")
     end
   end
 
@@ -215,6 +253,15 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
         expect(generator).to have_received(:template).with("initializer.rb", initializer_path)
         expect(generator).to have_received(:say_status).with(:created, "config/initializers/railspress.rb", :green)
       end
+    end
+
+    it "documents the host admin and isolated API authentication settings" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+
+      expect(template).to include("config.admin_authentication_method = :require_admin!")
+      expect(template).to include("config.current_admin_method = :current_user")
+      expect(template).to include("API controllers do not inherit ApplicationController")
+      expect(template.index("=== Admin Authentication ===")).to be < template.index("=== API (opt-in) ===")
     end
   end
 end

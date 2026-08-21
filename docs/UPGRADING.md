@@ -2,20 +2,79 @@
 
 This guide covers upgrading the RailsPress engine between versions.
 
+## Upgrading to 1.4.5
+
+RailsPress admin controllers now inherit the host application's `ApplicationController`. Mount the engine normally and configure the host methods RailsPress should use:
+
+```ruby
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
+end
+```
+
+`admin_authentication_method` is optional only when an inherited host callback already protects RailsPress. Verify this with a signed-out request: RailsPress can confirm that an explicit method exists, but cannot prove the authorization behavior of inherited callbacks, middleware, or a reverse proxy.
+
+API controllers remain on a separate `ActionController::API` stack and use bearer authentication, so remove session-only constraints wrapped around the entire engine mount. A rejected constraint can return `404` before API authentication runs. If a later catch-all route handles the miss, an API client can instead receive `200 text/html` with a login page. After remediation, an unauthenticated API request should reach RailsPress and return `401`, not `404` or successful HTML.
+
+Rename `current_api_actor_method` to `current_admin_method`, `current_api_actor_proc` to `current_admin_proc`, and any controller-helper use of `current_api_actor` to `current_railspress_admin`. The old names continue to work with deprecation warnings in RailsPress 1.x and will be removed in RailsPress 2.0.
+
+RailsPress now validates the Active Record Encryption prerequisite when Agents & API is enabled. Existing API-enabled hosts must provide `primary_key`, `deterministic_key`, and `key_derivation_salt` through Rails credentials or `config.active_record.encryption` in every deployed environment.
+
+If credentials are missing, generate the standard Rails snippet and store its values in the host's credentials or deployment secret manager:
+
+```bash
+bin/rails db:encryption:init
+```
+
+RailsPress does not generate, persist, or overwrite these secrets. A missing value normally stops boot with `Railspress::ConfigurationError`. `bin/rails railspress:doctor` uses a narrow report-only boot mode so it can name RailsPress configuration failures without weakening normal application boot validation. Hosts that do not call `config.enable_api` are unaffected.
+
+RailsPress now depends on `stimulus-rails >= 1.2.2` and serves its default Stimulus import locally instead of loading Stimulus from JSPM. Bundler will reuse a compatible host installation; applications pinned below 1.2.2 must upgrade that pin. Existing host importmap pins remain authoritative because the host map loads after the engine map. The Google Fonts import was also removed, so RailsPress admin display text now uses the local Georgia/system-serif stack.
+
+No host importmap edit is required. Remove an old RailsPress-specific JSPM pin if the host does not intentionally manage Stimulus itself:
+
+```ruby
+# No longer needed for RailsPress:
+pin "@hotwired/stimulus", to: "https://ga.jspm.io/..."
+```
+
 ## Quick Upgrade
 
 ```bash
 # 1. Update the gem
 bundle update railspress-engine
 
-# 2. Copy new migrations
-rails railspress:install:migrations
+# 2. Optionally preview configuration and migration work without writes
+DRY_RUN=1 bin/rails railspress:upgrade
 
-# 3. Run migrations
-rails db:migrate
+# 3. Copy RailsPress migrations, run migrations, and verify
+bin/rails railspress:upgrade
 
 # 4. Restart your server
 ```
+
+The upgrade task runs `db:migrate`, so it applies **all pending host migrations**, not only RailsPress migrations. Its manual equivalent is:
+
+```bash
+bin/rails railspress:install:migrations
+bin/rails db:migrate
+bin/rails railspress:doctor
+```
+
+If Agents & API is enabled, confirm that the host already supplies all three Active Record Encryption settings before restarting. Run `bin/rails db:encryption:init` only when a value is missing, and store the generated values in the host's secret-management system. Never replace working production encryption credentials during a routine upgrade.
+
+Also verify that `/railspress/admin/*` is protected through `config.admin_authentication_method` or an inherited host callback, while the engine itself is mounted without an outer session constraint.
+
+### Production deployments
+
+`railspress:upgrade` is a source-tree convenience task and refuses to mutate production. Run it in a writable development checkout, review and commit the generated `.railspress.rb` migration files, then deploy them with the host application. Production should use the host's normal release command:
+
+```bash
+RAILS_ENV=production bin/rails db:migrate
+RAILS_ENV=production bin/rails railspress:doctor
+```
+
+The doctor command is read-only. It returns nonzero for definite configuration or migration failures and zero when it finds only warnings. Warnings about implicit authentication or route constraints require an operator to verify signed-out browser access and API behavior.
 
 ## Step-by-Step Guide
 
@@ -370,7 +429,7 @@ rails railspress:install:migrations
 rails db:migrate
 ```
 
-2. Configure Active Record Encryption keys in your host app.
+2. Configure Active Record Encryption keys in your host app. Run `bin/rails db:encryption:init` to generate the standard credentials snippet; RailsPress never writes it for you.
 3. Enable API in your RailsPress initializer (`config.enable_api`).
 4. Open `/railspress/admin/api_keys` (Agents & API) and create:
    - an **Agent Key** (bootstrap, one-time exchange), or

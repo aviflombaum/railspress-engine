@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.
+- **Upgrade workflow**: Added `bin/rails railspress:upgrade` to run configuration preflight, copy RailsPress migrations, apply all pending host migrations, and verify the result. `DRY_RUN=1` previews the work without writes, and production environments retain their normal committed-migration deployment flow.
+
+### Changed
+
+- **Upgrade guidance**: Moved browser-admin authentication settings out of the initializer's API-only section and made doctor/upgrade the canonical local workflow, including troubleshooting for constrained mounts that return either routing 404s or successful HTML login pages to API clients.
+
+## [1.4.5] - 2026-08-21
+
+### Fixed
+
+- **Agents & API encryption setup**: Validate all three host-managed Active Record Encryption values at boot when `config.enable_api` is enabled, and raise a RailsPress-specific error with the exact `bin/rails db:encryption:init` setup command when configuration is incomplete.
+- **Installer and upgrade guidance**: Detect existing Active Record Encryption configuration without writing secrets, confirm configured hosts, and print setup guidance only when values are missing.
+- **Admin/API authentication boundary**: RailsPress browser controllers now inherit the host `ApplicationController` and optionally invoke `config.admin_authentication_method`, while API controllers remain isolated on `ActionController::API` with bearer-token authentication. This allows a normal unconstrained engine mount without exposing the admin UI.
+- **Current administrator integration**: Added `config.current_admin_method` and `config.current_admin_proc` to resolve the host administrator recorded on API key lifecycle actions.
+- **Site-scoped agent tokens**: Admin-generated API and bootstrap instructions now store exchanged tokens under a URL-derived path in `$HOME/.railspress/tokens`, keeping credentials separate across hostnames, local ports, and configured base paths.
+- **Local browser assets**: Added `stimulus-rails >= 1.2.2` as an engine dependency, pin its packaged Stimulus 3.2.2 asset locally, and removed the Google Fonts import. RailsPress admin pages no longer require JSPM or Google font requests at runtime, eliminating offline/browser-test timeouts. An intentional host Stimulus pin remains authoritative.
+- **Packaged documentation**: Include `docs/` and `CHANGELOG.md` in the gem so README documentation links work after installation.
+
+### Deprecated
+
+- **API actor names**: `current_api_actor_method`, `current_api_actor_proc`, and the `current_api_actor` controller helper remain compatibility aliases but now warn in favor of `current_admin_method`, `current_admin_proc`, and `current_railspress_admin`. They will be removed in RailsPress 2.0.
+
+### Upgrade Notes (target: 1.4.5)
+
+- API-enabled hosts must provide `primary_key`, `deterministic_key`, and `key_derivation_salt` through Rails credentials or `config.active_record.encryption` in every environment.
+- If values are missing, run `bin/rails db:encryption:init` and store its output in the host's credentials or deployment secret-management system. RailsPress never writes these values.
+- Do not replace existing production encryption credentials during a routine upgrade.
+- Mount the engine normally. Protect RailsPress browser routes with `config.admin_authentication_method` (unless an inherited callback already does so) and identify the administrator with `config.current_admin_method`.
+- Rename the deprecated `current_api_actor_*` settings before RailsPress 2.0.
+- Hosts pinned below `stimulus-rails 1.2.2` must upgrade. No host importmap change is required unless removing an obsolete external Stimulus CDN pin.
+
 ## [1.4.4] - 2026-08-18
 
 ### Added

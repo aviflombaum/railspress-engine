@@ -12,6 +12,7 @@ Base path (default mount): `/railspress/api/v1`
 - [Prime](prime.md)
 - [Errors](errors.md)
 - [Posts](posts.md)
+- [Post Assets](post_assets.md)
 - [Post Imports](post_imports.md)
 - [Categories](categories.md)
 - [Tags](tags.md)
@@ -23,7 +24,8 @@ Base path (default mount): `/railspress/api/v1`
 ```ruby
 Railspress.configure do |config|
   config.enable_api
-  config.current_api_actor_method = :current_user
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
   # Optional canonical host used in generated instruction snippets:
   # config.public_base_url = "https://blog.example.com"
 end
@@ -47,3 +49,6 @@ curl -H "Authorization: Bearer rp_test_..." \
 - Key lifecycle management is admin-only in v1.
 - Bootstrap keys are onboarding-only and cannot access content endpoints directly.
 - Token plaintext is shown once at create/rotate/exchange time.
+- Post reads are JSON and return canonical Action Text HTML.
+- Post writes accept HTML, Markdown, or plain text with an explicit content format.
+- Inline content images use the Post Assets endpoint; header images and gallery images have separate Post resources.

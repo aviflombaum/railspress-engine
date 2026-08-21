@@ -10,6 +10,9 @@ module Railspress
 
         def index
           posts = Railspress::Post.includes(:category, :tags).sorted_by(sort_column, sort_direction)
+          if Railspress.post_images_enabled?
+            posts = posts.includes(header_image_attachment: :blob, gallery_images_attachments: :blob)
+          end
           total_count = posts.count
 
           posts = posts.offset((page - 1) * per_page).limit(per_page)
@@ -30,8 +33,11 @@ module Railspress
         end
 
         def create
-          post = Railspress::Post.new(post_params.except(:header_image_signed_blob_id))
-          attach_header_image_from_signed_blob(post, post_params[:header_image_signed_blob_id])
+          attributes = formatted_post_params
+          return unless attributes
+
+          post = Railspress::Post.new(attributes.except(:header_image_signed_blob_id))
+          attach_header_image_from_signed_blob(post, attributes[:header_image_signed_blob_id])
 
           if post.save
             render json: { data: serialize_post(post) }, status: :created
@@ -44,8 +50,11 @@ module Railspress
         end
 
         def update
-          @post.assign_attributes(post_params.except(:header_image_signed_blob_id))
-          attach_header_image_from_signed_blob(@post, post_params[:header_image_signed_blob_id])
+          attributes = formatted_post_params
+          return unless attributes
+
+          @post.assign_attributes(attributes.except(:header_image_signed_blob_id))
+          attach_header_image_from_signed_blob(@post, attributes[:header_image_signed_blob_id])
 
           if @post.save
             render json: { data: serialize_post(@post) }
@@ -74,6 +83,7 @@ module Railspress
             :slug,
             :category_id,
             :content,
+            :content_format,
             :status,
             :published_at,
             :reading_time,
@@ -95,6 +105,24 @@ module Railspress
           end
 
           params.require(:post).permit(*permitted)
+        end
+
+        def formatted_post_params
+          attributes = post_params
+          requested_format = attributes.delete(:content_format).presence || request.headers["X-Railspress-Content-Format"].presence
+          return attributes unless attributes.key?(:content)
+
+          formatter = Railspress::PostContentFormatter.new(content: attributes[:content], format: requested_format)
+          unless formatter.supported?
+            render_error(
+              "Unsupported content format. Allowed: #{Railspress::PostContentFormatter::SUPPORTED_FORMATS.join(", ")}.",
+              status: :unprocessable_content
+            )
+            return
+          end
+
+          attributes[:content] = formatter.to_html
+          attributes
         end
 
         def page

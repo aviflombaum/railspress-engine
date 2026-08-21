@@ -43,6 +43,11 @@ module Railspress
         attachable.variant name, **options.merge(format: :webp)
       end
     end
+    has_many_attached :gallery_images do |attachable|
+      Railspress.post_image_variants.each do |name, options|
+        attachable.variant name, **options.merge(format: :webp)
+      end
+    end
     has_focal_point :header_image
 
     # Virtual attribute for removing header image via checkbox

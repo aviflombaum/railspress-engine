@@ -44,6 +44,22 @@ Successful response (`201`) returns a one-time API key token:
 }
 ```
 
+## Store the Exchanged Token Locally
+
+The generated admin instructions optionally store the long-lived API token in a site-scoped file under `$HOME/.railspress/tokens`. The filename is derived from the API base URL's full hostname, non-default port, and configured base path. This prevents one RailsPress application from overwriting another application's token.
+
+For a local application at `http://127.0.0.1:3129`, the generated commands are:
+
+```bash
+export RAILSPRESS_TOKEN_FILE="$HOME/.railspress/tokens/127.0.0.1-3129"
+install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
+printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
+chmod 600 "$RAILSPRESS_TOKEN_FILE"
+export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
+```
+
+Keep the bootstrap token transient. It is short-lived and one-time-use; only the exchanged API token belongs in the local token file.
+
 ## Admin Lifecycle
 
 Admin endpoints:

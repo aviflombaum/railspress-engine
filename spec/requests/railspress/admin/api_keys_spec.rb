@@ -12,7 +12,7 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
     Railspress.configure do |config|
       config.enable_api
       config.admin_auth_concern = nil
-      config.current_api_actor_proc = -> { User.find_by(id: actor_id) }
+      config.current_admin_proc = -> { User.find_by(id: actor_id) }
     end
   end
 
@@ -60,6 +60,7 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("https://api.example.test:8443")
+      expect(response.body).to include("$HOME/.railspress/tokens/api.example.test-8443")
       expect(response.body).not_to include("http://request-host.test")
     ensure
       Rails.application.routes.default_url_options.clear
@@ -75,18 +76,59 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
         port: 8443
       )
 
-      Railspress.configuration.public_base_url = "http://public.example.org"
+      Railspress.configuration.public_base_url = "http://public.example.org/publishing"
       host! "request-host.test"
 
       get railspress.admin_api_keys_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("http://public.example.org")
+      expect(response.body).to include("http://public.example.org/publishing")
+      expect(response.body).to include("$HOME/.railspress/tokens/public.example.org-publishing")
       expect(response.body).not_to include("https://api.example.test:8443")
       expect(response.body).not_to include("http://request-host.test")
     ensure
       Rails.application.routes.default_url_options.clear
       Rails.application.routes.default_url_options.merge!(original_defaults)
+    end
+
+    it "includes a request host non-default port in the token filename" do
+      host! "127.0.0.1:3129"
+
+      get railspress.admin_api_keys_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("$HOME/.railspress/tokens/127.0.0.1-3129")
+    end
+
+    it "omits default HTTPS ports from the token filename" do
+      Railspress.configuration.public_base_url = "https://blog.example.com:443"
+
+      get railspress.admin_api_keys_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("$HOME/.railspress/tokens/blog.example.com")
+      expect(response.body).not_to include("$HOME/.railspress/tokens/blog.example.com-443")
+    end
+
+    it "keeps separate subdomains in separate token files" do
+      Railspress.configuration.public_base_url = "https://blog.example.com"
+      get railspress.admin_api_keys_path
+      blog_instructions = response.body
+
+      Railspress.configuration.public_base_url = "https://docs.example.com"
+      get railspress.admin_api_keys_path
+
+      expect(blog_instructions).to include("$HOME/.railspress/tokens/blog.example.com")
+      expect(response.body).to include("$HOME/.railspress/tokens/docs.example.com")
+    end
+
+    it "uses a safe fallback token filename when the configured URL has no host" do
+      Railspress.configuration.public_base_url = "/publishing"
+
+      get railspress.admin_api_keys_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("$HOME/.railspress/tokens/railspress-app")
     end
   end
 
@@ -102,6 +144,8 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       expect(response.body).to include("API Key Instructions")
       expect(response.body).to include(railspress.api_v1_prime_path)
       expect(response.body).to include("export RAILSPRESS_TOKEN=")
+      expect(response.body).to include("$HOME/.railspress/tokens/www.example.com")
+      expect(response.body).not_to include("~/.railspress_token")
       expect(response.body).to match(/rp_#{Rails.env}_[a-f0-9]{12}_[a-f0-9]{64}/)
     end
 
@@ -150,10 +194,48 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
   end
 
   describe "authentication guard" do
+    it "calls the configured host authentication method" do
+      Railspress.configure do |config|
+        config.enable_api
+        config.admin_authentication_method = :spec_authenticate_admin!
+      end
+
+      get railspress.admin_api_keys_path
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "uses the configured host current admin method" do
+      Railspress.configure do |config|
+        config.enable_api
+        config.admin_authentication_method = :spec_authenticate_admin!
+        config.current_admin_method = :spec_current_admin
+        config.current_admin_proc = nil
+      end
+
+      get railspress.admin_api_keys_path, headers: {
+        "X-Railspress-Admin" => "allowed",
+        "X-Railspress-Actor-ID" => actor.id.to_s
+      }
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "raises a configuration error when the authentication method is unavailable" do
+      Railspress.configure do |config|
+        config.enable_api
+        config.admin_authentication_method = :missing_admin_authentication!
+      end
+
+      expect {
+        get railspress.admin_api_keys_path
+      }.to raise_error(Railspress::ConfigurationError, /missing_admin_authentication!.*ApplicationController/)
+    end
+
     it "redirects when no current api actor is available" do
       Railspress.configure do |config|
         config.enable_api
-        config.current_api_actor_proc = -> { nil }
+        config.current_admin_proc = -> { nil }
       end
 
       get railspress.admin_api_keys_path
@@ -161,12 +243,12 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       expect(response).to redirect_to(railspress.admin_root_path)
     end
 
-    it "allows request-scoped current_api_actor_proc strategies" do
+    it "allows request-scoped current_admin_proc strategies" do
       actor_id = actor.id
       Railspress.configure do |config|
         config.enable_api
         config.admin_auth_concern = nil
-        config.current_api_actor_proc = lambda {
+        config.current_admin_proc = lambda {
           header_id = request.headers["X-Railspress-Actor-ID"]
           User.find_by(id: header_id)
         }
@@ -182,8 +264,8 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       Railspress.configure do |config|
         config.enable_api
         config.admin_auth_concern = "Railspress::SpecAdminAuthConcern"
-        config.current_api_actor_proc = nil
-        config.current_api_actor_method = :current_user
+        config.current_admin_proc = nil
+        config.current_admin_method = :current_user
       end
 
       Rails.application.reloader.prepare!

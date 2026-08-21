@@ -137,7 +137,6 @@ RSpec.describe "Railspress::Admin::Entities", type: :request do
 
   describe "unregistered entity" do
     it "returns 404 for unknown entity type" do
-      # The route constraint prevents matching, which Rails handles as 404
       get "/railspress/admin/entities/unknown"
       expect(response).to have_http_status(:not_found)
     end

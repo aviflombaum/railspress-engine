@@ -40,15 +40,35 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
     },
     "capabilities": {
       "posts": {
+        "list": true,
+        "read": true,
         "create": true,
         "update": true,
+        "delete": true,
+        "rich_text_html": true,
+        "content_formats": ["html", "markdown", "plain", "auto"],
+        "read_content_format": "html",
         "publish_supported": true
+      },
+      "post_imports": {
+        "create": true,
+        "read": true,
+        "formats": ["md", "markdown", "txt", "zip"]
+      },
+      "post_media": {
+        "inline_images": true,
+        "header_image": true,
+        "gallery_images": true,
+        "focal_points": true,
+        "context_overrides": true
       }
     },
     "endpoints": {
       "prime": "/railspress/api/v1/prime",
       "posts": "/railspress/api/v1/posts",
       "post_imports": "/railspress/api/v1/posts/imports",
+      "post_assets": "/railspress/api/v1/post_assets",
+      "post_gallery_images": "/railspress/api/v1/posts/:post_id/gallery_images",
       "categories": "/railspress/api/v1/categories",
       "tags": "/railspress/api/v1/tags"
     },
@@ -61,6 +81,8 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
   }
 }
 ```
+
+Media booleans reflect runtime configuration. Inline Action Text image uploads are available with the API; header images, galleries, focal points, and context overrides reflect their corresponding RailsPress feature flags.
 
 ## Draft vs publish
 

@@ -1,5 +1,7 @@
 module Railspress
   class Post < ApplicationRecord
+    PREVIEW_TOKEN_PURPOSE = :railspress_post_preview
+
     include Railspress::Entity
     include Railspress::Taggable
     include Railspress::HasFocalPoint
@@ -66,6 +68,10 @@ module Railspress
       published? && published_at.present? && published_at <= Time.current
     end
 
+    def preview_token(expires_in: Railspress.post_preview_expires_in)
+      signed_id(purpose: PREVIEW_TOKEN_PURPOSE, expires_in: expires_in)
+    end
+
     # Returns the status to display in UI (accounts for scheduled state)
     def display_status
       return "scheduled" if published? && scheduled?
@@ -124,6 +130,13 @@ module Railspress
         order(created_at: :desc)
       end
     }
+
+    def self.find_preview!(slug:, token:)
+      post = find_signed(token, purpose: PREVIEW_TOKEN_PURPOSE)
+      raise ActiveRecord::RecordNotFound unless Railspress.post_previews_enabled? && post&.slug == slug
+
+      post
+    end
 
     # Calculate reading time from content word count
     def calculate_reading_time

@@ -1,5 +1,6 @@
 require "railspress/version"
 require "active_support/deprecation"
+require "erb"
 require "railspress/cms_helper"
 require "railspress/active_record_encryption_configuration"
 require "railspress/engine"
@@ -24,16 +25,18 @@ module Railspress
                   :author_display_method,
                   :words_per_minute,
                   :blog_path,
+                  :post_preview_expires_in,
                   :default_index_columns,
                   :post_image_variants,
                   :inline_editing_check
 
-    attr_reader :authors_enabled, :post_images_enabled, :focal_points_enabled, :cms_enabled, :api_enabled, :image_contexts,
-      :deprecated_settings
+    attr_reader :authors_enabled, :post_images_enabled, :post_previews_enabled, :focal_points_enabled, :cms_enabled,
+      :api_enabled, :image_contexts, :deprecated_settings
 
     def initialize
       @authors_enabled = false
       @post_images_enabled = false
+      @post_previews_enabled = false
       @focal_points_enabled = false
       @cms_enabled = false
       @api_enabled = false
@@ -52,6 +55,7 @@ module Railspress
       @author_display_method = :name
       @words_per_minute = 200
       @blog_path = "/blog"
+      @post_preview_expires_in = 24.hours
       @default_index_columns = [ :id, :title, :name, :created_at ]
       @deprecated_settings = []
     end
@@ -86,6 +90,11 @@ module Railspress
       @post_images_enabled = true
     end
 
+    # Declarative setter: config.enable_post_previews
+    def enable_post_previews
+      @post_previews_enabled = true
+    end
+
     # Declarative setter: config.enable_focal_points
     def enable_focal_points
       @focal_points_enabled = true
@@ -113,6 +122,9 @@ module Railspress
       errors = []
       if @inline_editing_check && !@cms_enabled
         errors << "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
+      end
+      unless @post_preview_expires_in.respond_to?(:positive?) && @post_preview_expires_in.positive?
+        errors << "post_preview_expires_in must be a positive duration."
       end
       errors
     end
@@ -274,6 +286,10 @@ module Railspress
       configuration.post_images_enabled
     end
 
+    def post_previews_enabled?
+      configuration.post_previews_enabled
+    end
+
     def focal_points_enabled?
       configuration.focal_points_enabled
     end
@@ -389,6 +405,19 @@ module Railspress
 
     def blog_path
       configuration.blog_path
+    end
+
+    def post_preview_expires_in
+      configuration.post_preview_expires_in
+    end
+
+    def public_post_path(post)
+      "#{blog_path.to_s.chomp("/")}/#{ERB::Util.url_encode(post.slug)}"
+    end
+
+    def post_preview_path(post)
+      query = { railspress_preview: post.preview_token }.to_query
+      "#{public_post_path(post)}?#{query}"
     end
 
     def default_index_columns

@@ -20,6 +20,14 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.post_images_enabled?).to be false
     end
 
+    it "has post previews disabled by default" do
+      expect(Railspress.post_previews_enabled?).to be false
+    end
+
+    it "defaults post preview links to a 24 hour lifetime" do
+      expect(Railspress.post_preview_expires_in).to eq(24.hours)
+    end
+
     it "defaults author_class_name to User" do
       expect(Railspress.configuration.author_class_name).to eq("User")
     end
@@ -78,6 +86,22 @@ RSpec.describe Railspress::Configuration do
       end
 
       expect(Railspress.post_images_enabled?).to be true
+    end
+
+    it "allows enabling post previews" do
+      Railspress.configure do |config|
+        config.enable_post_previews
+      end
+
+      expect(Railspress.post_previews_enabled?).to be true
+    end
+
+    it "allows setting the post preview lifetime" do
+      Railspress.configure do |config|
+        config.post_preview_expires_in = 2.days
+      end
+
+      expect(Railspress.post_preview_expires_in).to eq(2.days)
     end
 
     it "allows setting author_class_name" do
@@ -290,6 +314,14 @@ RSpec.describe Railspress::Configuration do
   end
 
   describe "#validate!" do
+    it "rejects a non-positive post preview lifetime" do
+      expect {
+        Railspress.configure do |config|
+          config.post_preview_expires_in = 0.seconds
+        end
+      }.to raise_error(Railspress::ConfigurationError, /positive duration/)
+    end
+
     it "raises when inline_editing_check set without enable_cms" do
       expect {
         Railspress.configure do |config|
@@ -345,6 +377,8 @@ RSpec.describe Railspress::Configuration do
 
       expect(Railspress.authors_enabled?).to be false
       expect(Railspress.post_images_enabled?).to be false
+      expect(Railspress.post_previews_enabled?).to be false
+      expect(Railspress.post_preview_expires_in).to eq(24.hours)
       expect(Railspress.cms_enabled?).to be false
       expect(Railspress.configuration.author_class_name).to eq("User")
     end

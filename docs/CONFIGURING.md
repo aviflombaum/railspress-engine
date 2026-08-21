@@ -466,15 +466,52 @@ config.blog_path = ""            # posts at root (e.g., /my-post-slug)
 
 **Default:** `"/blog"`
 
-The admin post show page displays a "View" button for posts that are published and whose `published_at` time has arrived. The button links to `#{blog_path}/#{post.slug}`. Draft and scheduled posts do not display this public link.
-
-RailsPress does not provide a host-site draft preview route. The public frontend belongs to the host application, including its authentication and rendering. Applications that need site-rendered draft previews should add an authenticated host route that loads the requested post without using the `published` scope.
+The admin post show page displays a "View" button for posts that are published and whose `published_at` time has arrived. The button links to `<blog_path>/<post.slug>`. Draft and scheduled posts do not display this ordinary public link.
 
 Access programmatically:
 
 ```ruby
 Railspress.blog_path  # => "/blog"
 ```
+
+### Shareable Post Previews
+
+#### `enable_post_previews`
+
+Enables signed, expiring "Preview" links for draft and scheduled posts. This is disabled by default because the host blog controller must explicitly resolve preview tokens before the links will work.
+
+Follow the complete [host-controller integration](BLOGGING.md#shareable-draft-previews), then enable previews:
+
+```ruby
+config.enable_post_previews
+```
+
+Preview URLs use the configured `blog_path`, the post slug, and a `railspress_preview` query parameter. Live posts continue displaying the ordinary "View" link.
+
+#### `post_preview_expires_in`
+
+Controls the lifetime embedded in newly generated preview tokens:
+
+```ruby
+config.post_preview_expires_in = 24.hours # default
+config.post_preview_expires_in = 3.days
+```
+
+The value must be a positive duration. Changing it affects newly generated links; signed links retain the expiration embedded when they were created. Removing `config.enable_post_previews` prevents all preview tokens from resolving, including tokens that have not yet expired.
+
+Programmatic APIs:
+
+```ruby
+Railspress.post_previews_enabled?      # => true/false
+Railspress.post_preview_expires_in     # => 24.hours
+Railspress.public_post_path(post)      # => "/posts/my-draft"
+Railspress.post_preview_path(post)     # => "/posts/my-draft?railspress_preview=..."
+
+post.preview_token
+Railspress::Post.find_preview!(slug: post.slug, token: token)
+```
+
+Preview URLs are bearer credentials. Anyone with the URL can view the signed post until the token expires. Use HTTPS and share links only with intended reviewers. Invalid, expired, wrong-purpose, deleted-record, and slug-mismatched tokens return 404. Ordinary requests without a token must continue querying `Railspress::Post.published`; never replace the public action with an unscoped lookup.
 
 ### Entity Index Defaults
 
@@ -563,6 +600,8 @@ You can check configuration values programmatically:
 ```ruby
 Railspress.authors_enabled?        # => true/false
 Railspress.post_images_enabled?    # => true/false
+Railspress.post_previews_enabled?  # => true/false
+Railspress.post_preview_expires_in # => 24.hours
 Railspress.focal_points_enabled?   # => true/false
 Railspress.cms_enabled?            # => true/false
 Railspress.api_enabled?            # => true/false

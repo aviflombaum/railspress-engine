@@ -8,6 +8,7 @@ This guide covers how to build a fully-featured blog frontend with a recent post
 
 1. [Managing Content in the Admin](#managing-content-in-the-admin)
    - [Creating a Post](#creating-a-post)
+   - [Shareable Draft Previews](#shareable-draft-previews)
    - [Markdown Mode](#markdown-mode)
 2. [Building the Frontend Blog](#building-the-frontend-blog)
 3. [Recent Posts Feed](#recent-posts-feed)
@@ -42,7 +43,7 @@ RailsPress provides a full admin interface at `/railspress/admin`. Here you can:
 5. Set status to "Published" when ready
 6. Click "Create Post"
 
-Once the post is published and its `published_at` time has arrived, the admin show page displays a "View" link to `#{Railspress.blog_path}/#{post.slug}`. Configure the public path in `config/initializers/railspress.rb` when your frontend uses a path other than `/blog`:
+Once the post is published and its `published_at` time has arrived, the admin show page displays a "View" link under the configured public path. Configure that path in `config/initializers/railspress.rb` when your frontend uses a path other than `/blog`:
 
 ```ruby
 Railspress.configure do |config|
@@ -50,7 +51,52 @@ Railspress.configure do |config|
 end
 ```
 
-Draft and scheduled posts do not display the public link. RailsPress does not provide a host-site draft preview route; applications that need one should add an authenticated route in the host application so unpublished content is never exposed publicly.
+Draft and scheduled posts do not display the ordinary public link. They can display an expiring "Preview" link after completing the host-controller integration below and enabling post previews.
+
+### Shareable Draft Previews
+
+RailsPress can generate signed, expiring preview URLs using the same `blog_path` and slug as the live post:
+
+```text
+/posts/my-draft?railspress_preview=<signed-token>
+```
+
+The host application still renders the post with its normal controller, layout, and template. Update the host blog controller's `show` action so requests with a preview token use `find_preview!`, while every ordinary request continues using the published-only scope:
+
+RailsPress does not currently generate or modify public blog controllers, so this integration is intentionally copied into the host application. A future dedicated blog generator should include the same guarded `show` action.
+
+```ruby
+def show
+  @post = if params[:railspress_preview].present?
+    Railspress::Post.find_preview!(
+      slug: params[:slug],
+      token: params[:railspress_preview]
+    )
+  else
+    Railspress::Post.published.find_by!(slug: params[:slug])
+  end
+
+  @related_posts = @post.category&.posts
+                        &.published
+                        &.where.not(id: @post.id)
+                        &.ordered
+                        &.limit(3) || []
+end
+```
+
+Then opt in from `config/initializers/railspress.rb`:
+
+```ruby
+Railspress.configure do |config|
+  config.blog_path = "/posts"
+  config.enable_post_previews
+  config.post_preview_expires_in = 24.hours
+end
+```
+
+After enabling the feature, RailsPress displays "Preview" for draft and scheduled posts and keeps "View" for live posts. Opening the preview uses the host application's normal post template, and the URL can be shared with a reviewer until it expires.
+
+Preview URLs are bearer credentials: anyone possessing one can view that post until expiration. Use HTTPS, share links only with intended reviewers, and remember that URLs may appear in browser history and request logs. Disabling `enable_post_previews` invalidates preview resolution globally. Editing a post does not invalidate an existing token—the link shows the latest saved content—while changing its slug, deleting it, or waiting for expiry makes the old URL return 404.
 
 ### Markdown Mode
 
@@ -110,7 +156,11 @@ class BlogController < ApplicationController
   end
 
   def show
-    @post = Railspress::Post.published.find_by!(slug: params[:slug])
+    @post = if params[:railspress_preview].present?
+      Railspress::Post.find_preview!(slug: params[:slug], token: params[:railspress_preview])
+    else
+      Railspress::Post.published.find_by!(slug: params[:slug])
+    end
     @related_posts = @post.category&.posts
                           &.published
                           &.where.not(id: @post.id)

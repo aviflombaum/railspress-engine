@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Shareable post previews**: Hosts can opt into expiring, purpose-scoped preview links for draft and scheduled posts with `config.enable_post_previews`. RailsPress generates links under the configured `blog_path`, while the host blog controller explicitly resolves signed tokens and keeps ordinary requests published-only.
 - **Initializer validation**: Doctor now checks for a missing initializer and invalid Ruby syntax before application boot, reports settings that raise while the initializer is evaluated, and continues to surface RailsPress validation errors and deprecated settings after boot.
 - **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.
 - **Upgrade workflow**: Added `bin/rails railspress:upgrade` to run configuration preflight, copy RailsPress migrations, apply all pending host migrations, and verify the result. `DRY_RUN=1` previews the work without writes, and production environments retain their normal committed-migration deployment flow.
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade Notes (target: Unreleased)
 
 - These changes require no new RailsPress migrations. Existing initializers keep their current behavior; the new recommended feature defaults apply only when the install generator creates an initializer.
+- Post previews remain disabled until the host blog controller implements the documented `railspress_preview` token branch and the initializer calls `config.enable_post_previews`.
 - API consumers should tolerate the additive post and Prime response fields. Post content reads are HTML even when writes supplied Markdown or plain text.
 - Post-image gallery capabilities remain gated by `config.enable_post_images`; inline Action Text asset uploads do not use that toggle.
 - Post import jobs are not idempotent. Inspect a partially processed import before retrying it.

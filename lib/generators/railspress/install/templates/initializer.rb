@@ -49,6 +49,12 @@ Railspress.configure do |config|
   # the RailsPress engine mount path. Default: "/blog"
   # config.blog_path = "/posts"
 
+  # Shareable, expiring Preview links for draft and scheduled posts. Add the
+  # host-controller integration from docs/BLOGGING.md before enabling this.
+  # Disabled by default; preview links are bearer credentials.
+  # config.enable_post_previews
+  # config.post_preview_expires_in = 24.hours
+
   # Reading speed used for estimated reading time. Default: 200
   # config.words_per_minute = 250
 

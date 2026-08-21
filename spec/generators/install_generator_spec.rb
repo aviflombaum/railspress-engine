@@ -278,7 +278,8 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       template = File.read(File.join(described_class.source_root, "initializer.rb"))
       settings = %w[
         admin_authentication_method current_admin_method current_admin_proc admin_auth_concern
-        enable_post_images enable_focal_points post_image_variants blog_path words_per_minute
+        enable_post_images enable_focal_points post_image_variants blog_path enable_post_previews
+        post_preview_expires_in words_per_minute
         enable_authors author_class_name author_scope author_display_method current_author_method
         current_author_proc enable_cms inline_editing_check add_image_context remove_image_context
         image_contexts register_entity default_index_columns enable_api public_base_url

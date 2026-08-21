@@ -57,10 +57,10 @@ RSpec.describe "Packaged documentation contracts" do
 
   it "covers every public host configuration option" do
     public_options = %w[
-      enable_authors enable_post_images enable_focal_points enable_cms enable_api
+      enable_authors enable_post_images enable_post_previews enable_focal_points enable_cms enable_api
       author_class_name current_author_method current_author_proc author_scope author_display_method
       admin_authentication_method current_admin_method current_admin_proc admin_auth_concern public_base_url
-      words_per_minute blog_path default_index_columns post_image_variants inline_editing_check
+      words_per_minute blog_path post_preview_expires_in default_index_columns post_image_variants inline_editing_check
       image_contexts add_image_context remove_image_context register_entity
     ]
     guide = engine_root.join("docs/CONFIGURING.md").read

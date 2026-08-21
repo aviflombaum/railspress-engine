@@ -133,6 +133,84 @@ RSpec.describe Railspress::Post, type: :model do
     end
   end
 
+  describe ".find_preview!" do
+    before do
+      Railspress.configure(&:enable_post_previews)
+    end
+
+    it "resolves the signed post when the slug and token are valid" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+
+      expect(described_class.find_preview!(slug: post.slug, token: token)).to eq(post)
+    end
+
+    it "raises not found when previews are disabled" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+      Railspress.reset_configuration!
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the token has a different purpose" do
+      post = railspress_posts(:draft_post)
+      token = post.signed_id(purpose: :another_purpose, expires_in: 1.hour)
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the URL slug does not match the signed post" do
+      post = railspress_posts(:draft_post)
+
+      expect {
+        described_class.find_preview!(slug: "another-post", token: post.preview_token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the signed post has been deleted" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+      post.destroy!
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the token has expired" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token(expires_in: 1.minute)
+
+      travel 2.minutes do
+        expect {
+          described_class.find_preview!(slug: post.slug, token: token)
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
+  describe "#preview_token" do
+    it "uses the configured expiration" do
+      Railspress.configure do |config|
+        config.enable_post_previews
+        config.post_preview_expires_in = 1.minute
+      end
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+
+      travel 2.minutes do
+        expect {
+          described_class.find_preview!(slug: post.slug, token: token)
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
   describe "#scheduled?" do
     it "returns true when published_at is in the future" do
       post = Railspress::Post.new(published_at: 1.day.from_now)

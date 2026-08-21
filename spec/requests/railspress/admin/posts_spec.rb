@@ -38,6 +38,51 @@ RSpec.describe "Railspress::Admin::Posts", type: :request do
       get railspress.admin_post_path(post)
 
       expect(response.body).to include('href="/posts/hello-world"')
+      expect(response.body).to include('rel="noopener"')
+      expect(response.body).not_to include(">Preview</a>")
+    end
+
+    it "links a draft to an expiring preview when previews are enabled" do
+      Railspress.configure do |config|
+        config.blog_path = "/posts"
+        config.enable_post_previews
+      end
+      post = railspress_posts(:draft_post)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).to include('href="/posts/draft-post?railspress_preview=')
+      expect(response.body).to include(">Preview</a>")
+    end
+
+    it "links a scheduled post to an expiring preview when previews are enabled" do
+      Railspress.configure(&:enable_post_previews)
+      post = railspress_posts(:scheduled_post)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).to include('href="/blog/coming-soon?railspress_preview=')
+      expect(response.body).to include(">Preview</a>")
+    end
+
+    it "links previews at the site root when blog_path is empty" do
+      Railspress.configure do |config|
+        config.blog_path = ""
+        config.enable_post_previews
+      end
+      post = railspress_posts(:draft_post)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).to include('href="/draft-post?railspress_preview=')
+    end
+
+    it "does not show a preview link when previews are disabled" do
+      post = railspress_posts(:draft_post)
+
+      get railspress.admin_post_path(post)
+
+      expect(response.body).not_to include(">Preview</a>")
     end
 
     it "does not link a draft that retains an earlier publication date" do

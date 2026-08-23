@@ -77,5 +77,27 @@ RSpec.describe Railspress::AgentBootstrapKey, type: :model do
 
       expect { bootstrap_key.exchange! }.to raise_error(Railspress::AgentBootstrapKey::ExchangeError)
     end
+
+    it "allows only one exchange from independently loaded active handles" do
+      bootstrap_key, _token = described_class.issue!(name: "Concurrent Exchange", actor: actor)
+      first_handle = described_class.find(bootstrap_key.id)
+      stale_handle = described_class.find(bootstrap_key.id)
+
+      first_handle.exchange!
+
+      expect {
+        expect {
+          stale_handle.exchange!
+        }.to raise_error(Railspress::AgentBootstrapKey::ExchangeError)
+      }.not_to change(Railspress::ApiKey, :count)
+    end
+
+    it "rolls back its claim when API key issuance fails" do
+      bootstrap_key, _token = described_class.issue!(name: "Failed Exchange", actor: actor)
+      allow(Railspress::ApiKey).to receive(:issue!).and_raise(ActiveRecord::RecordInvalid)
+
+      expect { bootstrap_key.exchange! }.to raise_error(ActiveRecord::RecordInvalid)
+      expect(bootstrap_key.reload).to be_active
+    end
   end
 end

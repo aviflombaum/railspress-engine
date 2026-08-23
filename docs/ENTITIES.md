@@ -6,7 +6,30 @@ The Entity system allows you to manage any ActiveRecord model through the RailsP
 
 ## Quick Start
 
-### 1. Include the Entity concern in your model
+### Generate a new entity
+
+The generator creates a model, migration, and initializer registration in one command:
+
+```bash
+bin/rails generate railspress:entity Project title:string client:string featured:boolean body:rich_text
+bin/rails db:migrate
+```
+
+Generated output:
+
+- `app/models/project.rb`, including `Railspress::Entity`, field declarations, and `has_rich_text` declarations for `rich_text` arguments;
+- `db/migrate/TIMESTAMP_create_projects.rb`, containing regular database attributes and timestamps (rich-text content lives in Action Text and is not added as a table column); and
+- `config/initializers/railspress.rb` registration, creating the initializer first when needed.
+
+The generator uses Rails attribute types for migration-backed fields. It is best for scalar columns such as `string`, `text`, `boolean`, `integer`, `decimal`, `date`, and `datetime`, plus its special `rich_text` handling. Add Active Storage attachments, `:list`/`:lines` JSON fields, focal-point images, labels, validations, and custom index columns manually with the DSL described below.
+
+Review the generated migration before applying it. Restart the development server after adding or changing a registration so the initializer and route constraint see the new entity.
+
+For namespaced models, review the generated table/route key and register the intended class name explicitly; the entity route key comes from the model's plural name.
+
+### Configure an existing model
+
+#### 1. Include the Entity concern in your model
 
 ```ruby
 # app/models/project.rb
@@ -29,7 +52,7 @@ class Project < ApplicationRecord
 end
 ```
 
-### 2. Register the entity in an initializer
+#### 2. Register the entity in an initializer
 
 ```ruby
 # config/initializers/railspress.rb
@@ -70,7 +93,7 @@ railspress_fields :gallery, as: :attachments
 |------|-----------|------------|---------------|
 | `:string` | String columns | Text field | Truncated text |
 | `:text` | Text columns | Textarea | Truncated text |
-| `:rich_text` | `has_rich_text` | Trix editor | Stripped/truncated |
+| `:rich_text` | `has_rich_text` | Lexxy editor | Stripped/truncated |
 | `:boolean` | Boolean columns | Checkbox | Yes/No badge |
 | `:integer` | Integer columns | Number field | Raw value |
 | `:decimal` | Decimal/float columns | Number field (step: any) | Raw value |
@@ -663,8 +686,8 @@ end
 The taggings migration is included with RailsPress. Ensure you've run:
 
 ```bash
-rails railspress:install:migrations
-rails db:migrate
+bin/rails railspress:install:migrations
+bin/rails db:migrate
 ```
 
 This creates the `railspress_taggings` polymorphic join table.

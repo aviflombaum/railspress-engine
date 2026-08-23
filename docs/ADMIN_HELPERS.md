@@ -1,418 +1,340 @@
 # Admin Helper Reference
 
-When customizing RailsPress admin views, these helper methods are available. They provide consistent styling and behavior across the admin interface.
+RailsPress admin views expose `Railspress::AdminHelper`. Host applications overriding engine views can use these helpers to preserve the engine's `rp-` markup and behavior. Public blog views use the two `Railspress::ApplicationHelper` methods documented at the end.
 
-## Including Helpers
+The signatures below follow `app/helpers/railspress/admin_helper.rb`. Options not consumed by a helper are forwarded to the underlying Rails form or tag helper.
 
-Admin helpers are automatically available in RailsPress admin views. To use them in your own views or when overriding engine views, they're already included via the layout.
+## Generic Field Rendering
 
----
+### `rp_render_field(form, name, type:, **options)`
+
+Dispatches an Entity field to the matching helper. Supported types are `string`, `text`, `rich_text`, `boolean`, `datetime`, `date`, `integer`, `decimal`, `select`, `list`, `lines`, `attachment`, `attachments`, and `focal_point_image`. Unknown types fall back to a string field.
+
+```erb
+<%= rp_render_field form, :title, type: :string, primary: true %>
+<%= rp_render_field form, :gallery, type: :attachments, record: @project %>
+```
 
 ## Form Field Helpers
 
-These helpers render form fields with consistent styling and labels.
+All scalar field helpers accept an optional `label:` and `hint:` unless noted.
 
-### `rp_string_field`
-
-Single-line text input for strings.
+### `rp_string_field(form, name, primary: false, mono: false, placeholder: nil, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_string_field form, :title %>
-<%= rp_string_field form, :title, autofocus: true %>
-<%= rp_string_field form, :email, placeholder: "user@example.com" %>
+<%= rp_string_field form, :title, primary: true, autofocus: true %>
+<%= rp_string_field form, :slug, mono: true, placeholder: "my-post" %>
 ```
 
-### `rp_text_field`
-
-Multi-line textarea for longer text.
+### `rp_text_field(form, name, rows: 4, placeholder: nil, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_text_field form, :description %>
-<%= rp_text_field form, :description, rows: 6 %>
+<%= rp_text_field form, :description, rows: 6, hint: "Shown below the title." %>
 ```
 
-### `rp_rich_text_field`
+### `rp_rich_text_field(form, name, placeholder: nil, label: nil, hint: nil, **options)`
 
-Rich text editor (Lexxy/ActionText) for formatted content.
+Renders the Lexxy/Action Text editor. The signature retains `placeholder:` for compatibility, but the current helper does not forward it to the editor.
 
 ```erb
-<%= rp_rich_text_field form, :content %>
-<%= rp_rich_text_field form, :body %>
+<%= rp_rich_text_field form, :content, hint: "Write the post content." %>
 ```
 
-### `rp_boolean_field`
-
-Checkbox for boolean values.
+### `rp_boolean_field(form, name, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_boolean_field form, :published %>
-<%= rp_boolean_field form, :featured %>
+<%= rp_boolean_field form, :featured, hint: "Feature this item on the homepage." %>
 ```
 
-### `rp_datetime_field`
-
-Datetime picker input.
+### `rp_datetime_field(form, name, label: nil, hint: nil, **options)`
 
 ```erb
 <%= rp_datetime_field form, :published_at %>
-<%= rp_datetime_field form, :scheduled_for %>
 ```
 
-### `rp_date_field`
-
-Date-only picker input.
+### `rp_date_field(form, name, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_date_field form, :birth_date %>
+<%= rp_date_field form, :event_date %>
 ```
 
-### `rp_integer_field`
-
-Number input for integers.
+### `rp_integer_field(form, name, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_integer_field form, :position %>
-<%= rp_integer_field form, :display_order %>
+<%= rp_integer_field form, :position, min: 0 %>
 ```
 
-### `rp_decimal_field`
+### `rp_decimal_field(form, name, label: nil, hint: nil, **options)`
 
-Number input with decimal precision.
+Uses `step: "any"` unless the caller overrides it.
 
 ```erb
-<%= rp_decimal_field form, :price %>
-<%= rp_decimal_field form, :rating %>
+<%= rp_decimal_field form, :rating, min: 0, max: 5 %>
 ```
 
-### `rp_select_field`
-
-Dropdown select input.
+### `rp_select_field(form, name, choices:, include_blank: false, label: nil, hint: nil, **options)`
 
 ```erb
-<%= rp_select_field form, :status, choices: %w[draft published] %>
-<%= rp_select_field form, :category_id, choices: Category.all.map { |c| [c.name, c.id] } %>
-<%= rp_select_field form, :role, choices: User.roles.keys, include_blank: "Select role..." %>
+<%= rp_select_field form, :status,
+      choices: Railspress::Post.statuses.keys.map { |value| [value.humanize, value] },
+      include_blank: "Choose a status" %>
 ```
 
-### `rp_list_field`
+### `rp_list_field(form, name, placeholder: nil, label: nil, hint: nil, **options)`
 
-Text input for comma-separated lists (used with `:list` entity fields).
+Uses the Entity-generated `<name>_list` virtual attribute for comma-separated array fields. Its default hint is “Separate items with commas.”
 
 ```erb
 <%= rp_list_field form, :tech_stack %>
 ```
 
-Renders with hint: "Separate items with commas"
+### `rp_lines_field(form, name, rows: 5, placeholder: nil, label: nil, hint: nil, **options)`
 
-### `rp_lines_field`
-
-Textarea for line-separated lists (used with `:lines` entity fields).
+Uses the Entity-generated `<name>_list` virtual attribute for one-item-per-line arrays. Its default hint is “Enter one item per line.”
 
 ```erb
 <%= rp_lines_field form, :highlights %>
 ```
 
-Renders with hint: "Enter one item per line"
+### `rp_attachment_field(form, name, multiple: false, accept: "image/*", record: nil, param_key: nil, label: nil, hint: nil, **options)`
 
-### `rp_attachment_field`
-
-File upload with preview and removal checkbox.
+Renders a direct-upload file input with current attachment state and removal controls. `record` defaults to `form.object`. Use `multiple: true` for `has_many_attached` fields and set `accept:` when non-image attachments are intentional.
 
 ```erb
 <%= rp_attachment_field form, :header_image, record: @post %>
-<%= rp_attachment_field form, :avatar, record: @user %>
-```
-
-For multiple attachments:
-
-```erb
 <%= rp_attachment_field form, :gallery, record: @project, multiple: true %>
 ```
 
-### `rp_render_field`
+### `rp_focal_point_image_field(form, name, record: nil, label: nil, **options)`
 
-Generic field renderer that auto-detects the field type. Used internally by entity forms.
-
-```erb
-<%= rp_render_field form, :title, { type: :string } %>
-<%= rp_render_field form, :featured, { type: :boolean } %>
-```
-
----
-
-## Layout Helpers
-
-These helpers create consistent page structure and UI components.
-
-### `rp_page_header`
-
-Page title with optional action buttons.
+For a persisted record with an attached image, renders the compact focal-point section and editor. For a new record or missing image, renders the dropzone and explains that the record must be saved before focal-point editing is available.
 
 ```erb
-<%= rp_page_header "Posts" %>
-
-<%= rp_page_header "Posts", actions: {
-  "New Post" => new_admin_post_path
-} %>
-
-<%= rp_page_header "Edit Post", actions: {
-  "View" => admin_post_path(@post),
-  "Delete" => admin_post_path(@post)
-}, delete: admin_post_path(@post) %>
+<%= rp_focal_point_image_field form, :cover_image, record: @project %>
 ```
 
-### `rp_card`
+The model must declare focal-point support. See [Entities](ENTITIES.md#focal-point-images) and [Image Focal Points](image-focal-point-system.md).
 
-Card container with optional title.
+## Form Composition
 
-```erb
-<%= rp_card do %>
-  <p>Card content here</p>
-<% end %>
+### `rp_form_errors(record)`
 
-<%= rp_card title: "Statistics" do %>
-  <p>Dashboard stats</p>
-<% end %>
-```
-
-### `rp_form_errors`
-
-Displays validation errors for a record.
+Returns nothing when the record has no validation errors; otherwise renders the standard error list.
 
 ```erb
 <%= rp_form_errors(@post) %>
 ```
 
-Renders nothing if no errors are present.
+### `rp_form_group { ... }`
 
-### `rp_sidebar_section`
+Wraps custom label/input markup in `.rp-form-group`.
 
-Groups related form fields in the sidebar.
+```erb
+<%= rp_form_group do %>
+  <%= form.label :custom_code, class: rp_label_class(required: true) %>
+  <%= form.text_field :custom_code, class: rp_input_class(mono: true) %>
+  <%= rp_hint "Copied from the external system." %>
+<% end %>
+```
+
+### `rp_form_actions(form, cancel_path, submit_text: nil)`
+
+Renders a primary submit and secondary Cancel link in `.rp-form-actions`.
+
+```erb
+<%= rp_form_actions form, admin_posts_path, submit_text: "Save Post" %>
+```
+
+### `rp_sidebar_section(title) { ... }`
 
 ```erb
 <%= rp_sidebar_section "Publishing" do %>
-  <%= rp_select_field form, :status, choices: %w[draft published] %>
+  <%= rp_select_field form, :status, choices: Railspress::Post.statuses.keys %>
   <%= rp_datetime_field form, :published_at %>
 <% end %>
+```
 
-<%= rp_sidebar_section "Options" do %>
-  <%= rp_boolean_field form, :featured %>
-  <%= rp_boolean_field form, :allow_comments %>
+### `rp_hint(text)`
+
+Renders help text with `.rp-hint`.
+
+## Page and Container Helpers
+
+### `rp_page_header(title, actions = {})`
+
+Action values may be a path or `[path, html_options]`. The default class is `rp-btn rp-btn--primary`; pass a class in the options to select another button style.
+
+```erb
+<%= rp_page_header "Posts",
+      "Export" => [typed_admin_exports_path(type: "posts"), class: "rp-btn rp-btn--secondary"],
+      "New Post" => new_admin_post_path %>
+```
+
+### `rp_page_title(title)`
+
+Renders a standalone page title for pages without header actions.
+
+```erb
+<%= rp_page_title "Edit Post" %>
+```
+
+### `rp_card(padded: false, **options) { ... }`
+
+```erb
+<%= rp_card(padded: true, id: "post-details") do %>
+  <p>Content</p>
 <% end %>
 ```
 
-### `rp_empty_state`
-
-Empty state message with optional action link.
+### `rp_empty_state(message, link_text: nil, link_path: nil)`
 
 ```erb
-<%= rp_empty_state "No posts yet" %>
-
-<%= rp_empty_state "No posts yet",
-    link_text: "Create your first post",
-    link_path: new_admin_post_path %>
+<%= rp_empty_state "No posts yet", link_text: "Create one", link_path: new_admin_post_path %>
 ```
 
----
+### `rp_flash_messages`
 
-## Display Helpers
-
-These helpers format data for display in tables and detail views.
-
-### `rp_status_badge`
-
-Colored badge for status values.
+Renders the current Rails flash collection using the RailsPress success/danger/warning/info classes. It returns nothing when the flash is empty.
 
 ```erb
-<%= rp_status_badge "published", type: :success %>
-<%= rp_status_badge "draft", type: :warning %>
-<%= rp_status_badge "archived", type: :neutral %>
-<%= rp_status_badge "deleted", type: :danger %>
+<%= rp_flash_messages %>
 ```
 
-Types: `:success`, `:warning`, `:danger`, `:neutral`, `:info`
+## Badges and Display Values
 
-### `rp_boolean_badge`
+### `rp_status_badge(value, type: nil)`
 
-Yes/No badge for boolean values.
+Derives the badge modifier from the lowercased value when `type:` is omitted. Supply `type:` to choose a different modifier.
 
 ```erb
-<%= rp_boolean_badge(post.featured?) %>
-<%# Output: "Yes" (green) or "No" (gray) %>
-
-<%= rp_boolean_badge(post.published?, true_text: "Published", false_text: "Draft") %>
+<%= rp_status_badge post.display_status %>
+<%= rp_status_badge "Needs review", type: :warning %>
 ```
 
-### `rp_attachment_badge`
+### `rp_badge(text, status:)`
 
-Badge showing attachment status.
+Low-level badge builder that emits `rp-badge--<status>` without automatic mapping.
 
 ```erb
-<%= rp_attachment_badge(post.header_image) %>
-<%# Output: "Attached" or "None" %>
-
-<%= rp_attachment_badge(project.gallery) %>
-<%# Output: "3 images" or "None" %>
+<%= rp_badge "Internal", status: :neutral %>
 ```
 
-### `rp_truncated_text`
+### `rp_boolean_badge(value)`
 
-Truncates long text with ellipsis.
+Renders the built-in Yes/No badge. Custom true/false labels are not accepted.
+
+### `rp_attachment_badge(attachment)`
+
+Renders Attached/None for a single attachment or an attachment count for a multiple attachment proxy.
+
+### `rp_truncated_text(text, length: 50)`
+
+Returns an empty string for `nil` and otherwise uses Rails truncation.
+
+### `rp_author_display(author)`
+
+Returns `nil` for no author. Otherwise it tries `config.author_display_method`, then `name`, `full_name`, `display_name`, `email`, and `email_address`, finally falling back to `Author #<id>`.
 
 ```erb
-<%= rp_truncated_text(post.title) %>
-<%# Truncates at 50 chars by default %>
-
-<%= rp_truncated_text(post.content.to_plain_text, length: 100) %>
+<%= rp_author_display(@post.author) %>
 ```
 
-### `rp_datetime_display`
+## Table and Action Helpers
 
-Formats datetime for display.
+### `rp_sortable_header(column, label, current_sort:, current_direction:)`
+
+Builds a link that preserves the current query parameters and toggles `direction` for the selected column.
 
 ```erb
-<%= rp_datetime_display(post.published_at) %>
-<%# Output: "Jan 15, 2025 at 3:30 PM" %>
-
-<%= rp_datetime_display(post.created_at, format: :short) %>
-<%# Output: "Jan 15" %>
+<%= rp_sortable_header :title, "Title",
+      current_sort: @sort_column,
+      current_direction: @sort_direction %>
 ```
 
-### `rp_date_display`
+### `rp_table_header(label, **options)`
 
-Formats date for display.
+Renders a non-sortable header `<span>` with caller-supplied HTML attributes.
+
+### `rp_edit_icon(path, title: "Edit")`
+
+Renders the standard edit link with tooltip.
+
+### `rp_delete_icon(path, confirm: "Delete this item?", title: "Delete", disabled: false, disabled_title: nil)`
+
+Uses a Turbo confirmation when enabled. With `disabled: true`, it renders a non-interactive span; `disabled_title` explains why deletion is unavailable.
 
 ```erb
-<%= rp_date_display(post.published_at) %>
-<%# Output: "January 15, 2025" %>
+<%= rp_delete_icon admin_content_element_path(element),
+      confirm: "Delete this block?",
+      disabled: element.required?,
+      disabled_title: "Required blocks cannot be deleted" %>
 ```
 
----
+### `rp_table_action_icons(edit_path:, delete_path:, confirm: "Delete this item?", delete_disabled: false, disabled_title: nil)`
 
-## Table Helpers
+Combines the edit and delete helpers for a table row.
 
-Helpers for building data tables.
+### `rp_icon(name)`
 
-### `rp_table`
+Renders an inline SVG for `:edit`, `:trash`, `:plus`, or `:search`. Unknown names return an empty string. This small icon set is the supported surface for RailsPress admin view overrides.
 
-Wrapper for styled tables.
+## Advanced CSS-Class Builders
 
-```erb
-<%= rp_table do %>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @posts.each do |post| %>
-      <tr>
-        <td><%= post.title %></td>
-        <td><%= rp_status_badge(post.status) %></td>
-        <td><%= link_to "Edit", edit_admin_post_path(post) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-<% end %>
-```
+These methods are useful when a custom field cannot use a higher-level helper.
 
-### `rp_sortable_header`
+### `rp_input_class(primary: false, mono: false, size: nil)`
 
-Sortable column header for tables.
+Returns `.rp-input` plus optional `--title`, `--mono`, and `--<size>` modifiers.
 
-```erb
-<th><%= rp_sortable_header "Title", :title %></th>
-<th><%= rp_sortable_header "Created", :created_at %></th>
-```
+### `rp_label_class(large: false, required: false)`
 
----
+Returns `.rp-label` plus optional `--lg` and `--required` modifiers.
 
-## Button Helpers
+Prefer the field helpers when possible so labels, hints, and wrapper markup remain consistent.
 
-### `rp_button`
+## Public Blog Helpers
 
-Styled button or button-style link.
+`Railspress::ApplicationHelper` provides:
+
+### `rp_reading_time(post, format: :short)`
+
+Returns `"5 min"` by default or `"5 minute read"` with `format: :long`.
+
+### `rp_featured_image_url(post, variant: { resize_to_limit: [1200, 630] })`
+
+Returns `nil` when no header image is attached. Otherwise returns the host URL for the requested Active Storage variant. The host needs a configured image processor when a transformation is requested.
+
+## Custom Entity Form Example
 
 ```erb
-<%= rp_button "Save", type: :submit %>
-<%= rp_button "Cancel", path: admin_posts_path, variant: :secondary %>
-<%= rp_button "Delete", path: admin_post_path(@post), variant: :danger, method: :delete, confirm: "Are you sure?" %>
-```
-
-Variants: `:primary`, `:secondary`, `:danger`, `:ghost`
-
-### `rp_button_group`
-
-Groups multiple buttons together.
-
-```erb
-<%= rp_button_group do %>
-  <%= rp_button "Save", type: :submit %>
-  <%= rp_button "Cancel", path: admin_posts_path, variant: :secondary %>
-<% end %>
-```
-
----
-
-## Example: Custom Entity Form
-
-Here's a complete example using these helpers:
-
-```erb
-<%# app/views/railspress/admin/entities/_form.html.erb (override) %>
-<%= form_with model: @record, url: form_url, class: "rp-form" do |f| %>
+<%= form_with model: @record, url: form_url, class: "rp-form" do |form| %>
   <%= rp_form_errors(@record) %>
 
-  <div class="rp-form__layout">
-    <div class="rp-form__main">
-      <%= rp_string_field f, :title, autofocus: true %>
-      <%= rp_text_field f, :description, rows: 4 %>
-      <%= rp_rich_text_field f, :body %>
+  <div class="rp-form-layout">
+    <div class="rp-form-main">
+      <%= rp_string_field form, :title, primary: true %>
+      <%= rp_rich_text_field form, :body %>
     </div>
 
-    <div class="rp-form__sidebar">
-      <%= rp_sidebar_section "Status" do %>
-        <%= rp_boolean_field f, :published %>
-        <%= rp_datetime_field f, :published_at %>
-      <% end %>
-
+    <div class="rp-form-sidebar">
       <%= rp_sidebar_section "Options" do %>
-        <%= rp_boolean_field f, :featured %>
-        <%= rp_integer_field f, :position %>
+        <%= rp_boolean_field form, :featured %>
       <% end %>
-
-      <%= rp_sidebar_section "Image" do %>
-        <%= rp_attachment_field f, :cover_image, record: @record %>
-      <% end %>
+      <%= rp_focal_point_image_field form, :cover_image, record: @record %>
     </div>
   </div>
 
-  <div class="rp-form__actions">
-    <%= rp_button "Save", type: :submit %>
-    <%= rp_button "Cancel", path: entity_index_path, variant: :secondary %>
-  </div>
+  <%= rp_form_actions form, entity_index_path %>
 <% end %>
 ```
 
----
+See [Theming](THEMING.md) for the current CSS token and selector reference.
 
-## CSS Classes
+## Maintenance Checklist
 
-All RailsPress components use the `rp-` prefix. Key classes:
+When changing `Railspress::AdminHelper` or `Railspress::ApplicationHelper`:
 
-| Class | Element |
-|-------|---------|
-| `.rp-form` | Form container |
-| `.rp-form__layout` | Two-column form layout |
-| `.rp-form__main` | Main content column |
-| `.rp-form__sidebar` | Sidebar column |
-| `.rp-form-group` | Field wrapper |
-| `.rp-card` | Card container |
-| `.rp-btn` | Button base |
-| `.rp-btn--primary` | Primary button |
-| `.rp-table` | Table container |
-| `.rp-badge` | Status badge |
-
-See [Theming](THEMING.md) for CSS customization options.
+1. update the relevant signature and example here;
+2. remove documentation for deleted helpers;
+3. verify source/helper parity with the documentation spec; and
+4. update overridden-view examples in [Configuring](CONFIGURING.md) when markup expectations change.

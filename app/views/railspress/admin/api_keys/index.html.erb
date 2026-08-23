@@ -7,7 +7,35 @@
 <div class="rp-card rp-card--padded rp-card--section">
   <div class="rp-section">
     <div class="rp-section-header">
-      <h2 class="rp-section-title">Agent Setup (Generic)</h2>
+      <h2 class="rp-section-title">Recommended: Install RailsPress Agent</h2>
+    </div>
+
+    <div class="rp-form rp-form--spacious">
+      <p class="rp-hint">RailsPress Agent owns secure project trust, credential storage, bootstrap onboarding, and API capability verification. Review the installer before running it.</p>
+
+      <%= render "railspress/admin/shared/copyable_textarea",
+          id: "rp-agent-install",
+          label: "Install and Verify",
+          value: @railspress_agent_install,
+          rows: 8,
+          button_text: "Copy Install Commands" %>
+
+      <p class="rp-hint">Save this token-free manifest as <code>RAILSPRESS.md</code> at the publishing project root. Review and commit it; credentials remain outside the repository.</p>
+
+      <%= render "railspress/admin/shared/copyable_textarea",
+          id: "rp-agent-manifest",
+          label: "Project Manifest (Token-Free)",
+          value: @railspress_manifest,
+          rows: 12,
+          button_text: "Copy RAILSPRESS.md" %>
+    </div>
+  </div>
+</div>
+
+<div class="rp-card rp-card--padded rp-card--section">
+  <div class="rp-section">
+    <div class="rp-section-header">
+      <h2 class="rp-section-title">Agent Setup Instructions (Token-Free)</h2>
     </div>
 
     <div class="rp-form rp-form--spacious">

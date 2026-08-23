@@ -2,6 +2,7 @@
 
 require "rails/generators"
 require "rails/generators/base"
+require "railspress/active_record_encryption_configuration"
 
 module Railspress
   module Generators
@@ -77,6 +78,18 @@ module Railspress
         end
       end
 
+      def check_active_record_encryption
+        encryption = Railspress::ActiveRecordEncryptionConfiguration.new(Rails.application)
+
+        if encryption.configured?
+          say_status :ok, "Active Record Encryption credentials detected (Agents & API ready)", :green
+        else
+          say_status :required, "Active Record Encryption credentials for Agents & API", :yellow
+          say "     $ #{Railspress::ActiveRecordEncryptionConfiguration::SETUP_COMMAND}", :cyan
+          say "     Store the generated values in your host credentials or secret-management system."
+        end
+      end
+
       def show_post_install_message
         upgrading = !!@upgrading_existing_install
 
@@ -91,19 +104,29 @@ module Railspress
           say "  1. Review upgrade notes:"
           say "     docs/UPGRADING.md", :cyan
           say ""
-          say "  2. Run migrations:"
-          say "     $ rails db:migrate", :cyan
+          say "  2. Preview the upgrade (read-only):"
+          say "     $ DRY_RUN=1 bin/rails railspress:upgrade", :cyan
           say ""
-          say "  3. Verify your JS integration if using host-page features:"
+          say "  3. Copy migrations, migrate, and verify:"
+          say "     $ bin/rails railspress:upgrade", :cyan
+          say ""
+          say "  4. Review RailsPress admin authentication and JS integration:"
+          say "     config.admin_authentication_method and config.current_admin_method", :cyan
           say '     app/javascript/application.js includes: import "railspress"', :cyan
         else
           say "  1. Run migrations:"
-          say "     $ rails db:migrate", :cyan
+          say "     $ bin/rails db:migrate", :cyan
           say ""
-          say "  2. Access the admin dashboard:"
+          say "  2. Configure admin authentication before deployment:"
+          say "     config.admin_authentication_method and config.current_admin_method", :cyan
+          say ""
+          say "  3. Check the installation:"
+          say "     $ bin/rails railspress:doctor", :cyan
+          say ""
+          say "  4. Access the admin dashboard:"
           say "     http://localhost:3000/railspress/admin", :cyan
           say ""
-          say "  3. (Optional) Change the mount path in config/routes.rb:"
+          say "  5. (Optional) Change the mount path in config/routes.rb:"
           say '     mount Railspress::Engine => "/blog"', :cyan
         end
         say ""
@@ -111,7 +134,9 @@ module Railspress
         say "  Edit config/initializers/railspress.rb to enable:"
         say "    - CMS content elements (config.enable_cms)"
         say "    - Inline CMS editing (config.inline_editing_check)"
-        say "  See docs/CONFIGURING.md and docs/INLINE_EDITING.md for details."
+        say "    - Agents & API (config.enable_api; requires Active Record Encryption)"
+        say "  Mount RailsPress normally; its API bypasses host controller auth and uses bearer tokens."
+        say "  See the packaged docs/CONFIGURING.md and docs/INLINE_EDITING.md for details."
         say ""
         say "Full guides & documentation:", :yellow
         say "  https://railspress.org", :cyan

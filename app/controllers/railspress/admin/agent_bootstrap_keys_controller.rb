@@ -6,7 +6,7 @@ module Railspress
       DEFAULT_BOOTSTRAP_TTL = 1.hour
 
       before_action :ensure_api_enabled!
-      before_action :require_api_actor!
+      before_action :require_current_admin!
       before_action :set_agent_bootstrap_key, only: [ :revoke ]
 
       def new
@@ -16,8 +16,8 @@ module Railspress
       def create
         @agent_bootstrap_key, @plain_bootstrap_token = AgentBootstrapKey.issue!(
           name: agent_bootstrap_key_params[:name],
-          actor: current_api_actor,
-          owner: current_api_actor,
+          actor: current_railspress_admin,
+          owner: current_railspress_admin,
           expires_at: parsed_expires_at || default_bootstrap_expires_at
         )
         set_bootstrap_instructions
@@ -30,7 +30,7 @@ module Railspress
 
       def revoke
         @agent_bootstrap_key.revoke!(
-          actor: current_api_actor,
+          actor: current_railspress_admin,
           reason: params[:reason].presence || "revoked"
         )
 
@@ -43,8 +43,8 @@ module Railspress
         raise ActionController::RoutingError, "Not Found" unless Railspress.api_enabled?
       end
 
-      def require_api_actor!
-        return if current_api_actor.present?
+      def require_current_admin!
+        return if current_railspress_admin.present?
 
         redirect_to admin_root_path, alert: "You must be signed in to manage API keys."
       end
@@ -75,10 +75,7 @@ module Railspress
 
         @bootstrap_quick_start = <<~TEXT
           export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-          export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
-          printf '%s\n' "$RAILSPRESS_TOKEN" > ~/.railspress_token
-          chmod 600 ~/.railspress_token
-          curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
+          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
         TEXT
 
         @bootstrap_instructions = <<~TEXT
@@ -86,22 +83,21 @@ module Railspress
 
           Host: #{base_url}
           Bootstrap Token (one-time): #{@plain_bootstrap_token}
-          Exchange Endpoint: #{base_url}#{exchange_api_v1_agent_keys_path}
+          API Base: #{instruction_api_base(base_url)}
+          Token Path: #{instruction_token_file(base_url)}
 
-          1) Exchange bootstrap for API token:
+          1) Save the token-free RAILSPRESS.md from Agents & API at the publishing project root.
+
+          2) Review and explicitly trust its normalized values:
+            #{railspress_agent_command} config check --start /path/to/publishing-project
+            #{railspress_agent_command} config trust --start /path/to/publishing-project
+
+          3) Exchange once, store the API key safely, and verify /prime:
             export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-            export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
+            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
 
-          2) Optional local token file:
-            printf '%s\n' "$RAILSPRESS_TOKEN" > ~/.railspress_token
-            chmod 600 ~/.railspress_token
-            export RAILSPRESS_TOKEN="$(cat ~/.railspress_token)"
-
-          3) Verify connectivity:
-            curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
-
-          4) Create a draft post:
-            curl -X POST -H "Authorization: Bearer $RAILSPRESS_TOKEN" -H "Content-Type: application/json" -d '{"post":{"title":"Agent draft","content":"<p>Hello</p>"}}' #{base_url}#{api_v1_posts_path}
+          Never automatically retry an unknown exchange outcome. Inspect or revoke the
+          server-side API key, then create a new bootstrap key.
         TEXT
       end
     end

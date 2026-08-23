@@ -37,11 +37,11 @@ module Railspress
       end
     end
 
-    # Validate configuration after all initializers have run
-    initializer "railspress.validate_config" do
-      if Railspress.inline_editing_check && !Railspress.cms_enabled?
-        raise Railspress::ConfigurationError,
-          "Inline editing requires CMS. Add `config.enable_cms` to your initializer."
+    # Validate configuration after host initializers have loaded their settings.
+    initializer "railspress.validate_config", after: :load_config_initializers do |app|
+      unless Railspress.validation_reporting?
+        Railspress.configuration.validate!
+        Railspress::ActiveRecordEncryptionConfiguration.new(app).validate!
       end
     end
 

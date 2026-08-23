@@ -9,7 +9,11 @@ class BlogController < ApplicationController
   end
 
   def show
-    @post = Railspress::Post.published.find_by!(slug: params[:slug])
+    @post = if params[:railspress_preview].present?
+      Railspress::Post.find_preview!(slug: params[:slug], token: params[:railspress_preview])
+    else
+      Railspress::Post.published.find_by!(slug: params[:slug])
+    end
     @related_posts = if @post.category
       @post.category.posts
            .published

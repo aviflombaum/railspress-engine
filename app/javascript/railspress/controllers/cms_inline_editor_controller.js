@@ -34,10 +34,14 @@ export default class extends Controller {
     this._handleKeydown = this.handleKeydown.bind(this)
     this._handleSubmitEnd = this.handleSubmitEnd.bind(this)
     this._handleBackdropClick = () => this.close()
+    this._handleMenuClick = (event) => {
+      if (event.target.closest("[data-rp-inline-editor-close]")) this.close()
+    }
   }
 
   disconnect() {
     document.removeEventListener("keydown", this._handleKeydown)
+    if (this._menu) this._menu.removeEventListener("click", this._handleMenuClick)
     if (this._menu) this._menu.remove()
     if (this._backdrop) this._backdrop.remove()
   }
@@ -53,6 +57,7 @@ export default class extends Controller {
 
     this._menu = document.createElement("div")
     this._menu.className = "rp-inline-menu rp-inline-hidden"
+    this._menu.addEventListener("click", this._handleMenuClick)
     document.body.appendChild(this._menu)
 
     this._frame = document.createElement("turbo-frame")

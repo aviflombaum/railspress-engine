@@ -54,6 +54,7 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.dig("data", "id")).to eq(post_record.id)
+      expect(response.parsed_body.dig("data", "content_format")).to eq("html")
     end
   end
 
@@ -67,6 +68,56 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body.dig("data", "title")).to eq("API Created Post")
+    end
+
+    it "returns canonical Action Text HTML without rendered view markup" do
+      content = "<h2>API content</h2><p>Hello <strong>world</strong>.</p>"
+
+      post railspress.api_v1_posts_path,
+           headers: headers,
+           params: { post: { title: "API Content Post", content: content } }
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body.dig("data", "content")).to eq(content)
+      expect(response.parsed_body.dig("data", "content_format")).to eq("html")
+    end
+
+    it "converts Markdown content to Action Text HTML" do
+      post railspress.api_v1_posts_path,
+           headers: headers,
+           params: {
+             post: {
+               title: "Markdown API Post",
+               content: "## API heading\n\n**Rich body**",
+               content_format: "markdown"
+             }
+           }
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body.dig("data", "content")).to include(
+        "<h2>API heading</h2>",
+        "<strong>Rich body</strong>"
+      )
+    end
+
+    it "preserves literal plain text through a format header" do
+      post railspress.api_v1_posts_path,
+           headers: headers.merge("X-Railspress-Content-Format" => "text/plain"),
+           params: { post: { title: "Plain API Post", content: "# Literal <text>\nsecond line" } }
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body.dig("data", "content")).to eq(
+        "<p># Literal &lt;text&gt;<br>second line</p>"
+      )
+    end
+
+    it "returns a validation error for an unsupported content format" do
+      post railspress.api_v1_posts_path,
+           headers: headers,
+           params: { post: { title: "Invalid Format Post", content: "Body", content_format: "rst" } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body.dig("error", "message")).to include("Unsupported content format")
     end
 
     it "returns validation errors for invalid params" do
@@ -185,6 +236,17 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(post_record.reload.title).to eq("API Updated Title")
+    end
+
+    it "converts formatted content when updating a post" do
+      post_record = railspress_posts(:hello_world)
+
+      patch railspress.api_v1_post_path(post_record),
+            headers: headers,
+            params: { post: { content: "## Updated body", content_format: "markdown" } }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig("data", "content")).to include("<h2>Updated body</h2>")
     end
 
     it "returns not found for slug-style ids" do

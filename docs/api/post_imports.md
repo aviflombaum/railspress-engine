@@ -8,10 +8,11 @@ Use this API when you want to create posts from markdown/text/zip attachments in
 
 Supported file types:
 
-- `.md`
-- `.markdown`
-- `.txt`
+- `.md` and `.markdown` (rendered as Markdown)
+- `.txt` (escaped and preserved as literal plain text)
 - `.zip` (for batch imports)
+
+ZIP imports process Markdown and text files recursively. A `header_image` frontmatter value can reference an image inside the archive when post images are enabled. Relative inline Markdown images are not ingested as Action Text attachments; use the [Post Assets API](post_assets.md) when constructing rich content through the API.
 
 ## `POST /posts/imports`
 
@@ -21,6 +22,8 @@ Request options:
 
 - multipart `file`
 - JSON `signed_blob_id` (Active Storage direct upload)
+
+Unlike the admin importer, which accepts multiple selected files in one operation, each API request accepts one file or signed blob. Submit multiple requests for multiple source files.
 
 ### Multipart example
 
@@ -78,3 +81,5 @@ Status values:
 - `processing`
 - `completed`
 - `failed`
+
+Import creation is asynchronous and is not idempotent. Retrying a request or a failed job can create duplicate posts because imports create new records rather than upserting by slug. Before retrying, inspect the import status and the posts it already created.

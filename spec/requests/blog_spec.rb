@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Blog Frontend", type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   # Use fixtures from the engine
   fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings"
 
@@ -92,6 +94,42 @@ RSpec.describe "Blog Frontend", type: :request do
       it "returns 404" do
         get blog_post_path(slug: "draft-post")
         expect(response).to have_http_status(:not_found)
+      end
+
+      it "renders the host post template with a valid preview token" do
+        Railspress.configure(&:enable_post_previews)
+
+        get blog_post_path(slug: draft_post.slug), params: { railspress_preview: draft_post.preview_token }
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include("Draft Post")
+      end
+
+      it "returns 404 with an invalid preview token" do
+        Railspress.configure(&:enable_post_previews)
+
+        get blog_post_path(slug: draft_post.slug), params: { railspress_preview: "invalid" }
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "returns 404 when the preview token belongs to a different slug" do
+        Railspress.configure(&:enable_post_previews)
+
+        get blog_post_path(slug: published_post.slug), params: { railspress_preview: draft_post.preview_token }
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "returns 404 with an expired preview token" do
+        Railspress.configure(&:enable_post_previews)
+        token = draft_post.preview_token(expires_in: 1.minute)
+
+        travel 2.minutes do
+          get blog_post_path(slug: draft_post.slug), params: { railspress_preview: token }
+
+          expect(response).to have_http_status(:not_found)
+        end
       end
     end
 

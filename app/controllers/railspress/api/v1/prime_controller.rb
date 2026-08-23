@@ -43,6 +43,8 @@ module Railspress
               update: true,
               delete: true,
               rich_text_html: true,
+              content_formats: Railspress::PostContentFormatter::SUPPORTED_FORMATS,
+              read_content_format: "html",
               default_status: "draft",
               publish_supported: true
             },
@@ -52,7 +54,9 @@ module Railspress
               formats: %w[md markdown txt zip]
             },
             post_media: {
+              inline_images: true,
               header_image: Railspress.post_images_enabled?,
+              gallery_images: Railspress.post_images_enabled?,
               focal_points: Railspress.post_images_enabled? && Railspress.focal_points_enabled?,
               context_overrides: Railspress.post_images_enabled? && Railspress.focal_points_enabled?
             },
@@ -68,6 +72,8 @@ module Railspress
             prime: api_v1_prime_path,
             posts: api_v1_posts_path,
             post_imports: api_v1_post_imports_path,
+            post_assets: api_v1_post_assets_path,
+            post_gallery_images: "#{api_v1_posts_path}/:post_id/gallery_images",
             categories: api_v1_categories_path,
             tags: api_v1_tags_path
           }

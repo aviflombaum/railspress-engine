@@ -26,6 +26,7 @@ Single resource:
     "author_display": "avi@example.com",
     "tag_list": "rails, api",
     "content": "<h2>Intro</h2><div>...</div>",
+    "content_format": "html",
     "header_image": {
       "attached": true,
       "blob_id": 45,
@@ -34,6 +35,16 @@ Single resource:
       "byte_size": 214523,
       "content_type": "image/png"
     },
+    "gallery_images": [
+      {
+        "id": 91,
+        "blob_id": 46,
+        "signed_blob_id": "eyJfcmFpbHMiOns...",
+        "filename": "gallery-one.png",
+        "byte_size": 104857,
+        "content_type": "image/png"
+      }
+    ],
     "header_image_focal_point": {
       "id": 17,
       "attachment_name": "header_image",
@@ -61,20 +72,43 @@ Collection response includes `meta`:
 }
 ```
 
-## Rich Text Content
+## Content Formats
 
-`post[content]` accepts HTML (Action Text / Trix-style markup). Example:
+`post[content]` accepts HTML, Markdown, or plain text. A missing or JSON `null` content value becomes an empty string. Set the format with `post[content_format]`:
+
+- `html`: stores HTML through Action Text sanitization
+- `markdown`: renders Markdown to rich HTML before Action Text assignment
+- `plain`: escapes HTML and preserves paragraphs/newlines without interpreting Markdown
+- `auto`: detects obvious HTML or Markdown and otherwise uses plain text
+
+The JSON field takes precedence over the `X-Railspress-Content-Format` request header. Both inputs are case-insensitive and ignore surrounding whitespace. Accepted aliases are:
+
+| Canonical format | Aliases |
+| --- | --- |
+| `html` | `htm`, `text/html` |
+| `markdown` | `md`, `text/markdown` |
+| `plain` | `text`, `text/plain` |
+| `auto` | none |
+
+For backward compatibility, an omitted format means `html`. Auto detection only occurs when `auto` is explicitly requested.
+
+Markdown example:
 
 ```json
 {
   "post": {
-    "title": "API Rich Text Post",
-    "content": "<h2>Section</h2><p>Hello <strong>world</strong>.</p><ul><li>One</li><li>Two</li></ul>"
+    "title": "API Markdown Post",
+    "content": "## Section\n\nHello **world**.",
+    "content_format": "markdown"
   }
 }
 ```
 
-For embedded uploads/attachments in rich text, include Action Text attachment markup in the HTML payload.
+Markdown enables autolinks, tables, fenced code blocks, strikethrough, highlight, superscript, hard line wrapping, and safe-link filtering. Inline HTML is allowed by the Markdown renderer. All generated or submitted HTML then passes through Action Text's sanitization when assigned to the post.
+
+All read responses return canonical Action Text HTML and report `content_format: "html"`. The original Markdown/plain source is not persisted and therefore cannot be losslessly returned. A post without content serializes `content` as `null`.
+
+For inline images, upload through [Post Assets](post_assets.md), insert the returned `attachment_html` into an HTML body, and submit that body with `content_format: "html"`.
 
 ## Endpoints
 
@@ -117,6 +151,7 @@ Optional:
 - `post[slug]`
 - `post[category_id]`
 - `post[content]`
+- `post[content_format]` (`html`, `markdown`, `plain`, or `auto`; default `html`)
 - `post[status]` (`draft` or `published`)
 - `post[published_at]`
 - `post[reading_time]`
@@ -140,7 +175,8 @@ curl -X POST \
       "title": "API-created post",
       "status": "draft",
       "tag_list": "rails,api",
-      "content": "<h2>Hello API</h2><p>Created from JSON.</p>"
+      "content": "## Hello API\n\nCreated from JSON.",
+      "content_format": "markdown"
     }
   }' \
   "http://localhost:3000/railspress/api/v1/posts"
@@ -173,6 +209,8 @@ curl -X DELETE \
 
 ## Nested Header Image Resources
 
+The complete media contract, feature flags, request shapes, and error cases are collected in [Post Media](post_media.md). The summary below lists the available routes.
+
 ### `GET /posts/:post_id/header_image`
 
 Returns metadata for the post header image (and focal point data when enabled).
@@ -197,6 +235,41 @@ curl -X PUT \
 ### `DELETE /posts/:post_id/header_image`
 
 Purges the current header image.
+
+## Nested Gallery Image Resources
+
+Gallery resources are available only when `config.enable_post_images` is set. Gallery images do not have header-image focal points or context overrides.
+
+### `GET /posts/:post_id/gallery_images`
+
+Returns gallery attachment metadata. The attachment `id` is the resource ID used for deletion; it is distinct from `blob_id`.
+
+### `POST /posts/:post_id/gallery_images`
+
+Attach an image with multipart form data:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
+  -F "image=@./gallery-one.png" \
+  "http://localhost:3000/railspress/api/v1/posts/123/gallery_images"
+```
+
+Or attach an existing Active Storage blob:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"signed_blob_id":"eyJfcmFpbHMiOns..."}' \
+  "http://localhost:3000/railspress/api/v1/posts/123/gallery_images"
+```
+
+Supported types are JPEG, PNG, GIF, and WebP.
+
+### `DELETE /posts/:post_id/gallery_images/:id`
+
+Purges one gallery attachment and returns `204 No Content`.
 
 ## Nested Focal Point Resource
 

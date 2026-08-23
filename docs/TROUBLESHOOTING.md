@@ -2,7 +2,66 @@
 
 Common issues and solutions when using RailsPress.
 
+Start with the read-only diagnostic command:
+
+```bash
+bin/rails railspress:doctor
+```
+
+It can report RailsPress configuration failures even when normal RailsPress boot validation would stop the application. Warnings and failures include a `Suggestion:` line. Failures return status `1` without an exception banner; warnings identify conditions such as implicit authentication or route constraints and return `0`.
+
+An `[ERROR] railspress:doctor threw ...` line means the diagnostic command itself encountered an unexpected exception. Check the Rails log or rerun with `--trace` for the terminal backtrace.
+
+See [Maintenance Commands](MAINTENANCE.md) for the complete task contract.
+
 ## Installation Issues
+
+### Install Generator Was Interrupted or Rerun
+
+**Symptom**: The route or initializer exists, but migrations/importmap setup is incomplete; or a generator rerun reports a mixture of `skip` and `create` statuses.
+
+**Cause**: The install generator treats each target independently. It skips an existing engine mount, initializer, framework migration, or importmap pin instead of overwriting it. Detecting any existing RailsPress setup also switches the final message to the upgrade workflow.
+
+**Solution**:
+
+1. Review the generator target table in [Configuring](CONFIGURING.md#what-the-install-generator-changes).
+2. Run `bin/rails railspress:doctor` to identify uncopied or pending RailsPress migrations.
+3. Inspect `config/routes.rb`, `config/importmap.rb`, and `config/initializers/railspress.rb` rather than deleting working files.
+4. For an existing installation, use `DRY_RUN=1 bin/rails railspress:upgrade` and follow [Upgrading](UPGRADING.md).
+
+The generator never runs `db:migrate` and never writes Active Record Encryption credentials.
+
+### Doctor Reports API Migrations While Agents & API Is Disabled
+
+**Symptom**: Doctor reports `create_railspress_api_keys` or `create_railspress_agent_bootstrap_keys` as not copied even though `config.enable_api` is absent.
+
+**Cause**: This is an installation failure, not a false positive. RailsPress requires the complete migration history in every host application. Feature flags control runtime behavior and prerequisites such as encryption; they do not make migration files optional.
+
+**Solution**:
+
+```bash
+bin/rails railspress:install:migrations
+bin/rails db:migrate
+bin/rails railspress:doctor
+```
+
+Review and commit the copied `.railspress.rb` files before deployment. In production, deploy those files and use the host application's normal migration release step rather than running the mutating `railspress:upgrade` task.
+
+### "RailsPress Agents & API requires Active Record Encryption credentials"
+
+**Symptom**: The host application stops during boot with `Railspress::ConfigurationError` after `config.enable_api` is enabled. The error lists one or more of `primary_key`, `deterministic_key`, and `key_derivation_salt` as missing.
+
+**Cause**: RailsPress encrypts API-key and agent-bootstrap secret material with Active Record Encryption. The host application must own all three credentials; RailsPress intentionally does not generate or write deployment secrets.
+
+**Solution**: Generate the standard Rails credentials snippet:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated values under `active_record_encryption` in the appropriate environment credentials, or map deployment secrets into `Rails.application.config.active_record.encryption`. Do not replace existing production values: changing keys can make previously encrypted API-key material unreadable.
+
+Restart the application after the values are available in that environment. If Agents & API is not needed, remove `config.enable_api`; the encryption check does not run while the feature is disabled.
 
 ### "ActionText not installed" Error
 
@@ -108,20 +167,16 @@ Or via asset pipeline:
 
 **Symptom**: Anyone can access `/blog/admin` without authentication.
 
-**Solution**: RailsPress does not include authentication. Add it to your application:
+**Solution**: RailsPress does not include an authentication system. Configure the host method it should call before every RailsPress admin action:
 
 ```ruby
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, if: :railspress_admin?
-
-  private
-
-  def railspress_admin?
-    request.path.start_with?("/blog/admin")
-  end
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
 end
 ```
+
+Both methods come from the host `ApplicationController`, which RailsPress admin controllers inherit. If your host already applies a global authentication callback through `ApplicationController`, you can leave `admin_authentication_method` unset.
 
 See [CONFIGURING.md](CONFIGURING.md#adding-authentication) for more patterns.
 
@@ -149,46 +204,29 @@ config.current_author_proc = -> { Current.user }
 
 **Symptom**: `/blog/admin/api_keys` redirects with "You must be signed in to manage API keys." even though you are signed in elsewhere.
 
-**Cause**: RailsPress admin controllers can’t resolve your configured API actor method in their controller context.
+**Cause**: RailsPress cannot resolve the configured current administrator from the host controller.
 
-**Solution (preferred)**: define a host concern and configure `admin_auth_concern` so `current_user` is available in RailsPress admin controllers.
+**Solution**: configure the host's current-user method. RailsPress admin controllers inherit the host `ApplicationController`, so private helpers are available.
 
 ```ruby
-# app/controllers/concerns/railspress_admin_auth.rb
-module RailspressAdminAuth
-  extend ActiveSupport::Concern
-
-  included do
-    before_action :authenticate_user!
-    before_action :require_admin!
-  end
-
-  private
-
-  def require_admin!
-    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
-  end
-end
-
 # config/initializers/railspress.rb
 Railspress.configure do |config|
   config.enable_api
-  config.admin_auth_concern = "RailspressAdminAuth"
-  config.current_api_actor_method = :current_user
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
 end
 ```
 
-Alternative: use `current_api_actor_proc` with request-scoped auth lookup:
+Alternative: use `current_admin_proc` with request-scoped auth state:
 
 ```ruby
 Railspress.configure do |config|
   config.enable_api
-  config.current_api_actor_proc = -> {
-    user = Session.find_by(id: cookies.signed[:session_id])&.user
-    user if user&.admin?
-  }
+  config.current_admin_proc = -> { Current.user }
 end
 ```
+
+`current_api_actor_method` and `current_api_actor_proc` are deprecated aliases and will be removed in RailsPress 2.0.
 
 ### API endpoints return 404 behind route constraints
 
@@ -196,31 +234,33 @@ end
 
 **Cause**: The host route constraint blocks API requests before RailsPress token auth can run.
 
-**Solution**: Allow `/railspress/api/*` through your constraint while keeping admin paths protected.
+**Solution**: Remove the outer route constraint, mount the engine normally, and protect the browser controllers with `admin_authentication_method`.
 
 ```ruby
-class AdminConstraint
-  def self.matches?(request)
-    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
-
-    session_id = request.cookie_jar.signed[:session_id]
-    return false if session_id.blank?
-
-    Session.includes(:user).find_by(id: session_id)&.user&.admin?
-  end
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
 end
 
-Rails.application.routes.draw do
-  constraints AdminConstraint do
-    mount Railspress::Engine => "/railspress"
-  end
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
 end
 ```
 
 Expected behavior after this change:
 
-- Unauthenticated `/railspress/admin/*` remains blocked by host auth.
+- Unauthenticated `/railspress/admin/*` remains blocked by the configured host method.
 - Unauthenticated `/railspress/api/v1/*` returns `401` (not `404`), indicating RailsPress API auth is active.
+
+RailsPress API controllers do not inherit the host `ApplicationController`; they authenticate bearer tokens independently. A route constraint runs too early to preserve this split.
+
+### API endpoints return 200 with an HTML login page
+
+**Symptom**: `/railspress/api/v1/*` returns `200 OK` with `Content-Type: text/html` and a login/session page instead of a JSON API response.
+
+**Cause**: A route constraint rejected the engine mount, then a later host catch-all route such as `get "railspress(*path)", to: "sessions#new"` handled the request. The request never reached RailsPress bearer authentication.
+
+**Solution**: Use the same normal-mount configuration above and protect browser admin controllers through `config.admin_authentication_method`. An unauthenticated request that reaches RailsPress API authentication should return `401`, not successful HTML.
 
 ---
 
@@ -529,6 +569,26 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/blog/admin
 2. **Verify feature toggle**: The editor only appears when `enable_focal_points` is configured
 
 3. **Check browser console**: Look for JavaScript errors related to `focal_point_controller`
+
+### Stimulus Tries to Load from JSPM or Another CDN
+
+**Symptom**: RailsPress pages hang or fail offline while requesting `ga.jspm.io`, or browser tests raise `Ferrum::PendingConnectionsError` for a Stimulus URL.
+
+**Cause**: The host application still has an external `@hotwired/stimulus` pin. Host importmap entries intentionally override the RailsPress engine default.
+
+**Solution**: Remove the external pin unless the host intentionally manages it:
+
+```ruby
+# config/importmap.rb
+# Remove this kind of entry:
+pin "@hotwired/stimulus", to: "https://ga.jspm.io/..."
+```
+
+RailsPress provides `stimulus.min.js` locally through `stimulus-rails >= 1.2.2`. Restart the application after changing the importmap.
+
+### Browser Tests Wait for Google Fonts
+
+RailsPress 1.4.5 no longer imports Google Fonts. If a browser test still waits on `fonts.googleapis.com` or `fonts.gstatic.com`, the request comes from a host stylesheet or cached asset rather than the RailsPress admin stylesheet. Clear compiled assets and inspect the host CSS imports.
 
 ### Crosshair Position Wrong
 

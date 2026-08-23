@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Shareable post previews**: Hosts can opt into expiring, purpose-scoped preview links for draft and scheduled posts with `config.enable_post_previews`. RailsPress generates links under the configured `blog_path`, while the host blog controller explicitly resolves signed tokens and keeps ordinary requests published-only.
+- **Initializer validation**: Doctor now checks for a missing initializer and invalid Ruby syntax before application boot, reports settings that raise while the initializer is evaluated, and continues to surface RailsPress validation errors and deprecated settings after boot.
+- **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.
+- **Upgrade workflow**: Added `bin/rails railspress:upgrade` to run configuration preflight, copy RailsPress migrations, apply all pending host migrations, and verify the result. `DRY_RUN=1` previews the work without writes, and production environments retain their normal committed-migration deployment flow.
+- **Format-aware post writes**: Post create/update accepts HTML, Markdown, plain text, or automatic detection through `post[content_format]` or `X-Railspress-Content-Format`. Read responses remain canonical Action Text HTML.
+- **Inline post assets**: Added `POST /api/v1/post_assets`, which accepts an image upload or signed Active Storage blob and returns canonical Action Text attachment markup.
+- **Post galleries**: Added nested list/create/delete endpoints for gallery images when post images are enabled.
+
+### Changed
+
+- **Generated initializer defaults**: New installations receive a documented initializer covering every supported setting, with post images, post focal points, and CMS blocks enabled. Authors, inline editing, entities, and Agents & API remain opt-in; existing initializers are never overwritten.
+- **Upgrade guidance**: Moved browser-admin authentication settings out of the initializer's API-only section and made doctor/upgrade the canonical local workflow, including troubleshooting for constrained mounts that return either routing 404s or successful HTML login pages to API clients.
+- **Doctor output and exits**: Colorized interactive PASS/WARN/FAIL output, added explicit suggestions and conclusions, and replaced exception-style failure findings with a clean nonzero exit. Unexpected doctor exceptions are logged and rendered once as `[ERROR] railspress:doctor threw ErrorType - message`, with terminal backtraces available through `--trace`.
+- **Lexxy upgrade diagnostics**: Doctor now warns importmap hosts about redundant host-owned Lexxy pins/imports, names the affected files, and recommends manual cleanup while preserving intentional host overrides.
+- **Migration completeness**: Clarified in doctor output that every migration shipped by the installed RailsPress version must be copied and applied even when its optional feature is disabled.
+- **Post serialization**: Post responses now include `content_format`, `gallery_images`, and signed blob metadata needed by API clients. Prime advertises content formats, inline assets, galleries, and taxonomy capabilities.
+- **Plain-text imports**: `.txt` post imports now escape HTML and preserve literal paragraphs and line breaks instead of interpreting Markdown syntax.
+
+### Fixed
+
+- **Public rich-text code blocks**: Added engine baseline styles and documented host-app CSS that contain long preformatted lines with internal horizontal scrolling across mobile and desktop layouts, with wrapping restored for print.
+
+### Upgrade Notes (target: Unreleased)
+
+- These changes require no new RailsPress migrations. Existing initializers keep their current behavior; the new recommended feature defaults apply only when the install generator creates an initializer.
+- Post previews remain disabled until the host blog controller implements the documented `railspress_preview` token branch and the initializer calls `config.enable_post_previews`.
+- API consumers should tolerate the additive post and Prime response fields. Post content reads are HTML even when writes supplied Markdown or plain text.
+- Post-image gallery capabilities remain gated by `config.enable_post_images`; inline Action Text asset uploads do not use that toggle.
+- Post import jobs are not idempotent. Inspect a partially processed import before retrying it.
+
+## [1.4.5] - 2026-08-21
+
+### Fixed
+
+- **Agents & API encryption setup**: Validate all three host-managed Active Record Encryption values at boot when `config.enable_api` is enabled, and raise a RailsPress-specific error with the exact `bin/rails db:encryption:init` setup command when configuration is incomplete.
+- **Installer and upgrade guidance**: Detect existing Active Record Encryption configuration without writing secrets, confirm configured hosts, and print setup guidance only when values are missing.
+- **Admin/API authentication boundary**: RailsPress browser controllers now inherit the host `ApplicationController` and optionally invoke `config.admin_authentication_method`, while API controllers remain isolated on `ActionController::API` with bearer-token authentication. This allows a normal unconstrained engine mount without exposing the admin UI.
+- **Current administrator integration**: Added `config.current_admin_method` and `config.current_admin_proc` to resolve the host administrator recorded on API key lifecycle actions.
+- **Site-scoped agent tokens**: Admin-generated API and bootstrap instructions now store exchanged tokens under a URL-derived path in `$HOME/.railspress/tokens`, keeping credentials separate across hostnames, local ports, and configured base paths.
+- **Local browser assets**: Added `stimulus-rails >= 1.2.2` as an engine dependency, pin its packaged Stimulus 3.2.2 asset locally, and removed the Google Fonts import. RailsPress admin pages no longer require JSPM or Google font requests at runtime, eliminating offline/browser-test timeouts. An intentional host Stimulus pin remains authoritative.
+- **Packaged documentation**: Include `docs/` and `CHANGELOG.md` in the gem so README documentation links work after installation.
+
+### Deprecated
+
+- **API actor names**: `current_api_actor_method`, `current_api_actor_proc`, and the `current_api_actor` controller helper remain compatibility aliases but now warn in favor of `current_admin_method`, `current_admin_proc`, and `current_railspress_admin`. They will be removed in RailsPress 2.0.
+
+### Upgrade Notes (target: 1.4.5)
+
+- API-enabled hosts must provide `primary_key`, `deterministic_key`, and `key_derivation_salt` through Rails credentials or `config.active_record.encryption` in every environment.
+- If values are missing, run `bin/rails db:encryption:init` and store its output in the host's credentials or deployment secret-management system. RailsPress never writes these values.
+- Do not replace existing production encryption credentials during a routine upgrade.
+- Mount the engine normally. Protect RailsPress browser routes with `config.admin_authentication_method` (unless an inherited callback already does so) and identify the administrator with `config.current_admin_method`.
+- Rename the deprecated `current_api_actor_*` settings before RailsPress 2.0.
+- Hosts pinned below `stimulus-rails 1.2.2` must upgrade. No host importmap change is required unless removing an obsolete external Stimulus CDN pin.
+
 ## [1.4.4] - 2026-08-18
 
 ### Added
@@ -163,7 +220,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Lexxy dependency policy**: RailsPress now requires `lexxy >= 0.9.0.beta` (no upper pin). Host apps can get newer Lexxy releases via normal Bundler updates (`bundle update lexxy` or `bundle update --all`), while still allowing explicit host-level pinning when needed.
 - **Lexxy auto-wiring**: Lexxy is now consistently wired through RailsPress internals (engine importmap + RailsPress JavaScript entrypoint). Host apps no longer need to manually pin `lexxy` in `config/importmap.rb`.
-- **Install generator behavior**: `rails generate railspress:install` no longer appends a host-level `lexxy` pin to importmap; the engine handles this.
+- **Install generator behavior**: `bin/rails generate railspress:install` no longer appends a host-level `lexxy` pin to importmap; the engine handles this.
 - **Admin editor UX**: Lexxy toolbar is now sticky in the admin editor for long-form editing workflows.
 
 ### Fixed
@@ -223,6 +280,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 If upgrading from a version that used `railspress_post_tags`:
 
-1. Run `rails railspress:install:migrations` to get the new taggings migration
-2. Run `rails db:migrate` to create the new polymorphic table
+1. Run `bin/rails railspress:install:migrations` to get the new taggings migration
+2. Run `bin/rails db:migrate` to create the new polymorphic table
 3. Existing post-tag relationships will need to be migrated (see UPGRADING.md)

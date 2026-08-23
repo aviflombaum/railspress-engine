@@ -121,6 +121,15 @@ RSpec.describe Railspress::PostImportProcessor, type: :model do
 
         expect(post.content.to_plain_text).to include("plain text post")
       end
+
+      it "does not interpret Markdown syntax in text files" do
+        allow(File).to receive(:read).and_return("# Literal heading\n\n* literal stars *")
+
+        processor.process!
+        post = Railspress::Post.last
+
+        expect(post.content.body.to_html).to eq("<p># Literal heading</p><p>* literal stars *</p>")
+      end
     end
 
     context "with invalid frontmatter" do

@@ -21,7 +21,10 @@ The admin interface will be available at `/blog/admin`.
 ```bash
 bin/rails railspress:install:migrations
 bin/rails db:migrate
+bin/rails railspress:doctor
 ```
+
+Install and apply the complete migration history, including migrations for optional features that are currently disabled. Feature toggles control runtime routes and behavior; they do not select which RailsPress migrations belong in the host application.
 
 ### 3. Create Initializer
 
@@ -29,11 +32,70 @@ Create `config/initializers/railspress.rb`:
 
 ```ruby
 Railspress.configure do |config|
-  # Configuration options go here
+  config.enable_post_images
+  config.enable_focal_points
+  config.enable_cms
 end
 ```
 
+Those three features are the recommended defaults written by the install generator for new applications. The library defaults remain disabled, so existing applications and applications with a hand-written initializer do not change behavior during an upgrade. The generated initializer also includes concise defaults and examples for every supported setting.
+
+### What the Install Generator Changes
+
+For a new host application, the generator performs the setup steps above and fills in framework prerequisites when they are missing:
+
+```bash
+bin/rails generate railspress:install
+```
+
+| Target | Generator behavior |
+|--------|--------------------|
+| RailsPress migrations | Invokes `railspress:install:migrations` to copy missing engine migrations |
+| Action Text migrations | Copies them only when no `create_action_text_tables` migration exists |
+| Active Storage migrations | Copies them only when no `create_active_storage_tables` migration exists |
+| `config/routes.rb` | Adds `mount Railspress::Engine => "/railspress"` unless an engine mount already exists |
+| `config/importmap.rb` | Adds the Active Storage ESM pin when importmap is installed and the pin is absent |
+| RailsPress initializer | Creates the documented template, with post images, post focal points, and CMS enabled, only when the file is absent |
+
+The generator copies every missing RailsPress migration but does not run `db:migrate`. Its initializer enables the recommended post-image, focal-point, and CMS features for new installations; host-dependent features remain opt-in. It does not generate or write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
+
+The generator detects an existing RailsPress route, initializer, or copied migration and changes its final message to the upgrade workflow. Rerunning it can fill in missing setup, but it is not a replacement for reviewing [Upgrading](UPGRADING.md) and the installed version's release notes.
+
 ## Configuration Options
+
+### Feature Dependency Matrix
+
+Core Post, Category, and Tag models and their admin CRUD are always available. The following settings add optional behavior:
+
+The prerequisites column describes what an enabled feature uses at runtime. It is not a migration-installation matrix: every shipped RailsPress migration should be copied and applied in every host, including migrations for disabled features.
+
+| Setting | Default | Prerequisites | What it enables | Disabled behavior |
+|---------|---------|---------------|-----------------|-------------------|
+| `enable_authors` | Off | Configured author class and current-author method/proc | Author selection and `author_id` lookup for Posts/CMS records | Author accessors return no author and admin author inputs are omitted; API response keys remain stable |
+| `enable_post_images` | Off | Active Storage; processor gem/native library only when variants are requested | Post header/gallery attachments in admin and API | Post media API returns `404`; serialized media values are `null` |
+| `enable_focal_points` | Off | Standard complete migration install; Post focal UI/API also requires post images | Post header focal point and context API/UI | Post focal/context API returns `404` |
+| `enable_cms` | Off | Standard complete migration install | Content groups/elements, CMS transfer routes, and host CMS helpers | CMS routes are not drawn; disabled helper stubs raise `ConfigurationError` |
+| `inline_editing_check` | `nil` | CMS, `import "railspress"`, `yield :head`, and a proc returning true | Right-click inline editing for text blocks | No inline wrapper/menu is rendered |
+| `enable_api` | Off | Standard complete migration install and all three Active Record Encryption values | Bearer API and admin key-management navigation | API and key-management requests answer `404`, navigation is hidden, and encryption validation is skipped |
+
+The focal-point model concern is reusable outside Post feature gating. Entities declared with `focal_point_image` and CMS image elements use the shared focal-point table and editor directly. `enable_focal_points` specifically gates the optional Post header-image focal-point UI and API serialization/endpoints.
+
+Routes behave differently by subsystem: CMS routes are conditionally drawn when the engine route set loads, while versioned API routes remain recognizable and the API base controller returns `404` when Agents & API is disabled.
+
+Configuration validation runs after the host initializer block. An inline-editing proc without CMS raises `Railspress::ConfigurationError`; enabling Agents & API without complete encryption configuration raises during normal application boot.
+
+The defaults in the matrix above are library defaults. The install generator explicitly enables post images, post focal points, and CMS in a newly generated initializer. It never overwrites an existing initializer.
+
+#### Common Feature Recipes
+
+| Goal | Configuration and host setup |
+| --- | --- |
+| Blog only | No feature toggle is required; install migrations and protect the admin |
+| Blog with header/gallery media | `config.enable_post_images`, Active Storage, and an image processor only when requesting variants |
+| CMS blocks | Complete the standard migration install, then set `config.enable_cms` |
+| CMS with inline editing | CMS plus `config.inline_editing_check`, `import "railspress"`, and `yield :head` in the public layout |
+| Entity focal images | Complete the standard migration install and declare `focal_point_image` on an entity; the Post image toggle is not required |
+| Agents & API | Complete the standard migration install, set `config.enable_api`, provide all three encryption values, use a normal engine mount, and protect browser admin routes |
 
 ### Feature Toggles
 
@@ -63,7 +125,7 @@ end
 
 #### `post_image_variants`
 
-Declares named Active Storage variants for the post `header_image`, so views can request
+Declares named Active Storage variants for the post `header_image` and `gallery_images`, so views can request
 `@post.header_image.variant(:hero)` instead of repeating transformation options. Each variant is registered
 with `format: :webp` automatically.
 
@@ -80,8 +142,7 @@ Railspress.configure do |config|
 end
 ```
 
-The hash keys become variant names; the values are passed straight through to Active Storage, so any
-transformation it accepts works here.
+The hash keys become variant names; the values are passed to Active Storage and RailsPress adds `format: :webp`. Any transformation accepted by the configured processor can be used.
 
 ```erb
 <%= image_tag @post.header_image.variant(:hero), alt: @post.title %>
@@ -110,9 +171,23 @@ end
 
 **Default:** Disabled
 
-**Requirements:** Must also enable `enable_post_images`. Requires running migrations for the `railspress_focal_points` table.
+**Post requirement:** Post header-image focal points require `enable_post_images`. Entity focal-point fields and CMS image elements use the same focal-point model support without reading the Post image toggle. All uses require the `railspress_focal_points` migration.
 
 See [Image Focal Point System](image-focal-point-system.md) for full documentation including image contexts, per-context overrides, and view helpers.
+
+#### `image_contexts`, `add_image_context`, and `remove_image_context`
+
+Image contexts describe the aspect ratios and output sizes used by focal-point overrides. The defaults are `hero` (`16:9`), `card` (`4:3`), and `thumb` (`1:1`). Replace the full hash or modify it through the configuration helpers:
+
+```ruby
+config.image_contexts = {
+  hero: { aspect: [16, 9], label: "Hero", sizes: [1920, 1280] }
+}
+config.add_image_context :portrait, aspect: [3, 4], label: "Portrait", sizes: [900]
+config.remove_image_context :hero
+```
+
+Replacing the hash normalizes its top-level keys to symbols. Each context should supply an `aspect` pair; `label` and `sizes` are used in the admin/API presentation. Changing contexts does not rewrite stored overrides, so remove or rename a context only after checking existing focal-point data and clients.
 
 #### `enable_cms`
 
@@ -134,9 +209,20 @@ end
 
 When CMS is disabled, calling `cms_element` or `cms_value` in a view raises `Railspress::ConfigurationError` with a helpful message. CMS routes are not mounted and CMS links do not appear in the admin sidebar.
 
-**Image content elements** support drag-and-drop uploads via the dropzone UI, per-element focal points (when `enable_focal_points` is also active), and an `image_hint` field for documenting recommended dimensions. Content type is locked after creation. In views, `cms_element` automatically outputs an `<img>` tag with `object-position` CSS derived from the focal point.
+**Image content elements** support drag-and-drop uploads via the dropzone UI, per-element focal points, and an `image_hint` field for documenting recommended dimensions. Content type is locked after creation. In views, `cms_element` automatically outputs an `<img>` tag with `object-position` CSS derived from the focal point.
 
 **Inline editing** builds on top of CMS. See [Inline Editing](INLINE_EDITING.md) for how to enable right-click editing of CMS content on public pages.
+
+#### `inline_editing_check`
+
+Assign a proc that receives the helper context and returns whether inline CMS editing should render for the current request:
+
+```ruby
+config.enable_cms
+config.inline_editing_check = ->(context) { context.controller.current_user&.admin? }
+```
+
+Setting this without enabling CMS raises `Railspress::ConfigurationError` after the configure block. Public layouts using inline editing must also import `railspress` JavaScript and include `yield :head`; see [Inline Editing](INLINE_EDITING.md) for the full setup. The default is `nil`, which disables inline editing.
 
 #### `enable_api`
 
@@ -154,13 +240,32 @@ When enabled:
 - API endpoints are available under `/blog/api/v1/*` (assuming engine mounted at `/blog`)
 - API key management is available at `/blog/admin/api_keys`
 
-**Requirements:** Active Record Encryption keys must be configured in your host app.
+**Requirement:** all three Active Record Encryption credentials must be configured by the host application. When `config.enable_api` is enabled, RailsPress checks the effective Rails credentials/configuration during boot and raises `Railspress::ConfigurationError` if any value is missing. RailsPress never generates or writes these secrets.
+
+Generate the standard Rails credentials snippet:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` in the host application's Rails credentials or secret-management/deployment system. Rails automatically reads this credentials shape:
+
+```yaml
+active_record_encryption:
+  primary_key: ...
+  deterministic_key: ...
+  key_derivation_salt: ...
+```
+
+Explicit environment-backed Rails configuration is also supported when the deployment platform owns the values:
 
 ```ruby
 Rails.application.config.active_record.encryption.primary_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY")
 Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY")
 Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT")
 ```
+
+The install generator detects both forms. It confirms when configuration is present and prints `bin/rails db:encryption:init` only when values are missing.
 
 ### Author Configuration
 
@@ -188,7 +293,7 @@ config.current_author_method = :current_admin  # admin-specific
 config.current_author_method = :logged_in_user # custom auth
 ```
 
-This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_author_proc`.
+This method must be available on the host `ApplicationController`. RailsPress browser controllers inherit from it, so Devise-style `current_user` helpers work without extra integration. For non-method lookup flows, use `current_author_proc`.
 
 **Default:** `:current_user`
 
@@ -234,41 +339,50 @@ config.current_author_proc = -> {
 
 **Default:** `nil` (uses `current_author_method` instead)
 
-### API Actor Configuration
+### Admin Authentication
 
-These options are used when creating/rotating/revoking API keys in the admin.
+RailsPress browser controllers inherit the host application's `ApplicationController`. RailsPress API controllers deliberately do not: they inherit from `ActionController::API` and enforce RailsPress bearer-token authentication.
 
-#### `current_api_actor_method`
+#### `admin_authentication_method`
 
-The controller method used to identify the currently signed-in actor for API key lifecycle actions.
+The host controller method RailsPress calls before every admin action. This can be any private or public method already defined by the host authentication system.
 
 ```ruby
-config.current_api_actor_method = :current_user    # default
-config.current_api_actor_method = :current_admin   # custom auth
+config.admin_authentication_method = :require_admin!
+# or Devise:
+config.admin_authentication_method = :authenticate_user!
 ```
 
-This method must be available on `Railspress::Admin::BaseController`. In Devise-style setups, `current_user` is typically available and works out of the box. If your auth helper lives in a host concern, configure `admin_auth_concern`. For non-method lookup flows, use `current_api_actor_proc`.
+Leave this unset only if an inherited `ApplicationController` callback already protects RailsPress admin requests. RailsPress raises `Railspress::ConfigurationError` with the configured method name if the method is unavailable.
+
+**Default:** `nil`
+
+#### `current_admin_method`
+
+The host controller method that returns the signed-in administrator. RailsPress uses this identity to own and audit API key lifecycle actions; it is separate from the authentication method because many auth systems expose these as separate methods.
+
+```ruby
+config.current_admin_method = :current_user  # default
+config.current_admin_method = :current_admin
+```
 
 **Default:** `:current_user`
 
-#### `current_api_actor_proc`
+#### `current_admin_proc`
 
-Alternative to `current_api_actor_method` for custom request-scoped auth logic.
+Alternative to `current_admin_method` for request-scoped `Current`, session, or custom authentication state.
 
 ```ruby
-config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
-config.current_api_actor_proc = -> {
-  user = Session.find_by(id: cookies.signed[:session_id])&.user
-  user if user&.admin?
-}
+config.current_admin_proc = -> { Current.user }
 ```
 
-**Default:** `nil` (uses `current_api_actor_method` instead)
+**Default:** `nil` (uses `current_admin_method` instead)
+
+`current_api_actor_method`, `current_api_actor_proc`, and the `current_api_actor` controller helper remain compatibility aliases in RailsPress 1.x. They emit deprecation warnings and will be removed in RailsPress 2.0; use `current_admin_method`, `current_admin_proc`, and `current_railspress_admin` instead.
 
 #### `admin_auth_concern`
 
-Optional host-app concern to include into `Railspress::Admin::BaseController`.
-Use this when your auth stack defines helpers like `current_user` in app concerns and you want method-based config (`current_author_method`, `current_api_actor_method`) to work cleanly.
+Optional host-app concern to include directly into `Railspress::Admin::BaseController`. Most applications no longer need this because RailsPress browser controllers inherit the host `ApplicationController`. It remains available for auth behavior intentionally isolated in a concern that is not included by `ApplicationController`.
 
 Set this to a concern constant name (String/Symbol) or Module.
 
@@ -302,6 +416,8 @@ end
 #### `public_base_url`
 
 Optional canonical base URL used in admin-generated API/agent instructions.
+
+RailsPress also uses this URL to derive site-scoped local token filenames in those instructions. The full hostname, non-default port, and base path are retained, so separate RailsPress applications do not share a token file.
 
 If not set, RailsPress resolves the URL in this order:
 
@@ -342,6 +458,7 @@ The public URL path where your blog posts are displayed on your site. This is us
 
 ```ruby
 config.blog_path = "/blog"       # default
+config.blog_path = "/posts"      # posts route
 config.blog_path = "/articles"   # custom path
 config.blog_path = "/news"       # news section
 config.blog_path = ""            # posts at root (e.g., /my-post-slug)
@@ -349,13 +466,77 @@ config.blog_path = ""            # posts at root (e.g., /my-post-slug)
 
 **Default:** `"/blog"`
 
-The admin post show page displays a "View" button for published posts that links to `#{blog_path}/#{post.slug}`.
+The admin post show page displays a "View" button for posts that are published and whose `published_at` time has arrived. The button links to `<blog_path>/<post.slug>`. Draft and scheduled posts do not display this ordinary public link.
 
 Access programmatically:
 
 ```ruby
 Railspress.blog_path  # => "/blog"
 ```
+
+### Shareable Post Previews
+
+#### `enable_post_previews`
+
+Enables signed, expiring "Preview" links for draft and scheduled posts. This is disabled by default because the host blog controller must explicitly resolve preview tokens before the links will work.
+
+Follow the complete [host-controller integration](BLOGGING.md#shareable-draft-previews), then enable previews:
+
+```ruby
+config.enable_post_previews
+```
+
+Preview URLs use the configured `blog_path`, the post slug, and a compact, signed `railspress_preview` query parameter. Live posts continue displaying the ordinary "View" link.
+
+#### `post_preview_expires_in`
+
+Controls the lifetime embedded in newly generated preview tokens:
+
+```ruby
+config.post_preview_expires_in = 24.hours # default
+config.post_preview_expires_in = 3.days
+```
+
+The value must be a positive duration. Changing it affects newly generated links; signed links retain the expiration embedded when they were created. Removing `config.enable_post_previews` prevents all preview tokens from resolving, including tokens that have not yet expired.
+
+Programmatic APIs:
+
+```ruby
+Railspress.post_previews_enabled?      # => true/false
+Railspress.post_preview_expires_in     # => 24.hours
+Railspress.public_post_path(post)      # => "/posts/my-draft"
+Railspress.post_preview_path(post)     # => "/posts/my-draft?railspress_preview=..."
+
+post.preview_token
+Railspress::Post.find_preview!(slug: post.slug, token: token)
+```
+
+Preview URLs are bearer credentials. Anyone with the URL can view the signed post until the token expires. Use HTTPS and share links only with intended reviewers. Invalid, expired, wrong-purpose, deleted-record, and slug-mismatched tokens return 404. Ordinary requests without a token must continue querying `Railspress::Post.published`; never replace the public action with an unscoped lookup.
+
+### Entity Index Defaults
+
+#### `default_index_columns`
+
+Sets the fallback columns for registered entities that do not define `RAILSPRESS_INDEX_COLUMNS` or `railspress_index_columns`:
+
+```ruby
+config.default_index_columns = %i[id title name created_at]
+```
+
+RailsPress keeps only columns the entity actually has. Entity-level configuration takes precedence. The default is `%i[id title name created_at]`; see [Entities](ENTITIES.md) for model registration and per-model field/index configuration.
+
+### Entity Registration
+
+#### `register_entity`
+
+Registers a host model for the generic admin entity UI. String or symbol registration is preferred because it resolves the class again after Rails reloads:
+
+```ruby
+config.register_entity "Project"
+config.register_entity :admin_portfolio, label: "Work Samples"
+```
+
+The model must include `Railspress::Entity`. Use `Railspress.registered_entities`, `Railspress.entity_for(route_key)`, and `Railspress.entity_registered?(route_key)` for read-only registry access. See [Entities](ENTITIES.md) for generator and model setup.
 
 ## Example Configurations
 
@@ -419,6 +600,8 @@ You can check configuration values programmatically:
 ```ruby
 Railspress.authors_enabled?        # => true/false
 Railspress.post_images_enabled?    # => true/false
+Railspress.post_previews_enabled?  # => true/false
+Railspress.post_preview_expires_in # => 24.hours
 Railspress.focal_points_enabled?   # => true/false
 Railspress.cms_enabled?            # => true/false
 Railspress.api_enabled?            # => true/false
@@ -426,95 +609,50 @@ Railspress.author_class            # => User (the actual class)
 Railspress.available_authors       # => ActiveRecord::Relation of authors
 Railspress.author_display_method   # => :name
 Railspress.current_author_method   # => :current_user
-Railspress.current_api_actor_method # => :current_user
+Railspress.admin_authentication_method # => :require_admin!
+Railspress.current_admin_method    # => :current_user
 Railspress.blog_path               # => "/blog"
+Railspress.public_base_url         # => nil or configured canonical URL
+Railspress.post_image_variants     # => configured named-variant hash
+Railspress.image_contexts          # => hero/card/thumb definitions by default
+Railspress.inline_editing_check    # => nil or configured Proc
 ```
 
 ## Adding Authentication
 
-RailsPress does not include authentication. The preferred pattern is to keep auth logic in a host concern and have RailsPress include it via `admin_auth_concern`:
+RailsPress does not impose an authentication library. Its browser controllers inherit the host `ApplicationController`, and the initializer names the host methods RailsPress should use:
 
 ```ruby
-# app/controllers/concerns/railspress_admin_auth.rb
-module RailspressAdminAuth
-  extend ActiveSupport::Concern
-
-  included do
-    before_action :authenticate_user!
-    before_action :require_admin!
-  end
-
-  private
-
-  def require_admin!
-    redirect_to main_app.root_path, alert: "Not authorized." unless current_user&.admin?
-  end
-end
-
 # config/initializers/railspress.rb
 Railspress.configure do |config|
-  config.admin_auth_concern = "RailspressAdminAuth"
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
   config.current_author_method = :current_user
-  config.current_api_actor_method = :current_user
 end
 ```
 
-If your app already handles authentication and you only need RailsPress to resolve the current author/API actor, configure proc hooks:
+`require_admin!` and `current_user` belong to the host application and may be private. RailsPress makes no assumptions about whether they come from Devise, another gem, or custom controller code. If your host already has a global inherited callback that protects RailsPress, omit `admin_authentication_method` to avoid calling it twice.
+
+For `Current` or custom request-scoped identity, configure proc hooks:
 
 ```ruby
 Railspress.configure do |config|
   config.current_author_proc = -> { Current.user }
-  config.current_api_actor_proc = -> { Current.user if Current.user&.admin? }
+  config.current_admin_proc = -> { Current.user }
 end
 ```
 
-If RailsPress is mounted behind a host route constraint, allow API paths through so bearer-token auth can execute:
+Mount RailsPress normally:
 
 ```ruby
-class AdminConstraint
-  def self.matches?(request)
-    return true if request.path == "/railspress/api" || request.path.start_with?("/railspress/api/")
-
-    session_id = request.cookie_jar.signed[:session_id]
-    return false if session_id.blank?
-
-    Session.includes(:user).find_by(id: session_id)&.user&.admin?
-  end
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
 end
 ```
 
-Alternative: protect the admin path from your application controller:
+Do not put the whole engine behind a session-only route constraint. Route constraints run before controllers, so they prevent bearer-token requests from reaching `/railspress/api/*`. The normal mount is safe when `admin_authentication_method` (or an inherited callback) protects browser routes: API routes use their separate bearer-authenticated controller stack.
 
-```ruby
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, if: :railspress_admin?
-
-  private
-
-  def railspress_admin?
-    request.path.start_with?("/blog/admin")
-  end
-end
-```
-
-Alternative: override the RailsPress base controller directly:
-
-```ruby
-# config/initializers/railspress.rb
-Rails.application.config.to_prepare do
-  Railspress::Admin::BaseController.class_eval do
-    before_action :authenticate_user!
-    before_action :require_admin!
-
-    private
-
-    def require_admin!
-      redirect_to root_path unless current_user&.admin?
-    end
-  end
-end
-```
+Run `bin/rails railspress:doctor` after changing the initializer, authentication, or API configuration. Before boot, it checks that `config/initializers/railspress.rb` exists and parses as Ruby. During boot it identifies settings that raise; afterward it reports RailsPress validation errors and deprecated settings. It also verifies explicit method/concern resolution, encryption settings, the resolved mount, and that every shipped RailsPress migration is copied and applied. Warnings and failures include suggested next actions. When authentication is inherited or enforced outside Rails controllers, doctor warns because it cannot prove the semantics; verify the reported admin URL while signed out. See [Maintenance Commands](MAINTENANCE.md#railspressdoctor) for exit statuses, terminal colors, `NO_COLOR`, and unexpected-error handling.
 
 ## Required Model Methods
 
@@ -574,7 +712,7 @@ RailsPress uses standard Rails engine view overrides. Copy engine views to your 
 ```bash
 # Copy a specific view
 mkdir -p app/views/railspress/admin/posts
-cp $(bundle show railspress)/app/views/railspress/admin/posts/_form.html.erb \
+cp "$(bundle info --path railspress-engine)/app/views/railspress/admin/posts/_form.html.erb" \
    app/views/railspress/admin/posts/
 
 # Your app's views take precedence over engine views
@@ -592,31 +730,7 @@ cp $(bundle show railspress)/app/views/railspress/admin/posts/_form.html.erb \
 
 ### Override the Admin Layout
 
-```erb
-<!-- app/views/layouts/railspress/admin.html.erb -->
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Custom Admin</title>
-  <%= csrf_meta_tags %>
-  <%= stylesheet_link_tag "railspress/admin", "data-turbo-track": "reload" %>
-  <%= yield :head %>
-</head>
-<body class="rp-admin">
-  <div class="rp-layout">
-    <!-- Your custom sidebar -->
-    <%= render "railspress/admin/shared/sidebar" %>
-
-    <main class="rp-main">
-      <%= render "railspress/admin/shared/flash" %>
-      <%= yield %>
-    </main>
-  </div>
-
-  <%= javascript_importmap_tags %>
-</body>
-</html>
-```
+Copy the current engine layout before modifying it. Preserve the Lexxy and `railspress/application` stylesheet tags, CSRF/CSP tags, importmap tags, `import "railspress"`, and the two packaged admin/Markdown scripts. The current layout uses `.rp-admin-layout`, `.rp-sidebar`, and `.rp-main`; compare an override with the engine copy during each upgrade.
 
 ### Adding Custom Sidebar Links
 
@@ -624,22 +738,15 @@ Override the sidebar partial to add your own navigation:
 
 ```erb
 <!-- app/views/railspress/admin/shared/_sidebar.html.erb -->
-<aside class="rp-sidebar">
-  <div class="rp-sidebar__header">
-    <h1 class="rp-sidebar__title">My Blog</h1>
-  </div>
-
-  <nav class="rp-sidebar__nav">
-    <%= link_to "Dashboard", railspress.admin_root_path, class: "rp-sidebar__link" %>
-    <%= link_to "Posts", railspress.admin_posts_path, class: "rp-sidebar__link" %>
-    <%= link_to "Categories", railspress.admin_categories_path, class: "rp-sidebar__link" %>
-    <%= link_to "Tags", railspress.admin_tags_path, class: "rp-sidebar__link" %>
-
-    <!-- Your custom links -->
-    <%= link_to "Analytics", main_app.analytics_path, class: "rp-sidebar__link" %>
-    <%= link_to "Settings", main_app.settings_path, class: "rp-sidebar__link" %>
+<div class="rp-sidebar-content">
+  <!-- Preserve the current engine header and standard navigation links. -->
+  <nav class="rp-nav">
+    <%= link_to main_app.analytics_path, class: "rp-nav-link" do %>
+      <span class="rp-nav-icon" aria-hidden="true">A</span>
+      <span class="rp-nav-text">Analytics</span>
+    <% end %>
   </nav>
-</aside>
+</div>
 ```
 
 ### Customizing Form Fields
@@ -651,8 +758,8 @@ Override the post form to add custom fields or change layout:
 <%= form_with model: [:admin, @post], local: true, class: "rp-form" do |f| %>
   <%= rp_form_errors(@post) %>
 
-  <div class="rp-form__layout">
-    <div class="rp-form__main">
+  <div class="rp-form-layout">
+    <div class="rp-form-main">
       <%= rp_string_field f, :title, autofocus: true %>
       <%= rp_rich_text_field f, :content %>
 
@@ -660,14 +767,14 @@ Override the post form to add custom fields or change layout:
       <%= rp_string_field f, :custom_field %>
     </div>
 
-    <div class="rp-form__sidebar">
+    <div class="rp-form-sidebar">
       <%= rp_sidebar_section "Publishing" do %>
         <%= rp_select_field f, :status, choices: Railspress::Post.statuses.keys %>
       <% end %>
     </div>
   </div>
 
-  <div class="rp-form__actions">
+  <div class="rp-form-actions">
     <%= f.submit "Save", class: "rp-btn rp-btn--primary" %>
   </div>
 <% end %>
@@ -676,6 +783,20 @@ Override the post form to add custom fields or change layout:
 See [Admin Helpers](ADMIN_HELPERS.md) for available helper methods.
 
 ## Dependencies
+
+### Stimulus
+
+RailsPress depends on `stimulus-rails >= 1.2.2`, the first gem release that packages Stimulus 3.2.2. This preserves the Stimulus runtime RailsPress previously loaded from JSPM while serving it locally through the host asset pipeline.
+
+For importmap applications, the engine supplies:
+
+```ruby
+pin "@hotwired/stimulus", to: "stimulus.min.js"
+```
+
+No host CDN pin is required. Engine importmaps load before the host's `config/importmap.rb`, so an intentional host `@hotwired/stimulus` pin overrides the RailsPress default. RailsPress does not start a second Stimulus application; continue starting Stimulus in the host JavaScript entrypoint and importing `railspress` to register its controllers.
+
+RailsPress admin CSS also uses a system serif stack rather than downloading Google Fonts. The default admin interface therefore makes no runtime JavaScript or font CDN requests.
 
 ### Lexxy (Rich Text Editor)
 

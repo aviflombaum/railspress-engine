@@ -20,6 +20,14 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.post_images_enabled?).to be false
     end
 
+    it "has post previews disabled by default" do
+      expect(Railspress.post_previews_enabled?).to be false
+    end
+
+    it "defaults post preview links to a 24 hour lifetime" do
+      expect(Railspress.post_preview_expires_in).to eq(24.hours)
+    end
+
     it "defaults author_class_name to User" do
       expect(Railspress.configuration.author_class_name).to eq("User")
     end
@@ -28,16 +36,20 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.current_author_method).to eq(:current_user)
     end
 
-    it "defaults current_api_actor_method to :current_user" do
-      expect(Railspress.current_api_actor_method).to eq(:current_user)
+    it "defaults admin_authentication_method to nil" do
+      expect(Railspress.admin_authentication_method).to be_nil
+    end
+
+    it "defaults current_admin_method to :current_user" do
+      expect(Railspress.current_admin_method).to eq(:current_user)
     end
 
     it "defaults current_author_proc to nil" do
       expect(Railspress.current_author_proc).to be_nil
     end
 
-    it "defaults current_api_actor_proc to nil" do
-      expect(Railspress.current_api_actor_proc).to be_nil
+    it "defaults current_admin_proc to nil" do
+      expect(Railspress.current_admin_proc).to be_nil
     end
 
     it "defaults admin_auth_concern to nil" do
@@ -76,6 +88,22 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.post_images_enabled?).to be true
     end
 
+    it "allows enabling post previews" do
+      Railspress.configure do |config|
+        config.enable_post_previews
+      end
+
+      expect(Railspress.post_previews_enabled?).to be true
+    end
+
+    it "allows setting the post preview lifetime" do
+      Railspress.configure do |config|
+        config.post_preview_expires_in = 2.days
+      end
+
+      expect(Railspress.post_preview_expires_in).to eq(2.days)
+    end
+
     it "allows setting author_class_name" do
       Railspress.configure do |config|
         config.author_class_name = "Admin"
@@ -102,14 +130,60 @@ RSpec.describe Railspress::Configuration do
       expect(Railspress.current_author_proc).to eq(author_proc)
     end
 
-    it "allows setting current_api_actor_proc" do
-      api_actor_proc = -> { Current.user }
+    it "allows setting admin authentication and current admin hooks" do
+      admin_proc = -> { Current.user }
 
       Railspress.configure do |config|
-        config.current_api_actor_proc = api_actor_proc
+        config.admin_authentication_method = :require_admin!
+        config.current_admin_method = :current_admin
+        config.current_admin_proc = admin_proc
       end
 
-      expect(Railspress.current_api_actor_proc).to eq(api_actor_proc)
+      expect(Railspress.admin_authentication_method).to eq(:require_admin!)
+      expect(Railspress.current_admin_method).to eq(:current_admin)
+      expect(Railspress.current_admin_proc).to eq(admin_proc)
+    end
+
+    it "warns when setting the deprecated current_api_actor_method" do
+      allow(Railspress.deprecator).to receive(:warn)
+
+      Railspress.configure do |config|
+        config.current_api_actor_method = :current_admin
+      end
+
+      expect(Railspress.current_admin_method).to eq(:current_admin)
+      expect(Railspress.deprecator).to have_received(:warn).with(
+        /current_api_actor_method.*removed in RailsPress 2\.0.*current_admin_method/
+      )
+    end
+
+    it "warns when setting the deprecated current_api_actor_proc" do
+      allow(Railspress.deprecator).to receive(:warn)
+      admin_proc = -> { Current.user }
+
+      Railspress.configure do |config|
+        config.current_api_actor_proc = admin_proc
+      end
+
+      expect(Railspress.current_admin_proc).to eq(admin_proc)
+      expect(Railspress.deprecator).to have_received(:warn).with(
+        /current_api_actor_proc.*removed in RailsPress 2\.0.*current_admin_proc/
+      )
+    end
+
+    it "tracks deprecated configuration settings without duplicates" do
+      allow(Railspress.deprecator).to receive(:warn)
+
+      Railspress.configure do |config|
+        config.current_api_actor_method = :current_admin
+        config.current_api_actor_method
+        config.current_api_actor_proc = -> { Current.user }
+      end
+
+      expect(Railspress.configuration.deprecated_settings).to contain_exactly(
+        :current_api_actor_method,
+        :current_api_actor_proc
+      )
     end
 
     it "allows setting admin_auth_concern" do
@@ -240,6 +314,14 @@ RSpec.describe Railspress::Configuration do
   end
 
   describe "#validate!" do
+    it "rejects a non-positive post preview lifetime" do
+      expect {
+        Railspress.configure do |config|
+          config.post_preview_expires_in = 0.seconds
+        end
+      }.to raise_error(Railspress::ConfigurationError, /positive duration/)
+    end
+
     it "raises when inline_editing_check set without enable_cms" do
       expect {
         Railspress.configure do |config|
@@ -295,8 +377,45 @@ RSpec.describe Railspress::Configuration do
 
       expect(Railspress.authors_enabled?).to be false
       expect(Railspress.post_images_enabled?).to be false
+      expect(Railspress.post_previews_enabled?).to be false
+      expect(Railspress.post_preview_expires_in).to eq(24.hours)
       expect(Railspress.cms_enabled?).to be false
       expect(Railspress.configuration.author_class_name).to eq("User")
+    end
+
+    it "clears deprecated setting usage" do
+      allow(Railspress.deprecator).to receive(:warn)
+      Railspress.configuration.current_api_actor_method
+
+      Railspress.reset_configuration!
+
+      expect(Railspress.configuration.deprecated_settings).to be_empty
+    end
+  end
+
+  describe ".with_validation_reporting" do
+    it "lets diagnostics load invalid RailsPress configuration" do
+      expect {
+        Railspress.with_validation_reporting do
+          Railspress.configure do |config|
+            config.inline_editing_check = ->(_context) { true }
+          end
+        end
+      }.not_to raise_error
+
+      expect(Railspress.configuration.validation_errors).to include(/Inline editing requires CMS/)
+    end
+
+    it "restores fail-fast validation after an exception" do
+      expect {
+        Railspress.with_validation_reporting { raise "stop" }
+      }.to raise_error("stop")
+
+      expect {
+        Railspress.configure do |config|
+          config.inline_editing_check = ->(_context) { true }
+        end
+      }.to raise_error(Railspress::ConfigurationError, /enable_cms/)
     end
   end
 end

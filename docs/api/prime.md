@@ -2,6 +2,11 @@
 
 Endpoint: `GET /railspress/api/v1/prime`
 
+RailsPress Agent runs this handshake through `railspress-agent prime --json`
+before writes. The request does not modify content or local credentials, but
+successful API-key authentication updates server-side `last_used_at` and
+`last_used_ip` metadata.
+
 Authentication: bearer token (see [authentication.md](authentication.md)).
 
 Use this endpoint as the first connectivity handshake for agents and integrations.
@@ -40,27 +45,58 @@ curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
     },
     "capabilities": {
       "posts": {
+        "list": true,
+        "read": true,
         "create": true,
         "update": true,
+        "delete": true,
+        "rich_text_html": true,
+        "content_formats": ["html", "markdown", "plain", "auto"],
+        "read_content_format": "html",
+        "default_status": "draft",
         "publish_supported": true
+      },
+      "post_imports": {
+        "create": true,
+        "read": true,
+        "formats": ["md", "markdown", "txt", "zip"]
+      },
+      "post_media": {
+        "inline_images": true,
+        "header_image": true,
+        "gallery_images": true,
+        "focal_points": true,
+        "context_overrides": true
+      },
+      "taxonomies": {
+        "categories": true,
+        "tags": true
       }
     },
     "endpoints": {
       "prime": "/railspress/api/v1/prime",
       "posts": "/railspress/api/v1/posts",
       "post_imports": "/railspress/api/v1/posts/imports",
+      "post_assets": "/railspress/api/v1/post_assets",
+      "post_gallery_images": "/railspress/api/v1/posts/:post_id/gallery_images",
       "categories": "/railspress/api/v1/categories",
       "tags": "/railspress/api/v1/tags"
     },
     "key": {
       "id": 1,
       "name": "Agent Key",
-      "status": "active"
+      "status": "active",
+      "expires_at": null,
+      "last_used_at": null
     },
     "server_time": "2026-04-16T00:00:00.000Z"
   }
 }
 ```
+
+Media booleans reflect runtime configuration. Inline Action Text image uploads are available with the API; header images, galleries, focal points, and context overrides reflect their corresponding RailsPress feature flags.
+
+Endpoint values are generated from the engine mount and are intended to be used as returned. A host that mounts RailsPress somewhere other than `/railspress` receives paths with that mount prefix.
 
 ## Draft vs publish
 

@@ -7,7 +7,9 @@
   </div>
   <div class="rp-page-actions">
     <% if @post.live? %>
-      <%= link_to "View", "#{Railspress.blog_path}/#{@post.slug}", class: "rp-btn rp-btn--secondary", target: "_blank" %>
+      <%= link_to "View", Railspress.public_post_path(@post), class: "rp-btn rp-btn--secondary", target: "_blank", rel: "noopener" %>
+    <% elsif Railspress.post_previews_enabled? %>
+      <%= link_to "Preview", Railspress.post_preview_path(@post), class: "rp-btn rp-btn--secondary", target: "_blank", rel: "noopener" %>
     <% end %>
     <%= link_to "Edit", edit_admin_post_path(@post), class: "rp-btn rp-btn--primary" %>
     <%= link_to "Back", admin_posts_path, class: "rp-btn rp-btn--secondary" %>

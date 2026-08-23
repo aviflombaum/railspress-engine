@@ -1,5 +1,8 @@
 module Railspress
   class Post < ApplicationRecord
+    PREVIEW_TOKEN_KEY_SALT = "railspress/post_preview"
+    PREVIEW_TOKEN_SIGNATURE_BYTES = 16
+
     include Railspress::Entity
     include Railspress::Taggable
     include Railspress::HasFocalPoint
@@ -43,6 +46,11 @@ module Railspress
         attachable.variant name, **options.merge(format: :webp)
       end
     end
+    has_many_attached :gallery_images do |attachable|
+      Railspress.post_image_variants.each do |name, options|
+        attachable.variant name, **options.merge(format: :webp)
+      end
+    end
     has_focal_point :header_image
 
     # Virtual attribute for removing header image via checkbox
@@ -58,7 +66,12 @@ module Railspress
 
     # Predicate: post is live (published_at in past or present)
     def live?
-      published_at.present? && published_at <= Time.current
+      published? && published_at.present? && published_at <= Time.current
+    end
+
+    def preview_token(expires_in: Railspress.post_preview_expires_in)
+      payload = [ id.to_s(36), expires_in.from_now.to_i.to_s(36) ].join(".")
+      "#{payload}.#{self.class.preview_token_signature(payload)}"
     end
 
     # Returns the status to display in UI (accounts for scheduled state)
@@ -119,6 +132,30 @@ module Railspress
         order(created_at: :desc)
       end
     }
+
+    def self.find_preview!(slug:, token:)
+      encoded_id, encoded_expiry, signature = token.to_s.split(".", 3)
+      payload = [ encoded_id, encoded_expiry ].join(".")
+      expected_signature = preview_token_signature(payload)
+
+      valid_signature = signature&.bytesize == expected_signature.bytesize &&
+        ActiveSupport::SecurityUtils.secure_compare(signature, expected_signature)
+      expires_at = Integer(encoded_expiry, 36)
+      raise ActiveRecord::RecordNotFound unless valid_signature && expires_at > Time.current.to_i
+
+      post = find(Integer(encoded_id, 36))
+      raise ActiveRecord::RecordNotFound unless Railspress.post_previews_enabled? && post&.slug == slug
+
+      post
+    rescue ArgumentError
+      raise ActiveRecord::RecordNotFound
+    end
+
+    def self.preview_token_signature(payload)
+      key = Rails.application.key_generator.generate_key(PREVIEW_TOKEN_KEY_SALT, 32)
+      digest = OpenSSL::HMAC.digest("SHA256", key, payload).first(PREVIEW_TOKEN_SIGNATURE_BYTES)
+      Base64.urlsafe_encode64(digest, padding: false)
+    end
 
     # Calculate reading time from content word count
     def calculate_reading_time

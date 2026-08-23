@@ -42,13 +42,15 @@ RSpec.describe "Railspress::Api::V1::AgentKeyExchanges", type: :request do
     it "rejects replay after the bootstrap token has been used" do
       _bootstrap_key, bootstrap_token = Railspress::AgentBootstrapKey.issue!(name: "One Time", actor: actor)
 
-      post railspress.exchange_api_v1_agent_keys_path,
-           headers: { "Authorization" => "Bearer #{bootstrap_token}" }
-      expect(response).to have_http_status(:created)
+      expect {
+        post railspress.exchange_api_v1_agent_keys_path,
+             headers: { "Authorization" => "Bearer #{bootstrap_token}" }
+        expect(response).to have_http_status(:created)
 
-      post railspress.exchange_api_v1_agent_keys_path,
-           headers: { "Authorization" => "Bearer #{bootstrap_token}" }
-      expect(response).to have_http_status(:unauthorized)
+        post railspress.exchange_api_v1_agent_keys_path,
+             headers: { "Authorization" => "Bearer #{bootstrap_token}" }
+        expect(response).to have_http_status(:unauthorized)
+      }.to change(Railspress::ApiKey, :count).by(1)
     end
   end
 end

@@ -42,7 +42,7 @@ You define a regular ActiveRecord model, include `Railspress::Entity`, and Rails
 - Focal point image cropping for any attachment
 - Polymorphic tagging
 - Custom index columns, searchable fields, scopes
-- Generator: `rails generate railspress:entity Project title:string description:text`
+- Generator: `bin/rails generate railspress:entity Project title:string description:text`
 
 ### Blocks
 
@@ -75,6 +75,7 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 - Focal point image concern for any model: `focal_point_image :cover_photo`
 - CSS variable theming
 - Generators for installation and custom entities
+- Engine-managed browser assets with no runtime JavaScript or font CDN dependency
 
 ## Requirements
 
@@ -83,13 +84,23 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 - ActionText
 - Active Storage
 
+The optional Agents & API feature also requires all three Active Record Encryption credentials. RailsPress checks for them when `config.enable_api` is enabled, but never generates or writes them. Generate the standard Rails credentials snippet with:
+
+```bash
+bin/rails db:encryption:init
+```
+
+Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` values in the host application's Rails credentials or deployment secret-management system.
+
+RailsPress also depends on `stimulus-rails >= 1.2.2` and supplies a local `@hotwired/stimulus` importmap pin. Hosts do not need a CDN pin. A host importmap pin with the same package name loads after the engine map and therefore remains authoritative when an application intentionally manages its own Stimulus asset.
+
 ## Installation
 
 Ensure ActionText and Active Storage are installed:
 
 ```bash
-rails action_text:install
-rails active_storage:install
+bin/rails action_text:install
+bin/rails active_storage:install
 ```
 
 ### Image variants
@@ -125,9 +136,23 @@ Run the install generator:
 
 ```bash
 bundle install
-rails generate railspress:install
-rails db:migrate
+bin/rails generate railspress:install
+bin/rails db:migrate
 ```
+
+The generator copies the complete RailsPress migration history, plus Action Text and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. The generated initializer enables post images, post focal points, and CMS blocks for new installations while leaving authors, inline editing, entities, and Agents & API opt-in. RailsPress migrations are installed even when the feature that uses their tables is disabled. The generator does not run migrations or write encryption credentials. Existing files and registrations are skipped where possible.
+
+The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally. Existing installations should follow the [upgrade guide](docs/UPGRADING.md) rather than treating a generator rerun as a complete upgrade.
+
+Check the resolved installation at any time with the read-only doctor command:
+
+```bash
+bin/rails railspress:doctor
+```
+
+Doctor prints color-coded `PASS`, `WARN`, and `FAIL` findings in an interactive terminal, with a suggested action for every warning or failure. Warnings return status `0`; definite configuration or migration failures return status `1` as a normal report rather than a Rake exception. It checks that the RailsPress initializer exists and contains valid Ruby before boot, reports settings that raise during initializer evaluation, and detects RailsPress validation errors and deprecated settings after boot. It also verifies every shipped migration and warns importmap hosts about redundant Lexxy pins/imports without editing host files. See [Maintenance Commands](docs/MAINTENANCE.md#railspressdoctor) for the full output and error contract.
+
+For upgrades, run `bundle update railspress-engine`, optionally preview with `DRY_RUN=1 bin/rails railspress:upgrade`, then run `bin/rails railspress:upgrade`. The upgrade task copies every missing RailsPress migration and runs all pending host migrations; production deployments should commit copied migrations and use the host's normal `db:migrate` release step.
 
 Mount the engine (the install generator does this automatically):
 
@@ -138,22 +163,65 @@ Rails.application.routes.draw do
 end
 ```
 
-## Authentication
+### Enabling Agents & API
 
-The admin interface is publicly accessible by default. Add authentication before deploying:
+After Active Record Encryption is configured, enable the API in the host initializer:
 
 ```ruby
-# app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, if: :railspress_admin?
-
-  private
-
-  def railspress_admin?
-    request.path.start_with?("/railspress/admin")
-  end
+# config/initializers/railspress.rb
+Railspress.configure do |config|
+  config.enable_api
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
 end
 ```
+
+RailsPress then exposes bearer-authenticated endpoints under the engine mount, such as `/railspress/api/v1/prime`, and key management under `/railspress/admin/api_keys`.
+
+For AI agents and first-time API setup, RailsPress Agent is the recommended
+client. The **Agents & API** page includes an always-visible installer card, a
+token-free `RAILSPRESS.md` generated for the host's real public URL and engine
+mount, and CLI-first key instructions. The CLI validates explicit project
+trust, exchanges one-time bootstrap keys from stdin, stores the resulting API
+key outside the repository, and verifies `/prime`:
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh \
+  https://agent.railspress.org/install.sh
+less railspress-install.sh
+sh railspress-install.sh --all
+"$HOME/.railspress/bin/railspress-agent" version
+```
+
+Open `/railspress/admin/api_keys` to copy the exact manifest and onboarding
+commands. Raw bearer-token requests remain supported for manual API clients.
+
+Mount the engine normally, without a host authentication route constraint. RailsPress browser controllers inherit the host application's `ApplicationController`, so they can call host authentication methods and run inherited callbacks. RailsPress API controllers use a separate `ActionController::API` stack and authenticate bearer tokens themselves.
+
+For example, if the host already defines `require_admin!` and `current_user`, the two settings above protect all `/railspress/admin/*` requests and identify the administrator responsible for API key changes. If an inherited `ApplicationController` callback already protects RailsPress, `admin_authentication_method` may be omitted.
+
+Do not wrap the mount in a session-only route constraint:
+
+```ruby
+Rails.application.routes.draw do
+  mount Railspress::Engine => "/railspress"
+end
+```
+
+An outer session constraint runs before RailsPress and makes token-only API requests return `404`. See [API authentication](docs/api/authentication.md) for RailsPress Agent setup, direct key creation, and manual bootstrap exchange.
+
+## Authentication
+
+The admin interface is publicly accessible by default. RailsPress admin controllers inherit your host `ApplicationController`; configure the host authentication method RailsPress should invoke before every admin action:
+
+```ruby
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
+end
+```
+
+Both methods are defined by the host application. RailsPress does not assume Devise, Warden, or any particular session model. The API controller stack does not inherit these browser callbacks and always requires its own bearer token.
 
 See [CONFIGURING.md](docs/CONFIGURING.md) for more authentication patterns including Devise integration.
 
@@ -180,7 +248,7 @@ Create posts with rich text, categories, tags, and header images. Build your own
 Generate a model and register it:
 
 ```bash
-rails generate railspress:entity Project title:string client:string description:text
+bin/rails generate railspress:entity Project title:string client:string description:text
 ```
 
 ```ruby
@@ -225,8 +293,8 @@ Create the "Homepage" group and its blocks in the admin at `/railspress/admin/co
 ## Generators
 
 ```bash
-rails generate railspress:install                    # Full setup
-rails generate railspress:entity Project title:string # Add a managed entity
+bin/rails generate railspress:install                     # Full setup
+bin/rails generate railspress:entity Project title:string # Add a managed entity
 ```
 
 ## Documentation
@@ -251,13 +319,14 @@ rails generate railspress:entity Project title:string # Add a managed entity
 | [Admin Helpers](docs/ADMIN_HELPERS.md) | View helper reference |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues |
 | [Upgrading](docs/UPGRADING.md) | Version upgrades and migrations |
+| [Maintenance Commands](docs/MAINTENANCE.md) | Doctor, upgrade, migration, and legacy tasks |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## Development
 
 ```bash
 bundle install
-cd spec/dummy && bundle exec rails db:migrate && cd ../..
+cd spec/dummy && bin/rails db:migrate && cd ../..
 bundle exec rspec
 ```
 

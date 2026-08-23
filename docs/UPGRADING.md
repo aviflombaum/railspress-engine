@@ -2,20 +2,99 @@
 
 This guide covers upgrading the RailsPress engine between versions.
 
+## Current Upgrade Workflow (Unreleased)
+
+The current Unreleased changes add doctor/upgrade tasks and additive API content/media capabilities. API clients can now write HTML, Markdown, plain text, or auto-detected post content; upload inline Action Text assets; manage gallery images; and read expanded Post and Prime serialization. Plain-text imports remain literal rather than being interpreted as Markdown.
+
+These additions require no new migrations or initializer changes beyond the requirements of the installed 1.4.5 release. API consumers should accept additive response keys, read the Prime capability flags, and remember that content reads return canonical HTML. Gallery/header media remains gated by `config.enable_post_images`, while inline post assets only require Agents & API. Post import retries can create duplicates; inspect partial results before retrying.
+
+The following 1.4.5 authentication, encryption, and local-asset requirements still apply when upgrading from an older release.
+
+RailsPress admin controllers now inherit the host application's `ApplicationController`. Mount the engine normally and configure the host methods RailsPress should use:
+
+```ruby
+Railspress.configure do |config|
+  config.admin_authentication_method = :require_admin!
+  config.current_admin_method = :current_user
+end
+```
+
+`admin_authentication_method` is optional only when an inherited host callback already protects RailsPress. Verify this with a signed-out request: RailsPress can confirm that an explicit method exists, but cannot prove the authorization behavior of inherited callbacks, middleware, or a reverse proxy.
+
+API controllers remain on a separate `ActionController::API` stack and use bearer authentication, so remove session-only constraints wrapped around the entire engine mount. A rejected constraint can return `404` before API authentication runs. If a later catch-all route handles the miss, an API client can instead receive `200 text/html` with a login page. After remediation, an unauthenticated API request should reach RailsPress and return `401`, not `404` or successful HTML.
+
+Rename `current_api_actor_method` to `current_admin_method`, `current_api_actor_proc` to `current_admin_proc`, and any controller-helper use of `current_api_actor` to `current_railspress_admin`. The old names continue to work with deprecation warnings in RailsPress 1.x and will be removed in RailsPress 2.0.
+
+RailsPress now validates the Active Record Encryption prerequisite when Agents & API is enabled. Existing API-enabled hosts must provide `primary_key`, `deterministic_key`, and `key_derivation_salt` through Rails credentials or `config.active_record.encryption` in every deployed environment.
+
+If credentials are missing, generate the standard Rails snippet and store its values in the host's credentials or deployment secret manager:
+
+```bash
+bin/rails db:encryption:init
+```
+
+RailsPress does not generate, persist, or overwrite these secrets. A missing value normally stops boot with `Railspress::ConfigurationError`. `bin/rails railspress:doctor` uses a narrow report-only boot mode so it can name RailsPress configuration failures without weakening normal application boot validation. Hosts that do not call `config.enable_api` are unaffected.
+
+RailsPress now depends on `stimulus-rails >= 1.2.2` and serves its default Stimulus import locally instead of loading Stimulus from JSPM. Bundler will reuse a compatible host installation; applications pinned below 1.2.2 must upgrade that pin. Existing host importmap pins remain authoritative because the host map loads after the engine map. The Google Fonts import was also removed, so RailsPress admin display text now uses the local Georgia/system-serif stack.
+
+RailsPress also pins and imports Lexxy through the engine. Importmap hosts no longer need either of these legacy references:
+
+```ruby
+# config/importmap.rb
+pin "lexxy", to: "lexxy.js"
+```
+
+```javascript
+// app/javascript/application.js
+import "lexxy"
+```
+
+`bin/rails railspress:doctor` reports these references as a non-failing warning and names the affected files. Remove them manually when obsolete; do not remove a host pin that intentionally overrides the engine-managed Lexxy asset. Doctor is read-only and never rewrites host JavaScript configuration.
+
+No host importmap edit is required. Remove an old RailsPress-specific JSPM pin if the host does not intentionally manage Stimulus itself:
+
+```ruby
+# No longer needed for RailsPress:
+pin "@hotwired/stimulus", to: "https://ga.jspm.io/..."
+```
+
 ## Quick Upgrade
 
 ```bash
 # 1. Update the gem
 bundle update railspress-engine
 
-# 2. Copy new migrations
-rails railspress:install:migrations
+# 2. Optionally preview configuration and migration work without writes
+DRY_RUN=1 bin/rails railspress:upgrade
 
-# 3. Run migrations
-rails db:migrate
+# 3. Copy RailsPress migrations, run migrations, and verify
+bin/rails railspress:upgrade
 
 # 4. Restart your server
 ```
+
+The upgrade task runs `db:migrate`, so it applies **all pending host migrations**, not only RailsPress migrations. Its manual equivalent is:
+
+```bash
+bin/rails railspress:install:migrations
+bin/rails db:migrate
+bin/rails railspress:doctor
+```
+
+If Agents & API is enabled, confirm that the host already supplies all three Active Record Encryption settings before restarting. Run `bin/rails db:encryption:init` only when a value is missing, and store the generated values in the host's secret-management system. Never replace working production encryption credentials during a routine upgrade.
+
+Also verify that `/railspress/admin/*` is protected through `config.admin_authentication_method` or an inherited host callback, while the engine itself is mounted without an outer session constraint.
+
+### Production deployments
+
+`railspress:upgrade` is a source-tree convenience task and refuses to mutate production. Run it in a writable development checkout, review and commit the generated `.railspress.rb` migration files, then deploy them with the host application. Production should use the host's normal release command:
+
+```bash
+RAILS_ENV=production bin/rails db:migrate
+RAILS_ENV=production bin/rails railspress:doctor
+```
+
+The doctor command is read-only. It returns status `1` for definite configuration or migration failures and zero when it finds only warnings. Every warning and failure includes a suggested next action, and expected findings end as a normal report rather than a Rake exception. An `[ERROR] railspress:doctor threw ...` line is reserved for an unexpected failure inside the command itself; rerun with `--trace` to print its backtrace. Warnings about implicit authentication or route constraints require an operator to verify signed-out browser access and API behavior.
 
 ## Step-by-Step Guide
 
@@ -52,15 +131,15 @@ bundle update railspress-engine
 RailsPress includes a rake task to copy engine migrations to your application:
 
 ```bash
-rails railspress:install:migrations
+bin/rails railspress:install:migrations
 ```
 
-This copies any new migrations from the engine to your `db/migrate/` folder. Existing migrations are skipped (matched by migration name, not timestamp).
+This copies every new migration from the engine to your `db/migrate/` folder, including migrations for optional features that are disabled. Existing migrations are skipped (matched by migration name, not timestamp). Feature toggles never filter the migration-copy step.
 
 **Check what was copied:**
 
 ```bash
-ls -la db/migrate/*railspress*
+bin/rails db:migrate:status
 ```
 
 ### 3. Review Migration Changes
@@ -69,23 +148,23 @@ Before running migrations, review them for any data implications:
 
 ```bash
 # See pending migrations
-rails db:migrate:status
+bin/rails db:migrate:status
 
 # Preview a specific migration
-cat db/migrate/TIMESTAMP_create_railspress_exports.rb
+sed -n '1,240p' db/migrate/TIMESTAMP_create_railspress_exports.railspress.rb
 ```
 
 ### 4. Run Migrations
 
 ```bash
-rails db:migrate
+bin/rails db:migrate
 ```
 
 For production, consider running migrations separately from deployment:
 
 ```bash
 # Production
-RAILS_ENV=production rails db:migrate
+RAILS_ENV=production bin/rails db:migrate
 ```
 
 ### 5. Check Configuration
@@ -109,7 +188,7 @@ Check the [CONFIGURING.md](CONFIGURING.md) guide for new options.
 
 ```bash
 # Development
-rails restart
+bin/rails restart
 
 # Production (example with Puma)
 pumactl restart
@@ -137,26 +216,51 @@ The `.railspress` suffix tracks the migration origin.
 
 RailsPress uses a fixed timestamp prefix pattern:
 
-| Timestamp | Migration |
-|-----------|-----------|
-| `20241218000001` | create_railspress_categories |
-| `20241218000002` | create_railspress_tags |
-| `20241218000003` | create_railspress_posts |
-| `20241218000004` | create_railspress_post_tags |
-| `20241218000005` | create_railspress_imports |
-| `20241218000006` | create_railspress_exports |
-| `20260415000001` | create_railspress_api_keys |
+| Area | Timestamp | Migration |
+|------|-----------|-----------|
+| Core blog | `20241218000001` | create_railspress_categories |
+| Core blog | `20241218000002` | create_railspress_tags |
+| Core blog | `20241218000003` | create_railspress_posts |
+| Tagging transition | `20241218000004` | create_railspress_post_tags (legacy join table) |
+| Import/export | `20241218000005` | create_railspress_imports |
+| Import/export | `20241218000006` | create_railspress_exports |
+| Tagging transition | `20241218000007` | create_railspress_taggings |
+| Tagging transition | `20241218000008` | drop_railspress_post_tags |
+| Core blog | `20241218000010` | add_reading_time_to_railspress_posts |
+| Media | `20250105000002` | create_railspress_focal_points |
+| CMS | `20260206000001` | create_railspress_content_groups |
+| CMS | `20260206000002` | create_railspress_content_elements |
+| CMS | `20260206000003` | create_railspress_content_element_versions |
+| CMS | `20260207000001` | add_unique_index_to_content_elements |
+| CMS | `20260211112812` | add_image_hint_to_railspress_content_elements |
+| CMS | `20260211154040` | add_required_to_railspress_content_elements |
+| Agents & API | `20260415000001` | create_railspress_api_keys |
+| Agents & API | `20260415000002` | create_railspress_agent_bootstrap_keys |
 
-New migrations increment the suffix (000007, 000008, etc.).
+This table describes the migrations shipped by the current gem; copied host timestamps differ. Do not infer migration order from a numeric suffix alone—use the full timestamp and `bin/rails db:migrate:status`.
+
+### Feature Flags and Installed Tables
+
+RailsPress copies its complete migration history; feature flags control runtime behavior, not which migration files are installed.
+
+| Feature | Migration-backed storage |
+| --- | --- |
+| Core blog | Categories, tags, posts, taggings, imports, and exports |
+| Post images | Active Storage tables supplied by Rails; no separate post-image table |
+| Focal points | `railspress_focal_points` |
+| CMS | Content groups, elements, and element versions; CMS images use Active Storage |
+| Agents & API | API keys and agent bootstrap keys |
+
+It is normal for optional-feature tables to exist while the corresponding initializer toggle is disabled.
 
 ### Checking Migration Status
 
 ```bash
 # See all migrations and their status
-rails db:migrate:status
+bin/rails db:migrate:status
 
 # Filter to RailsPress migrations
-rails db:migrate:status | grep railspress
+bin/rails db:migrate:status | grep railspress
 ```
 
 ### Rolling Back
@@ -165,10 +269,10 @@ If needed, rollback a specific migration:
 
 ```bash
 # Rollback last migration
-rails db:rollback
+bin/rails db:rollback
 
 # Rollback to specific version
-rails db:migrate:down VERSION=20241224123456
+bin/rails db:migrate:down VERSION=20241224123456
 ```
 
 ## Troubleshooting
@@ -187,8 +291,8 @@ If your schema differs from expected migrations:
 
 ```bash
 # Check current schema
-rails db:schema:dump
-cat db/schema.rb | grep railspress
+bin/rails db:schema:dump
+grep railspress db/schema.rb
 
 # Compare with engine migrations
 ls railspress/db/migrate/
@@ -199,22 +303,26 @@ ls railspress/db/migrate/
 If RailsPress tables are missing:
 
 ```bash
-# Re-copy all migrations
-rails railspress:install:migrations
+# Copy any missing migrations
+bin/rails railspress:install:migrations
 
 # Run pending
-rails db:migrate
+bin/rails db:migrate
 ```
 
 ### Duplicate Migrations
 
-If you have duplicate migrations (same content, different timestamps):
-
-1. Check which are already run: `rails db:migrate:status`
-2. Delete the unrun duplicate
-3. If both are run, the second likely failed silently
+If two host files have the same RailsPress migration name with different timestamps, stop before migrating and compare them with the current engine migration. Use `bin/rails db:migrate:status` to determine whether either version ran. Do not delete a migration that has run in any shared environment; reconcile the files and schema through the host application's normal migration-review process.
 
 ## Version-Specific Notes
+
+### Upgrading to 1.4.5 (from 1.4.4)
+
+RailsPress browser admin controllers now inherit the host `ApplicationController`; mount the engine normally, protect the admin with `config.admin_authentication_method` or an inherited callback, and configure `config.current_admin_method` for lifecycle auditing. Rename the deprecated `current_api_actor_*` settings before RailsPress 2.0.
+
+Agents & API now validates all three host-owned Active Record Encryption settings at boot. Generate missing values with `bin/rails db:encryption:init`, store them in credentials or the deployment secret manager, and never replace working production keys during a routine upgrade.
+
+The release also requires `stimulus-rails >= 1.2.2`, serves the default Stimulus import locally, and removes the Google Fonts request. No migration is required. Remove an obsolete RailsPress-specific external Stimulus pin unless the host intentionally owns that pin.
 
 ### Upgrading to 1.4.4 (from 1.4.3)
 
@@ -306,8 +414,8 @@ Recommended upgrade flow:
 
 ```bash
 bundle update railspress-engine lexxy
-rails railspress:install:migrations
-rails db:migrate
+bin/rails railspress:install:migrations
+bin/rails db:migrate
 ```
 
 JavaScript/config checklist:
@@ -348,8 +456,8 @@ end
 
 After upgrade:
 ```bash
-rails railspress:install:migrations
-rails db:migrate
+bin/rails railspress:install:migrations
+bin/rails db:migrate
 ```
 
 JavaScript upgrade notes:
@@ -366,11 +474,11 @@ If you are upgrading to a version that includes API support:
 1. Copy and run migrations:
 
 ```bash
-rails railspress:install:migrations
-rails db:migrate
+bin/rails railspress:install:migrations
+bin/rails db:migrate
 ```
 
-2. Configure Active Record Encryption keys in your host app.
+2. Configure Active Record Encryption keys in your host app. Run `bin/rails db:encryption:init` to generate the standard credentials snippet; RailsPress never writes it for you.
 3. Enable API in your RailsPress initializer (`config.enable_api`).
 4. Open `/railspress/admin/api_keys` (Agents & API) and create:
    - an **Agent Key** (bootstrap, one-time exchange), or
@@ -383,8 +491,8 @@ See [Blocks & Inline Editing](INLINE_EDITING.md) and [Configuring](CONFIGURING.m
 Initial release. Run full install:
 
 ```bash
-rails generate railspress:install
-rails db:migrate
+bin/rails generate railspress:install
+bin/rails db:migrate
 ```
 
 ## CI/CD Considerations
@@ -397,23 +505,21 @@ In CI, ensure migrations run before tests:
 # .github/workflows/test.yml
 - name: Setup database
   run: |
-    rails railspress:install:migrations
-    rails db:create db:migrate
+    bin/rails db:prepare
 ```
 
 ### Production Deployments
 
-For zero-downtime deploys, run migrations before deploying new code if they're additive (new tables, new columns with defaults).
+Copy RailsPress migrations in a writable development checkout, review them, and commit them with the application. CI and production should consume those committed migration files; they should not generate new source files during a deploy.
 
-For destructive migrations (removing columns), deploy code first, then migrate.
+Whether a migration can run before or after application code depends on its compatibility with both versions. Review each copied migration and use the host application's established expand/contract deployment process for destructive changes.
 
 ```bash
 # Typical deploy sequence
 git pull origin main
 bundle install
-rails railspress:install:migrations
-rails db:migrate
-rails assets:precompile
+bin/rails db:migrate
+bin/rails assets:precompile
 # restart app
 ```
 
@@ -421,4 +527,5 @@ rails assets:precompile
 
 - Check [CONFIGURING.md](CONFIGURING.md) for configuration options
 - Check [IMPORT_EXPORT.md](IMPORT_EXPORT.md) for import/export features
-- Review engine source: `bundle show railspress`
+- Check [MAINTENANCE.md](MAINTENANCE.md) for task behavior and production-safe workflows
+- Review engine source: `bundle show railspress-engine`

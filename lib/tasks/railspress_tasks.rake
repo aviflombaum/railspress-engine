@@ -44,6 +44,6 @@ namespace :railspress do
     puts "\nMigration complete!"
     puts "You can now safely drop the post_tags table."
     puts "Run the drop migration or execute:"
-    puts "  rails generate migration DropRailspressPostTags"
+    puts "  bin/rails generate migration DropRailspressPostTags"
   end
 end

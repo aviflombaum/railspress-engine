@@ -111,6 +111,10 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       output = messages.join("\n")
       expect(output).to include("RailsPress installed successfully")
       expect(output).to include("http://localhost:3000/railspress/admin")
+      expect(output).to include("config.admin_authentication_method and config.current_admin_method")
+      expect(output).to include("bin/rails railspress:doctor")
+      expect(output).to include("API bypasses host controller auth and uses bearer tokens")
+      expect(output).to include("config.enable_api; requires Active Record Encryption")
       expect(output).to include("https://railspress.org")
     end
 
@@ -124,8 +128,42 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
       output = messages.join("\n")
       expect(output).to include("RailsPress upgrade setup completed")
       expect(output).to include("docs/UPGRADING.md")
+      expect(output).to include("DRY_RUN=1 bin/rails railspress:upgrade")
+      expect(output).to include("bin/rails railspress:upgrade")
       expect(output).to include('import "railspress"')
+      expect(output).to include("config.admin_authentication_method and config.current_admin_method")
+      expect(output).to include("API bypasses host controller auth and uses bearer tokens")
+      expect(output).to include("config.enable_api; requires Active Record Encryption")
       expect(output).to include("https://railspress.org")
+    end
+  end
+
+  describe "#check_active_record_encryption" do
+    it "confirms when credentials are already configured" do
+      encryption = instance_double(Railspress::ActiveRecordEncryptionConfiguration, configured?: true)
+      allow(Railspress::ActiveRecordEncryptionConfiguration).to receive(:new).and_return(encryption)
+      allow(generator).to receive(:say_status)
+
+      generator.check_active_record_encryption
+
+      expect(generator).to have_received(:say_status).with(
+        :ok,
+        "Active Record Encryption credentials detected (Agents & API ready)",
+        :green
+      )
+    end
+
+    it "prints the exact setup command when credentials are missing" do
+      encryption = instance_double(Railspress::ActiveRecordEncryptionConfiguration, configured?: false)
+      messages = []
+      allow(Railspress::ActiveRecordEncryptionConfiguration).to receive(:new).and_return(encryption)
+      allow(generator).to receive(:say_status)
+      allow(generator).to receive(:say) { |message, *| messages << message.to_s }
+
+      generator.check_active_record_encryption
+
+      expect(messages.join("\n")).to include("bin/rails db:encryption:init")
+      expect(messages.join("\n")).to include("host credentials or secret-management system")
     end
   end
 
@@ -214,6 +252,41 @@ RSpec.describe Railspress::Generators::InstallGenerator, type: :generator do
 
         expect(generator).to have_received(:template).with("initializer.rb", initializer_path)
         expect(generator).to have_received(:say_status).with(:created, "config/initializers/railspress.rb", :green)
+      end
+    end
+
+    it "documents the host admin and isolated API authentication settings" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+
+      expect(template).to include("config.admin_authentication_method = :require_admin!")
+      expect(template).to include("config.current_admin_method = :current_user")
+      expect(template).to include("API controllers do not inherit ApplicationController")
+      expect(template.index("=== Admin Authentication ===")).to be < template.index("=== Agents & API (opt-in) ===")
+    end
+
+    it "enables the recommended post-image, focal-point, and CMS defaults" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+
+      expect(template).to match(/^  config\.enable_post_images$/)
+      expect(template).to match(/^  config\.enable_focal_points$/)
+      expect(template).to match(/^  config\.enable_cms$/)
+      expect(template).not_to match(/^  config\.enable_authors$/)
+      expect(template).not_to match(/^  config\.enable_api$/)
+    end
+
+    it "documents every supported initializer setting" do
+      template = File.read(File.join(described_class.source_root, "initializer.rb"))
+      settings = %w[
+        admin_authentication_method current_admin_method current_admin_proc admin_auth_concern
+        enable_post_images enable_focal_points post_image_variants blog_path enable_post_previews
+        post_preview_expires_in words_per_minute
+        enable_authors author_class_name author_scope author_display_method current_author_method
+        current_author_proc enable_cms inline_editing_check add_image_context remove_image_context
+        image_contexts register_entity default_index_columns enable_api public_base_url
+      ]
+
+      settings.each do |setting|
+        expect(template).to include("config.#{setting}")
       end
     end
   end

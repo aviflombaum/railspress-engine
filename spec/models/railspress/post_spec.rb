@@ -133,6 +133,91 @@ RSpec.describe Railspress::Post, type: :model do
     end
   end
 
+  describe ".find_preview!" do
+    before do
+      Railspress.configure(&:enable_post_previews)
+    end
+
+    it "resolves the signed post when the slug and token are valid" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+
+      expect(described_class.find_preview!(slug: post.slug, token: token)).to eq(post)
+    end
+
+    it "raises not found when previews are disabled" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+      Railspress.reset_configuration!
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the token has been altered" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token.succ
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the URL slug does not match the signed post" do
+      post = railspress_posts(:draft_post)
+
+      expect {
+        described_class.find_preview!(slug: "another-post", token: post.preview_token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the signed post has been deleted" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+      post.destroy!
+
+      expect {
+        described_class.find_preview!(slug: post.slug, token: token)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "raises not found when the token has expired" do
+      post = railspress_posts(:draft_post)
+      token = post.preview_token(expires_in: 1.minute)
+
+      travel 2.minutes do
+        expect {
+          described_class.find_preview!(slug: post.slug, token: token)
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
+  describe "#preview_token" do
+    it "returns a compact URL-safe token" do
+      token = railspress_posts(:draft_post).preview_token
+
+      expect(token).to match(/\A[A-Za-z0-9._-]+\z/)
+      expect(token.length).to be <= 40
+    end
+
+    it "uses the configured expiration" do
+      Railspress.configure do |config|
+        config.enable_post_previews
+        config.post_preview_expires_in = 1.minute
+      end
+      post = railspress_posts(:draft_post)
+      token = post.preview_token
+
+      travel 2.minutes do
+        expect {
+          described_class.find_preview!(slug: post.slug, token: token)
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
   describe "#scheduled?" do
     it "returns true when published_at is in the future" do
       post = Railspress::Post.new(published_at: 1.day.from_now)
@@ -152,23 +237,28 @@ RSpec.describe Railspress::Post, type: :model do
 
   describe "#live?" do
     it "returns true when published_at is in the past" do
-      post = Railspress::Post.new(published_at: 1.day.ago)
-      expect(post.live?).to be true
+      post = Railspress::Post.new(status: :published, published_at: 1.day.ago)
+      expect(post).to be_live
     end
 
     it "returns true when published_at is now" do
-      post = Railspress::Post.new(published_at: Time.current)
-      expect(post.live?).to be true
+      post = Railspress::Post.new(status: :published, published_at: Time.current)
+      expect(post).to be_live
     end
 
     it "returns false when published_at is nil" do
-      post = Railspress::Post.new(published_at: nil)
-      expect(post.live?).to be false
+      post = Railspress::Post.new(status: :published, published_at: nil)
+      expect(post).not_to be_live
     end
 
     it "returns false when published_at is in the future" do
-      post = Railspress::Post.new(published_at: 1.day.from_now)
-      expect(post.live?).to be false
+      post = Railspress::Post.new(status: :published, published_at: 1.day.from_now)
+      expect(post).not_to be_live
+    end
+
+    it "returns false for a draft that retains a past published_at" do
+      post = Railspress::Post.new(status: :draft, published_at: 1.day.ago)
+      expect(post).not_to be_live
     end
   end
 

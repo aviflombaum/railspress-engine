@@ -5,7 +5,7 @@
 
 :root {
   /* Typography */
-  --rp-font-display: 'Source Serif 4', Georgia, serif;
+  --rp-font-display: Georgia, "Times New Roman", serif;
   --rp-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --rp-font-mono: 'SF Mono', Consolas, monospace;
 

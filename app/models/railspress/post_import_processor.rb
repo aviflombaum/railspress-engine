@@ -126,7 +126,7 @@ module Railspress
       title = File.basename(path, ".*").tr("-_", " ").titleize
       frontmatter = { title: title }
 
-      create_post(frontmatter, content, path, base_dir: base_dir)
+      create_post(frontmatter, content, path, base_dir: base_dir, content_format: :plain)
     rescue => e
       import.add_error("#{File.basename(path)}: #{e.message}")
     end
@@ -149,7 +149,7 @@ module Railspress
       end
     end
 
-    def create_post(frontmatter, body, source_path, base_dir: nil)
+    def create_post(frontmatter, body, source_path, base_dir: nil, content_format: :markdown)
       title = frontmatter[:title]
 
       if title.blank?
@@ -171,8 +171,7 @@ module Railspress
         meta_description: frontmatter[:meta_description].presence
       )
 
-      # Set rich text content (convert markdown to HTML)
-      post.content = render_markdown(body) if body.present?
+      post.content = format_content(body, content_format) if body.present?
 
       # Handle associations
       assign_author(post, frontmatter[:author])
@@ -328,29 +327,9 @@ module Railspress
       post.tag_list = csv
     end
 
-    def render_markdown(text)
-      return "" if text.blank?
-
-      # Strip Obsidian-style metadata before rendering
-      text = strip_obsidian_metadata(text)
-
-      renderer = Redcarpet::Render::HTML.new(
-        hard_wrap: true,
-        filter_html: false,
-        safe_links_only: true
-      )
-
-      markdown = Redcarpet::Markdown.new(renderer,
-        autolink: true,
-        tables: true,
-        fenced_code_blocks: true,
-        strikethrough: true,
-        highlight: true,
-        superscript: true,
-        no_intra_emphasis: true
-      )
-
-      markdown.render(text)
+    def format_content(text, format)
+      text = strip_obsidian_metadata(text) if format.to_sym == :markdown
+      PostContentFormatter.new(content: text, format: format).to_html
     end
 
     def strip_obsidian_metadata(text)

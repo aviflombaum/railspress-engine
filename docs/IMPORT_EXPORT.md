@@ -58,13 +58,18 @@ cms_content_20260207_143022.zip
           "name": "Homepage H1",
           "content_type": "text",
           "position": 1,
-          "text_content": "Welcome to Our Site"
+          "text_content": "Welcome to Our Site",
+          "required": true,
+          "image_hint": null
         },
         {
           "name": "Hero Image",
           "content_type": "image",
           "position": 2,
           "text_content": null,
+          "required": false,
+          "image_hint": "Wide hero image",
+          "focal_point": { "x": 0.45, "y": 0.3 },
           "image_path": "images/headers/hero-image.png"
         }
       ]
@@ -80,6 +85,9 @@ Fields:
 - `source` — Always `"RailsPress CMS"`
 - `groups[].name` — Group name (used as match key on import)
 - `groups[].elements[].name` — Element name (used as match key within group)
+- `groups[].elements[].required` — Whether the CMS element is required
+- `groups[].elements[].image_hint` — Optional guidance shown for image elements
+- `groups[].elements[].focal_point` — Optional non-centered image focal coordinates
 - `groups[].elements[].image_path` — Relative path to image in the ZIP (image elements only)
 - `author_id` is intentionally excluded (meaningless across environments)
 
@@ -127,7 +135,7 @@ result.success?  # => true (when errors is empty)
 
 Key behaviors:
 
-- **Idempotent** — Re-importing the same ZIP produces no duplicates or unnecessary changes
+- **Name-based upsert** — Re-importing matches existing groups and elements by name, preventing duplicates; matching records are still updated and counted
 - **Auto-versioning** — Text content changes trigger the normal `after_save` versioning callback
 - **Error collection** — Individual record errors are collected; processing continues for remaining items
 - **CMS cache clearing** — `CmsHelper.cache` is cleared after import so templates reflect new content immediately
@@ -136,7 +144,7 @@ Key behaviors:
 
 - **50 MB** maximum ZIP file size
 - **500** maximum ZIP entries
-- **Path traversal** — Entries containing `..` or starting with `/` are rejected
+- **Path traversal** — Entries containing `..` or starting with `/` are skipped
 - **macOS artifacts** — `__MACOSX` and dotfile entries are skipped
 - **Supported image types** — `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` only
 - Temp extraction directory cleaned up in `ensure` block
@@ -185,7 +193,7 @@ This prevents duplicate active elements within a group while allowing soft-delet
 ### Testing
 
 ```bash
-# All CMS transfer tests (34 examples)
+# All CMS transfer tests
 bundle exec rspec spec/services/railspress/content_export_service_spec.rb \
   spec/services/railspress/content_import_service_spec.rb \
   spec/requests/railspress/admin/cms_transfers_spec.rb
@@ -211,7 +219,7 @@ Background-processed import and export for posts, enabling bulk content migratio
 ### Supported File Types
 
 - **Markdown** (`.md`, `.markdown`): Parsed with YAML frontmatter
-- **Plain text** (`.txt`): Title derived from filename
+- **Plain text** (`.txt`): Title derived from filename; HTML is escaped and Markdown syntax remains literal
 - **Zip archives** (`.zip`): Processes all markdown/text files recursively
 
 ### Frontmatter Fields
@@ -283,13 +291,13 @@ The import processor strips Obsidian-specific metadata:
 
 ### Processing Flow
 
-1. User uploads files via drag-and-drop or file picker
+1. User uploads one or more files via drag-and-drop or the file picker
 2. Controller saves files to `tmp/uploads/import_{id}/`
 3. `ImportPostsJob` enqueued with file paths
 4. `PostImportProcessor` processes each file:
    - Extracts zip to `tmp/imports/{id}_{timestamp}/`
    - Parses frontmatter and content
-   - Converts markdown to HTML via Redcarpet
+   - Converts Markdown to HTML via Redcarpet or plain text to escaped paragraphs
    - Creates post with associations
    - Attaches header image
 5. Cleans up temp files
@@ -363,44 +371,7 @@ Completed exports show a "Download" button in the Recent Exports table. The down
 
 ## Database Schema
 
-### Imports Table
-
-```ruby
-create_table :railspress_imports do |t|
-  t.string :import_type, null: false
-  t.string :filename
-  t.string :content_type
-  t.string :status, default: "pending"
-  t.integer :total_count, default: 0
-  t.integer :success_count, default: 0
-  t.integer :error_count, default: 0
-  t.text :error_messages
-  t.bigint :user_id
-  t.timestamps
-end
-```
-
-### Exports Table
-
-```ruby
-create_table :railspress_exports do |t|
-  t.string :export_type, null: false
-  t.string :filename
-  t.string :status, default: "pending"
-  t.integer :total_count, default: 0
-  t.integer :success_count, default: 0
-  t.integer :error_count, default: 0
-  t.text :error_messages
-  t.bigint :user_id
-  t.timestamps
-end
-```
-
-Exports also use ActiveStorage attachment:
-
-```ruby
-has_one_attached :file
-```
+Import and export progress is stored in `railspress_imports` and `railspress_exports`. Both track type, filename, status, counts, serialized error messages, and timestamps. Export archives are attached to the export record through Active Storage. Treat the shipped migrations and generated host schema as authoritative; this guide intentionally avoids a copy of the migration definitions that could drift.
 
 ## Dependencies
 
@@ -432,6 +403,8 @@ Rails.application.config.to_prepare do
   Railspress::ExportPostsJob.queue_as :exports
 end
 ```
+
+Exercise the configured job classes through the host application's queue adapter in a staging/test environment. Adapter behavior for class-level queue overrides, retries, and priorities is host-owned and can differ from inline/test execution.
 
 ### Job Classes
 
@@ -479,7 +452,9 @@ When jobs fail:
 - **Import failures**: Individual file errors are recorded in `error_messages`. Processing continues for remaining files. Import marked "failed" only if all files fail.
 - **Export failures**: Export status set to "failed" with error message. Partial exports are cleaned up.
 
-Retry behavior follows your queue adapter's configuration. RailsPress jobs are safe to retry.
+Retry behavior follows your queue adapter's configuration. Post imports are **not idempotent**: a retry after partial processing can create duplicate posts and increment counters again. Export retries can regenerate and replace the archive, but may also duplicate counters or errors. Disable automatic retries for these jobs or review the record and resulting posts before retrying manually.
+
+The admin importer accepts multiple files per operation. The [Post Imports API](api/post_imports.md) accepts one file or signed blob per request.
 
 ### File Cleanup
 
@@ -492,6 +467,15 @@ Temporary files are cleaned up after processing:
 | `tmp/exports/{id}_{timestamp}/` | After export zip is attached to record |
 
 Export zip files are stored via ActiveStorage and follow your storage configuration's lifecycle.
+
+The temporary paths are internal implementation details, not stable integration points. If a process is terminated before an `ensure` cleanup runs, stale directories may remain under the host application's `tmp` directory and can be removed after confirming no related job is active.
+
+### Post Import Security
+
+- Remote header images are limited to HTTP(S) destinations accepted by `ssrf_filter`; redirects and unsafe network addresses are rejected.
+- Relative header-image paths from ZIP files must resolve inside the extracted archive and use a supported image extension.
+- RailsPress does not currently impose an application-level post-import ZIP size or entry-count limit. Apply request-size limits at the proxy/web server, restrict the admin and API to trusted callers, and monitor worker disk usage.
+- The CMS transfer importer has its own 50 MB and 500-entry limits described above; those limits do not apply to post imports.
 
 ## Routes
 
@@ -529,8 +513,8 @@ Import/export respects these Railspress configuration options:
 ```ruby
 Railspress.configure do |config|
   config.enable_post_images = true   # Include header images in import/export
-  config.enable_authors = true         # Include author in frontmatter
-  config.author_class = "User"         # Model for author lookup
+  config.enable_authors                # Include author in frontmatter
+  config.author_class_name = "User"    # Model for author lookup
   config.author_display_method = :name # Field to match/display author
 end
 ```

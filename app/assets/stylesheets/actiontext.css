@@ -364,15 +364,27 @@ trix-editor .attachment__metadata {
   .trix-content [dir=rtl] li {
     margin-right: 1em; }
   .trix-content pre {
-    display: inline-block;
+    display: block;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     vertical-align: top;
     font-family: monospace;
     font-size: 0.9em;
     padding: 0.5em;
     white-space: pre;
     background-color: #eee;
-    overflow-x: auto; }
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; }
+  @media (max-width: 767px) {
+    .trix-content pre {
+      font-size: 0.8em; } }
+  @media print {
+    .trix-content pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      overflow-x: visible; } }
   .trix-content img {
     max-width: 100%;
     height: auto; }

@@ -35,6 +35,10 @@ RSpec.describe "Railspress::Admin::AgentBootstrapKeys", type: :request do
       expect(response.body).to include("Bootstrap Token")
       expect(response.body).to include("Bootstrap Quick Start")
       expect(response.body).to include(railspress.exchange_api_v1_agent_keys_path)
+      expect(response.body).to include("onboard --start /path/to/publishing-project --json")
+      expect(response.body).to include("config trust --start /path/to/publishing-project")
+      expect(response.body).not_to include("install -d -m 700")
+      expect(response.body).not_to include("--replace")
       expect(response.body).to match(/rpb_#{Rails.env}_[a-f0-9]{12}_[a-f0-9]{64}/)
     end
 

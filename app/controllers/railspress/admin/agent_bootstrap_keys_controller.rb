@@ -72,16 +72,10 @@ module Railspress
 
       def set_bootstrap_instructions
         base_url = instruction_base_url
-        token_file = instruction_token_file(base_url)
 
         @bootstrap_quick_start = <<~TEXT
           export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-          export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
-          export RAILSPRESS_TOKEN_FILE="#{token_file}"
-          install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
-          printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
-          chmod 600 "$RAILSPRESS_TOKEN_FILE"
-          curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
+          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
         TEXT
 
         @bootstrap_instructions = <<~TEXT
@@ -89,24 +83,21 @@ module Railspress
 
           Host: #{base_url}
           Bootstrap Token (one-time): #{@plain_bootstrap_token}
-          Exchange Endpoint: #{base_url}#{exchange_api_v1_agent_keys_path}
+          API Base: #{instruction_api_base(base_url)}
+          Token Path: #{instruction_token_file(base_url)}
 
-          1) Exchange bootstrap for API token:
+          1) Save the token-free RAILSPRESS.md from Agents & API at the publishing project root.
+
+          2) Review and explicitly trust its normalized values:
+            #{railspress_agent_command} config check --start /path/to/publishing-project
+            #{railspress_agent_command} config trust --start /path/to/publishing-project
+
+          3) Exchange once, store the API key safely, and verify /prime:
             export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-            export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $RAILSPRESS_BOOTSTRAP_TOKEN" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
+            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
 
-          2) Optional site-scoped local token file:
-            export RAILSPRESS_TOKEN_FILE="#{token_file}"
-            install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
-            printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
-            chmod 600 "$RAILSPRESS_TOKEN_FILE"
-            export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
-
-          3) Verify connectivity:
-            curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
-
-          4) Create a draft post:
-            curl -X POST -H "Authorization: Bearer $RAILSPRESS_TOKEN" -H "Content-Type: application/json" -d '{"post":{"title":"Agent draft","content":"<p>Hello</p>"}}' #{base_url}#{api_v1_posts_path}
+          Never automatically retry an unknown exchange outcome. Inspect or revoke the
+          server-side API key, then create a new bootstrap key.
         TEXT
       end
     end

@@ -35,6 +35,12 @@ Successful creates return `201 Created`, queued imports return `202 Accepted`, o
 
 Feature-gated post-media endpoints deliberately return `404` when the relevant capability is disabled. Clients should read [Prime](prime.md) before calling them. See [Post Media](post_media.md) for its route-specific errors.
 
+For one-time bootstrap exchange, a client must distinguish a definitive `401`
+from an ambiguous timeout, reset, `429`, or `5xx`. Do not automatically retry an
+ambiguous exchange: the server may have committed an API key before the response
+was interrupted. RailsPress Agent reports this as `exchange_outcome_unknown`
+with milestone data and recovery guidance.
+
 | Endpoint area | Example `422` message |
 | --- | --- |
 | Post content | `Unsupported content format. Allowed: html, markdown, plain, auto.` |

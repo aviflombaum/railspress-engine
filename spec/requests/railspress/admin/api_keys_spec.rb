@@ -26,9 +26,13 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       expect(response.body).to include("Agent Bootstrap Keys")
       expect(response.body).to include("API Keys")
       expect(response.body).to include("New Agent Key")
+      expect(response.body).to include("Recommended: Install RailsPress Agent")
+      expect(response.body).to include("https://agent.railspress.org/install.sh")
+      expect(response.body).to include("Project Manifest (Token-Free)")
+      expect(response.body).to include("onboard --start /path/to/publishing-project --json")
     end
 
-    it "shows instructions with the most recent active bootstrap token when present" do
+    it "never redisplays an active bootstrap token on the generic index" do
       _older_key, _older_token = Railspress::AgentBootstrapKey.issue!(
         name: "Older Active Key",
         actor: actor,
@@ -43,7 +47,8 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       get railspress.admin_api_keys_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(newer_token)
+      expect(response.body).not_to include(newer_token)
+      expect(response.body).to include("YOUR_BOOTSTRAP_TOKEN")
     end
 
     it "uses Rails route default_url_options for instruction URLs when present" do
@@ -60,6 +65,7 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("https://api.example.test:8443")
+      expect(response.body).to include("api_base: https://api.example.test:8443#{railspress.api_v1_posts_path.delete_suffix("/posts")}")
       expect(response.body).to include("$HOME/.railspress/tokens/api.example.test-8443")
       expect(response.body).not_to include("http://request-host.test")
     ensure
@@ -83,6 +89,8 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("http://public.example.org/publishing")
+      expect(response.body).to include("host: http://public.example.org/publishing")
+      expect(response.body).to include("api_base: http://public.example.org/publishing#{railspress.api_v1_posts_path.delete_suffix("/posts")}")
       expect(response.body).to include("$HOME/.railspress/tokens/public.example.org-publishing")
       expect(response.body).not_to include("https://api.example.test:8443")
       expect(response.body).not_to include("http://request-host.test")
@@ -142,8 +150,11 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
       expect(response.body).to include("Copy this key now")
       expect(response.body).to include("API Quick Start")
       expect(response.body).to include("API Key Instructions")
-      expect(response.body).to include(railspress.api_v1_prime_path)
       expect(response.body).to include("export RAILSPRESS_TOKEN=")
+      expect(response.body).to include("token store")
+      expect(response.body).to include("prime --start /path/to/publishing-project --json")
+      expect(response.body).not_to include("install -d -m 700")
+      expect(response.body).not_to include("--replace")
       expect(response.body).to include("$HOME/.railspress/tokens/www.example.com")
       expect(response.body).not_to include("~/.railspress_token")
       expect(response.body).to match(/rp_#{Rails.env}_[a-f0-9]{12}_[a-f0-9]{64}/)

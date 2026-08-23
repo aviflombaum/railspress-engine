@@ -114,6 +114,19 @@ RSpec.describe "Packaged documentation contracts" do
     )
   end
 
+  it "documents the CLI-first RailsPress Agent onboarding contract" do
+    readme = engine_root.join("README.md").read
+    api_readme = engine_root.join("docs/api/README.md").read
+    bootstrap_guide = engine_root.join("docs/api/agent_bootstrap_keys.md").read
+    authentication_guide = engine_root.join("docs/api/authentication.md").read
+
+    expect(readme).to include("https://agent.railspress.org/install.sh")
+    expect(api_readme).to include("railspress-agent", "onboard", "RAILSPRESS.md")
+    expect(bootstrap_guide).to include("railspress-agent", "onboard", "exchange_outcome_unknown")
+    expect(authentication_guide).to include("railspress-agent", "prime", "atomically claimed")
+    expect([ bootstrap_guide, authentication_guide ].join).not_to include('> "$RAILSPRESS_TOKEN_FILE"')
+  end
+
   it "keeps Post and header-media examples aligned with their public shapes" do
     posts_guide = engine_root.join("docs/api/posts.md").read
     post_json = posts_guide.match(/Single resource:.*?```json\n(.*?)```/m)[1]

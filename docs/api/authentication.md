@@ -85,33 +85,35 @@ Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetc
 ## Bootstrap Exchange Flow
 
 1. Create a key in admin (`/railspress/admin/api_keys`) via **New Agent Key** on the **Agents & API** page.
-2. Exchange bootstrap key for API key:
+2. Save the token-free `RAILSPRESS.md` from that page in the publishing project,
+review it, and establish trust.
+3. Use RailsPress Agent for the one-time exchange, secure storage, and `/prime`
+verification:
 
 ```bash
 export RAILSPRESS_BOOTSTRAP_TOKEN="rpb_test_..."
-export RAILSPRESS_TOKEN=$(curl -s -X POST \
-  -H "Authorization: Bearer ${RAILSPRESS_BOOTSTRAP_TOKEN}" \
-  http://localhost:3000/railspress/api/v1/agent_keys/exchange \
-  | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
+printf '%s\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" \
+  | "$HOME/.railspress/bin/railspress-agent" onboard --start /path/to/project --json
 ```
 
-3. Optional site-scoped local token file:
+The exchange is atomically claimed by the engine. Concurrent or replayed use
+cannot mint another API key. Never automatically retry an unknown outcome;
+inspect/revoke the potentially created key and generate a new bootstrap token.
+
+4. A direct API key can be stored through the same hardened CLI boundary:
 
 ```bash
 export RAILSPRESS_TOKEN_FILE="$HOME/.railspress/tokens/localhost-3000"
-install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
-printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
-chmod 600 "$RAILSPRESS_TOKEN_FILE"
-export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
+printf '%s\n' "$RAILSPRESS_TOKEN" \
+  | "$HOME/.railspress/bin/railspress-agent" token store "$RAILSPRESS_TOKEN_FILE"
 ```
 
 The **Agents & API** admin page generates the correct scoped path for the configured public URL or current request, so prefer its copy-ready instructions over constructing this filename manually.
 
-4. Verify connectivity:
+5. Returning sessions verify connectivity and capabilities before writes:
 
 ```bash
-curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" \
-  http://localhost:3000/railspress/api/v1/prime
+"$HOME/.railspress/bin/railspress-agent" prime --start /path/to/project --json
 ```
 
 ## Admin Lifecycle Endpoints

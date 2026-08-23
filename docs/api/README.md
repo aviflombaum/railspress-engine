@@ -32,17 +32,44 @@ Railspress.configure do |config|
 end
 ```
 
-2. Open **Agents & API** in admin (`/railspress/admin/api_keys`) and create a bootstrap key:
-- Go to `/railspress/admin/api_keys`
-- Click **New Agent Key** and copy the one-time reveal instructions
-- Exchange the bootstrap token once to mint an API key
+2. Open **Agents & API** in admin (`/railspress/admin/api_keys`). Install
+RailsPress Agent from the always-visible setup card, then save its generated,
+token-free manifest as `RAILSPRESS.md` at the publishing project root.
 
-3. Call the API with the API key bearer token:
+The review-first install path is:
 
 ```bash
-curl -H "Authorization: Bearer rp_test_..." \
-  http://localhost:3000/railspress/api/v1/prime
+curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh \
+  https://agent.railspress.org/install.sh
+less railspress-install.sh
+sh railspress-install.sh --all
+"$HOME/.railspress/bin/railspress-agent" version
+"$HOME/.railspress/bin/railspress-agent" doctor
 ```
+
+Review the manifest values before creating their local trust binding:
+
+```bash
+"$HOME/.railspress/bin/railspress-agent" config check --start /path/to/project
+"$HOME/.railspress/bin/railspress-agent" config trust --start /path/to/project
+```
+
+3. Create a bootstrap key:
+
+- Go to `/railspress/admin/api_keys`
+- Click **New Agent Key** and copy the one-time reveal instructions
+- Pipe the bootstrap token to `railspress-agent onboard --json`; the command
+  exchanges it once, stores only the API key, and verifies `/prime`
+
+4. For returning sessions, verify the server contract before every write:
+
+```bash
+"$HOME/.railspress/bin/railspress-agent" prime --start /path/to/project --json
+```
+
+Direct bearer-token HTTP remains available for clients that intentionally do
+not install RailsPress Agent. See [Authentication](authentication.md) and
+[Agent Bootstrap Keys](agent_bootstrap_keys.md) for the manual path.
 
 ## v1 Scope
 

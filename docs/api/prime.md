@@ -2,6 +2,11 @@
 
 Endpoint: `GET /railspress/api/v1/prime`
 
+RailsPress Agent runs this handshake through `railspress-agent prime --json`
+before writes. The request does not modify content or local credentials, but
+successful API-key authentication updates server-side `last_used_at` and
+`last_used_ip` metadata.
+
 Authentication: bearer token (see [authentication.md](authentication.md)).
 
 Use this endpoint as the first connectivity handshake for agents and integrations.

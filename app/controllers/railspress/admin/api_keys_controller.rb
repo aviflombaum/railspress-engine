@@ -85,7 +85,9 @@ module Railspress
 
         @api_key_quick_start = <<~TEXT
           export RAILSPRESS_TOKEN="#{@plain_token}"
-          curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
+          export RAILSPRESS_TOKEN_FILE="#{token_file}"
+          printf '%s\\n' "$RAILSPRESS_TOKEN" | #{railspress_agent_command} token store "$RAILSPRESS_TOKEN_FILE"
+          #{railspress_agent_command} prime --start /path/to/publishing-project --json
         TEXT
 
         @api_key_instructions = <<~TEXT
@@ -93,22 +95,23 @@ module Railspress
 
           Host: #{base_url}
           API Key: #{@plain_token}
-          API Base: #{base_url}#{api_v1_posts_path.delete_suffix("/posts")}
+          API Base: #{instruction_api_base(base_url)}
 
-          Set environment variable:
+          Save the token-free project manifest shown on Agents & API as RAILSPRESS.md,
+          then review and approve its trust binding:
+            #{railspress_agent_command} config check --start /path/to/publishing-project
+            #{railspress_agent_command} config trust --start /path/to/publishing-project
+
+          Store this one-time-visible API key through RailsPress Agent:
             export RAILSPRESS_TOKEN="#{@plain_token}"
-
-          Optional site-scoped local token file:
             export RAILSPRESS_TOKEN_FILE="#{token_file}"
-            install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
-            printf '%s\n' "#{@plain_token}" > "$RAILSPRESS_TOKEN_FILE"
-            chmod 600 "$RAILSPRESS_TOKEN_FILE"
+            printf '%s\\n' "$RAILSPRESS_TOKEN" | #{railspress_agent_command} token store "$RAILSPRESS_TOKEN_FILE"
+
+          Verify connectivity and capabilities:
+            #{railspress_agent_command} prime --start /path/to/publishing-project --json
+
+          Manual content API example (the CLI currently owns setup and prime):
             export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
-
-          Quick start:
-            #{api_key_quick_start_line}
-
-          Create a draft post (default behavior):
             curl -X POST -H "Authorization: Bearer $RAILSPRESS_TOKEN" -H "Content-Type: application/json" -d '{"post":{"title":"Agent draft","content":"<p>Hello</p>"}}' #{base_url}#{api_v1_posts_path}
 
           Publish explicitly:
@@ -117,54 +120,49 @@ module Railspress
       end
 
       def set_generic_agent_instructions
-        bootstrap_token = latest_active_bootstrap_token || "<YOUR_BOOTSTRAP_TOKEN>"
+        bootstrap_token = "<YOUR_BOOTSTRAP_TOKEN>"
         base_url = instruction_base_url
-        token_file = instruction_token_file(base_url)
+        @railspress_manifest = instruction_manifest(base_url)
+        @railspress_agent_install = <<~TEXT
+          ruby --version  # Ruby 3.3+
+          curl --version  # curl 8.4+
+          curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh https://agent.railspress.org/install.sh
+          less railspress-install.sh
+          sh railspress-install.sh --all
+          #{railspress_agent_command} version
+          #{railspress_agent_command} doctor
+        TEXT
 
         @generic_agent_quick_start = <<~TEXT
+          #{railspress_agent_command} config check --start /path/to/publishing-project
+          #{railspress_agent_command} config trust --start /path/to/publishing-project
           export RAILSPRESS_BOOTSTRAP_TOKEN="#{bootstrap_token}"
-          export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer ${RAILSPRESS_BOOTSTRAP_TOKEN}" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
-          curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
+          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
         TEXT
 
         @generic_agent_instructions = <<~TEXT
           I use Railspress for blog publishing. Here's the secure agent flow:
 
           Host: #{base_url}
-          Bootstrap Token: #{bootstrap_token}
-          API Base: #{base_url}#{api_v1_posts_path.delete_suffix("/posts")}
+          Bootstrap Token: #{bootstrap_token} (obtain it from its one-time reveal page)
+          API Base: #{instruction_api_base(base_url)}
 
-          Exchange bootstrap token for a real API key (one-time bootstrap):
+          1) Save the token-free RAILSPRESS.md shown on this page at the publishing project root.
+
+          2) Review and explicitly trust its normalized host, API base, and token path:
+            #{railspress_agent_command} config check --start /path/to/publishing-project
+            #{railspress_agent_command} config trust --start /path/to/publishing-project
+
+          3) Exchange and store the one-time bootstrap token through RailsPress Agent:
             export RAILSPRESS_BOOTSTRAP_TOKEN="#{bootstrap_token}"
-            export RAILSPRESS_TOKEN=$(curl -s -X POST -H "Authorization: Bearer ${RAILSPRESS_BOOTSTRAP_TOKEN}" #{base_url}#{exchange_api_v1_agent_keys_path} | ruby -rjson -e 'print JSON.parse(STDIN.read).dig("data","api_key","token")')
+            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
 
-          Optional site-scoped local token file:
-            export RAILSPRESS_TOKEN_FILE="#{token_file}"
-            install -d -m 700 "$(dirname "$RAILSPRESS_TOKEN_FILE")"
-            printf '%s\n' "$RAILSPRESS_TOKEN" > "$RAILSPRESS_TOKEN_FILE"
-            chmod 600 "$RAILSPRESS_TOKEN_FILE"
-            export RAILSPRESS_TOKEN="$(cat "$RAILSPRESS_TOKEN_FILE")"
-
-          Quick start:
-            curl -H "Authorization: Bearer $RAILSPRESS_TOKEN" #{base_url}#{api_v1_prime_path}
-
-          Create a draft post (default behavior):
-            curl -X POST -H "Authorization: Bearer $RAILSPRESS_TOKEN" -H "Content-Type: application/json" -d '{"post":{"title":"Agent draft","content":"<p>Hello</p>"}}' #{base_url}#{api_v1_posts_path}
+          4) Returning sessions verify capabilities before every write:
+            #{railspress_agent_command} prime --start /path/to/publishing-project --json
 
           Publish explicitly:
             set "post.status" to "published" (optionally also set "post.published_at")
         TEXT
-      end
-
-      def api_key_quick_start_line
-        @api_key_quick_start.strip
-      end
-
-      def latest_active_bootstrap_token
-        bootstrap_key = AgentBootstrapKey.active.recent.first
-        return nil unless bootstrap_key
-
-        AgentBootstrapKey.build_token(bootstrap_key.token_prefix, bootstrap_key.secret_ciphertext)
       end
     end
   end

@@ -108,9 +108,9 @@ module Railspress
     end
 
     def exchange!(ip_address: nil, api_key_name: default_api_key_name, api_key_expires_at: nil)
-      raise ExchangeError, "Bootstrap key is not active." unless active?
-
       transaction do
+        claim_exchange!(ip_address:)
+
         api_key_actor = owner || created_by
         api_key_owner = owner || api_key_actor
         api_key, plain_token = Railspress::ApiKey.issue!(
@@ -121,8 +121,6 @@ module Railspress
         )
 
         update!(
-          used_at: Time.current,
-          used_ip: ip_address,
           exchanged_api_key: api_key
         )
 
@@ -151,6 +149,18 @@ module Railspress
     end
 
     private
+
+    def claim_exchange!(ip_address:)
+      claimed_at = Time.current
+      claimed = self.class
+        .where(id:, revoked_at: nil, used_at: nil)
+        .where("expires_at > ?", claimed_at)
+        .update_all(used_at: claimed_at, used_ip: ip_address, updated_at: claimed_at)
+
+      raise ExchangeError, "Bootstrap key is not active." unless claimed == 1
+
+      reload
+    end
 
     def default_api_key_name
       "#{name} (API Key)"

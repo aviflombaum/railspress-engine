@@ -178,6 +178,24 @@ end
 
 RailsPress then exposes bearer-authenticated endpoints under the engine mount, such as `/railspress/api/v1/prime`, and key management under `/railspress/admin/api_keys`.
 
+For AI agents and first-time API setup, RailsPress Agent is the recommended
+client. The **Agents & API** page includes an always-visible installer card, a
+token-free `RAILSPRESS.md` generated for the host's real public URL and engine
+mount, and CLI-first key instructions. The CLI validates explicit project
+trust, exchanges one-time bootstrap keys from stdin, stores the resulting API
+key outside the repository, and verifies `/prime`:
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh \
+  https://agent.railspress.org/install.sh
+less railspress-install.sh
+sh railspress-install.sh --all
+"$HOME/.railspress/bin/railspress-agent" version
+```
+
+Open `/railspress/admin/api_keys` to copy the exact manifest and onboarding
+commands. Raw bearer-token requests remain supported for manual API clients.
+
 Mount the engine normally, without a host authentication route constraint. RailsPress browser controllers inherit the host application's `ApplicationController`, so they can call host authentication methods and run inherited callbacks. RailsPress API controllers use a separate `ActionController::API` stack and authenticate bearer tokens themselves.
 
 For example, if the host already defines `require_admin!` and `current_user`, the two settings above protect all `/railspress/admin/*` requests and identify the administrator responsible for API key changes. If an inherited `ApplicationController` callback already protects RailsPress, `admin_authentication_method` may be omitted.
@@ -190,7 +208,7 @@ Rails.application.routes.draw do
 end
 ```
 
-An outer session constraint runs before RailsPress and makes token-only API requests return `404`. See [API authentication](docs/api/authentication.md) for key creation and bootstrap exchange.
+An outer session constraint runs before RailsPress and makes token-only API requests return `404`. See [API authentication](docs/api/authentication.md) for RailsPress Agent setup, direct key creation, and manual bootstrap exchange.
 
 ## Authentication
 

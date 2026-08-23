@@ -85,6 +85,29 @@ module Railspress
         "$HOME/.railspress/tokens/#{instruction_token_scope(base_url)}"
       end
 
+      def instruction_api_base(base_url = instruction_base_url)
+        "#{base_url}#{api_v1_posts_path.delete_suffix("/posts")}"
+      end
+
+      def instruction_manifest(base_url = instruction_base_url)
+        <<~MARKDOWN
+          ---
+          railspress:
+            host: #{base_url}
+            api_base: #{instruction_api_base(base_url)}
+            token_file: #{instruction_token_file(base_url)}
+          ---
+
+          # RailsPress
+
+          This project publishes through RailsPress. This file contains configuration, never credentials.
+        MARKDOWN
+      end
+
+      def railspress_agent_command
+        '"$HOME/.railspress/bin/railspress-agent"'
+      end
+
       def instruction_token_scope(base_url)
         uri = URI.parse(base_url)
         return "railspress-app" if uri.host.blank?

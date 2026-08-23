@@ -33,5 +33,9 @@ RSpec.configure do |config|
 
   config.after(:each) do
     Railspress.reset_configuration!
+    Railspress.configuration.enable_cms
+    unless Railspress::Engine.routes.url_helpers.respond_to?(:admin_content_groups_path)
+      Rails.application.reload_routes!
+    end
   end
 end

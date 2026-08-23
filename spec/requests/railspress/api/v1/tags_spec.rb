@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe "Railspress::Api::V1::Tags", type: :request do
-  fixtures "railspress/tags", "railspress/posts", "railspress/taggings", :users
+  fixtures "railspress/categories", "railspress/tags", "railspress/posts", "railspress/taggings", :users
 
   let(:actor) { users(:api_admin) }
   let(:api_token) { Railspress::ApiKey.issue!(name: "Tags API", actor: actor).last }

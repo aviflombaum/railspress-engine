@@ -1,33 +1,26 @@
 <% content_for :title, "Agents & API" %>
 
 <%= rp_page_header "Agents & API",
-    "New Agent Key" => [new_admin_agent_bootstrap_key_path, class: "rp-btn rp-btn--secondary"],
-    "New API Key" => new_admin_api_key_path %>
+    "New Agent Setup Key" => [new_admin_agent_bootstrap_key_path, class: "rp-btn rp-btn--secondary"],
+    "New Developer API Key" => new_admin_api_key_path %>
 
 <div class="rp-card rp-card--padded rp-card--section">
   <div class="rp-section">
     <div class="rp-section-header">
-      <h2 class="rp-section-title">Recommended: Install RailsPress Agent</h2>
+      <h2 class="rp-section-title">1. Install RailsPress Agent</h2>
     </div>
 
     <div class="rp-form rp-form--spacious">
-      <p class="rp-hint">RailsPress Agent owns secure project trust, credential storage, bootstrap onboarding, and API capability verification. Review the installer before running it.</p>
+      <p class="rp-hint">Installs the RailsPress CLI and the RailsPress skill for Codex and Claude when detected. The installer checks system requirements automatically.</p>
 
       <%= render "railspress/admin/shared/copyable_textarea",
           id: "rp-agent-install",
-          label: "Install and Verify",
+          label: "Install",
           value: @railspress_agent_install,
-          rows: 8,
-          button_text: "Copy Install Commands" %>
+          rows: 2,
+          button_text: "Copy Install Command" %>
 
-      <p class="rp-hint">Save this token-free manifest as <code>RAILSPRESS.md</code> at the publishing project root. Review and commit it; credentials remain outside the repository.</p>
-
-      <%= render "railspress/admin/shared/copyable_textarea",
-          id: "rp-agent-manifest",
-          label: "Project Manifest (Token-Free)",
-          value: @railspress_manifest,
-          rows: 12,
-          button_text: "Copy RAILSPRESS.md" %>
+      <p class="rp-hint">The CLI manages setup, trust, credentials, and capability checks. The installed skill teaches your coding agent how to publish through the RailsPress API.</p>
     </div>
   </div>
 </div>
@@ -35,25 +28,35 @@
 <div class="rp-card rp-card--padded rp-card--section">
   <div class="rp-section">
     <div class="rp-section-header">
-      <h2 class="rp-section-title">Agent Setup Instructions (Token-Free)</h2>
+      <h2 class="rp-section-title">2. Connect This Publishing Project</h2>
     </div>
 
     <div class="rp-form rp-form--spacious">
-      <p class="rp-hint">Use a short-lived bootstrap key in agent instructions. The agent exchanges it once for a real API key.</p>
+      <p class="rp-hint"><code>RAILSPRESS.md</code> tells your coding agent which RailsPress site this project publishes to. It contains no credentials and is safe to commit. Save it in the root of the project whose content the agent will publish, which may be different from the Rails application hosting RailsPress.</p>
 
       <%= render "railspress/admin/shared/copyable_textarea",
-          id: "rp-generic-agent-quick-start",
-          label: "Bootstrap Quick Start",
-          value: @generic_agent_quick_start,
-          rows: 10,
-          button_text: "Copy Quick Start" %>
+          id: "rp-agent-manifest",
+          label: "Project Connection File (Token-Free)",
+          value: @railspress_manifest,
+          rows: 12,
+          button_text: "Copy RAILSPRESS.md" %>
 
-      <%= render "railspress/admin/shared/copyable_textarea",
-          id: "rp-generic-agent-instructions",
-          label: "Agent Instructions",
-          value: @generic_agent_instructions,
-          rows: 10,
-          button_text: "Copy Instructions" %>
+      <p class="rp-hint">Next, create an Agent Setup Key. It expires in one hour, cannot publish content itself, and is exchanged once for an API key stored outside the repository.</p>
+
+      <div class="rp-form-actions">
+        <%= link_to "Create Agent Setup Key", new_admin_agent_bootstrap_key_path, class: "rp-btn rp-btn--primary" %>
+      </div>
+
+      <details>
+        <summary>Manual agent setup without the RailsPress CLI</summary>
+        <p class="rp-hint">Use this advanced fallback only when the CLI cannot be installed. Your coding agent must perform trust review, one-time exchange, secure storage, and API capability discovery itself.</p>
+        <%= render "railspress/admin/shared/copyable_textarea",
+            id: "rp-manual-agent-instructions",
+            label: "Manual Agent Instructions",
+            value: @manual_agent_instructions,
+            rows: 16,
+            button_text: "Copy Manual Instructions" %>
+      </details>
     </div>
   </div>
 </div>
@@ -61,8 +64,10 @@
 <div class="rp-card rp-card--padded rp-card--section">
   <div class="rp-section">
     <div class="rp-section-header">
-      <h2 class="rp-section-title">API Keys</h2>
+      <h2 class="rp-section-title">Developer API Keys</h2>
     </div>
+
+    <p class="rp-hint">Reusable credentials for custom scripts, CI, and clients that call the HTTP API directly. For first-time Codex or Claude setup, use an Agent Setup Key instead.</p>
 
     <% if @api_keys.any? %>
       <div class="rp-table--responsive">
@@ -117,7 +122,7 @@
 <div class="rp-card rp-card--padded rp-card--section">
   <div class="rp-section">
     <div class="rp-section-header">
-      <h2 class="rp-section-title">Agent Bootstrap Keys</h2>
+      <h2 class="rp-section-title">Agent Setup Keys</h2>
     </div>
 
     <% if @agent_bootstrap_keys.any? %>

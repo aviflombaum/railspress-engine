@@ -1,6 +1,8 @@
-# Agent Bootstrap Keys
+# Agent Setup Keys (Bootstrap Keys)
 
-Agent bootstrap keys are short-lived, one-time onboarding tokens.
+The admin UI calls these **Agent Setup Keys**. The API and model use the
+technical term **bootstrap key**. They are short-lived, one-time onboarding
+tokens and cannot access content endpoints.
 
 - Token format: `rpb_<environment>_<prefix>_<secret>`
 - Default expiration: 1 hour
@@ -11,25 +13,21 @@ Use bootstrap keys when you want to give an agent setup instructions without exp
 ## Preferred RailsPress Agent Flow
 
 The **Agents & API** page provides the exact token-free `RAILSPRESS.md` for the
-host and mount. Save it at the publishing project root, review its normalized
-values, and establish trust before using a credential:
-
-```bash
-"$HOME/.railspress/bin/railspress-agent" config check --start /path/to/project
-"$HOME/.railspress/bin/railspress-agent" config trust --start /path/to/project
-```
-
-Then pipe the one-time token from its reveal page to the CLI:
+host and mount. Save it at the publishing project root, then pipe the one-time
+key from its reveal page to the preferred connection command:
 
 ```bash
 export RAILSPRESS_BOOTSTRAP_TOKEN="rpb_test_..."
 printf '%s\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" \
-  | "$HOME/.railspress/bin/railspress-agent" onboard --start /path/to/project --json
+  | "$HOME/.railspress/bin/railspress-agent" connect --start /path/to/project --json
 ```
 
-`onboard` refuses an existing token destination, makes exactly one exchange
-request without redirects or retries, stores only the returned API key, rereads
-it through the production credential checks, and verifies `/prime`.
+`connect` displays the normalized connection for explicit approval when first
+used. It refuses mismatched trust or an existing token destination, makes
+exactly one exchange request without redirects or retries, stores only the
+returned API key, rereads it through the production credential checks, and
+verifies `/prime`. Headless automation can establish trust separately and use
+the lower-level `onboard` command.
 
 If it reports `exchange_outcome_unknown`, do not repeat the bootstrap request.
 Inspect or revoke any server-side API key and create a new bootstrap key. If it
@@ -104,7 +102,7 @@ Admin endpoints:
 UI location:
 
 - `/railspress/admin/api_keys` (**Agents & API** page)
-- Click **New Agent Key**
+- Click **New Agent Setup Key**
 
 The one-time bootstrap token is only shown on create. The generic Agents & API
 index intentionally uses a placeholder and never reconstructs an active token.

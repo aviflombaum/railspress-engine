@@ -33,33 +33,32 @@ end
 ```
 
 2. Open **Agents & API** in admin (`/railspress/admin/api_keys`). Install
-RailsPress Agent from the always-visible setup card, then save its generated,
-token-free manifest as `RAILSPRESS.md` at the publishing project root.
-
-The review-first install path is:
+RailsPress Agent, which includes the CLI and skills for detected Codex/Claude
+runtimes:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh \
-  https://agent.railspress.org/install.sh
-less railspress-install.sh
-sh railspress-install.sh --all
-"$HOME/.railspress/bin/railspress-agent" version
-"$HOME/.railspress/bin/railspress-agent" doctor
+curl -fsSL https://agent.railspress.org/install.sh | sh
 ```
 
-Review the manifest values before creating their local trust binding:
+The installer checks requirements automatically. An inspect-first installation
+is available under the advanced installation guidance.
+
+Save the generated token-free project connection file as `RAILSPRESS.md` in
+the root of the project whose content the agent will publish. It selects this
+RailsPress host/API/token path without containing credentials.
+
+3. Create an **Agent Setup Key** and run its generated connection command:
 
 ```bash
-"$HOME/.railspress/bin/railspress-agent" config check --start /path/to/project
-"$HOME/.railspress/bin/railspress-agent" config trust --start /path/to/project
+export RAILSPRESS_BOOTSTRAP_TOKEN="rpb_test_..."
+printf '%s\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" \
+  | railspress-agent connect --start /path/to/project --json
 ```
 
-3. Create a bootstrap key:
-
-- Go to `/railspress/admin/api_keys`
-- Click **New Agent Key** and copy the one-time reveal instructions
-- Pipe the bootstrap token to `railspress-agent onboard --json`; the command
-  exchanges it once, stores only the API key, and verifies `/prime`
+`connect` displays the normalized connection for explicit local approval,
+exchanges the setup key once, stores only the API key, and verifies `/prime`.
+It never replaces changed trust or an existing credential. The lower-level
+`config` and `onboard` commands remain available for automation and diagnosis.
 
 4. For returning sessions, verify the server contract before every write:
 
@@ -67,9 +66,10 @@ Review the manifest values before creating their local trust binding:
 "$HOME/.railspress/bin/railspress-agent" prime --start /path/to/project --json
 ```
 
-Direct bearer-token HTTP remains available for clients that intentionally do
-not install RailsPress Agent. See [Authentication](authentication.md) and
-[Agent Bootstrap Keys](agent_bootstrap_keys.md) for the manual path.
+Create a reusable **Developer API Key** for custom scripts, CI, or clients that
+intentionally do not use Agent Setup Keys. Direct bearer-token HTTP and the
+manual/no-CLI agent protocol remain available under [Authentication](authentication.md)
+and [Agent Bootstrap Keys](agent_bootstrap_keys.md).
 
 ## v1 Scope
 

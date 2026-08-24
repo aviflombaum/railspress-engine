@@ -75,7 +75,7 @@ Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetc
 - Used for all content endpoints (`/api/v1/posts`, `/api/v1/categories`, etc.)
 - Default expiration: none (unless set at creation)
 
-### 2) Agent Bootstrap Key (onboarding token)
+### 2) Agent Setup Key (bootstrap/onboarding token)
 
 - Format: `rpb_<environment>_<prefix>_<secret>`
 - Exchange-only token for `POST /api/v1/agent_keys/exchange`
@@ -84,17 +84,20 @@ Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetc
 
 ## Bootstrap Exchange Flow
 
-1. Create a key in admin (`/railspress/admin/api_keys`) via **New Agent Key** on the **Agents & API** page.
+1. Create a key in admin (`/railspress/admin/api_keys`) via **New Agent Setup Key** on the **Agents & API** page.
 2. Save the token-free `RAILSPRESS.md` from that page in the publishing project,
 review it, and establish trust.
-3. Use RailsPress Agent for the one-time exchange, secure storage, and `/prime`
-verification:
+3. Use the preferred RailsPress Agent connection command for trust approval,
+one-time exchange, secure storage, and `/prime` verification:
 
 ```bash
 export RAILSPRESS_BOOTSTRAP_TOKEN="rpb_test_..."
 printf '%s\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" \
-  | "$HOME/.railspress/bin/railspress-agent" onboard --start /path/to/project --json
+  | "$HOME/.railspress/bin/railspress-agent" connect --start /path/to/project --json
 ```
+
+For already trusted/headless automation, `onboard` remains the lower-level
+exchange command.
 
 The exchange is atomically claimed by the engine. Concurrent or replayed use
 cannot mint another API key. Never automatically retry an unknown outcome;

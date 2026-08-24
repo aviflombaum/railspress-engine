@@ -1,6 +1,6 @@
-<% content_for :title, "API Key Created" %>
+<% content_for :title, "Developer API Key Created" %>
 
-<h1 class="rp-page-title rp-page-title--standalone">API Key Created</h1>
+<h1 class="rp-page-title rp-page-title--standalone">Developer API Key Created</h1>
 
 <div class="rp-card rp-card--padded">
   <div class="rp-form rp-form--spacious">
@@ -10,7 +10,7 @@
 
     <%= render "railspress/admin/shared/copyable_textarea",
         id: "rp-api-key-token",
-        label: "Bearer Token",
+        label: "Developer API Key",
         value: @plain_token,
         rows: 4,
         hint: "Use this as Authorization: Bearer <token> (or follow the instructions below to save it in a site-scoped token file).",
@@ -33,7 +33,7 @@
         button_text: "Copy Instructions" %>
 
     <div class="rp-form-actions">
-      <%= link_to "Create Another API Key", new_admin_api_key_path, class: "rp-btn rp-btn--primary" %>
+      <%= link_to "Create Another Developer API Key", new_admin_api_key_path, class: "rp-btn rp-btn--primary" %>
       <%= link_to "Back to Agents & API", admin_api_keys_path, class: "rp-btn rp-btn--secondary" %>
     </div>
   </div>

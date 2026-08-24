@@ -124,44 +124,29 @@ module Railspress
         base_url = instruction_base_url
         @railspress_manifest = instruction_manifest(base_url)
         @railspress_agent_install = <<~TEXT
-          ruby --version  # Ruby 3.3+
-          curl --version  # curl 8.4+
-          curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh https://agent.railspress.org/install.sh
-          less railspress-install.sh
-          sh railspress-install.sh --all
-          #{railspress_agent_command} version
-          #{railspress_agent_command} doctor
+          curl -fsSL https://agent.railspress.org/install.sh | sh
         TEXT
 
-        @generic_agent_quick_start = <<~TEXT
-          #{railspress_agent_command} config check --start /path/to/publishing-project
-          #{railspress_agent_command} config trust --start /path/to/publishing-project
-          export RAILSPRESS_BOOTSTRAP_TOKEN="#{bootstrap_token}"
-          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
-        TEXT
-
-        @generic_agent_instructions = <<~TEXT
-          I use Railspress for blog publishing. Here's the secure agent flow:
+        @manual_agent_instructions = <<~TEXT
+          Manual RailsPress agent protocol (use only when RailsPress Agent cannot be installed):
 
           Host: #{base_url}
-          Bootstrap Token: #{bootstrap_token} (obtain it from its one-time reveal page)
           API Base: #{instruction_api_base(base_url)}
+          Bootstrap Exchange: #{base_url}#{exchange_api_v1_agent_keys_path}
+          Agent Setup Key: #{bootstrap_token} (obtain it from its one-time reveal page)
+          API Token Path: #{instruction_token_file(base_url)}
 
-          1) Save the token-free RAILSPRESS.md shown on this page at the publishing project root.
+          1) Save the token-free RAILSPRESS.md shown on this page in the publishing project root.
 
-          2) Review and explicitly trust its normalized host, API base, and token path:
-            #{railspress_agent_command} config check --start /path/to/publishing-project
-            #{railspress_agent_command} config trust --start /path/to/publishing-project
+          2) Validate and show the host, API base, and token path. Obtain explicit approval before sending credentials.
 
-          3) Exchange and store the one-time bootstrap token through RailsPress Agent:
-            export RAILSPRESS_BOOTSTRAP_TOKEN="#{bootstrap_token}"
-            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
+          3) Send the rpb_ setup key exactly once to the exchange endpoint as Bearer authentication. Do not follow redirects or retry an unknown outcome. Require 201 JSON and store only data.api_key.token outside the repository with owner-only permissions.
 
-          4) Returning sessions verify capabilities before every write:
-            #{railspress_agent_command} prime --start /path/to/publishing-project --json
+          4) Before every write, call API Base + /prime with the stored rp_ API key. Require compatible JSON and use its capabilities and endpoint paths.
 
-          Publish explicitly:
-            set "post.status" to "published" (optionally also set "post.published_at")
+          5) Create drafts by default. Publish or delete only when explicitly requested.
+
+          If exchange may have succeeded but the response or storage outcome is unknown, do not exchange again. Ask an administrator to inspect and revoke any minted API key before issuing another Agent Setup Key.
         TEXT
       end
     end

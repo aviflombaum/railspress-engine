@@ -120,10 +120,10 @@ RSpec.describe "Packaged documentation contracts" do
     bootstrap_guide = engine_root.join("docs/api/agent_bootstrap_keys.md").read
     authentication_guide = engine_root.join("docs/api/authentication.md").read
 
-    expect(readme).to include("https://agent.railspress.org/install.sh")
-    expect(api_readme).to include("railspress-agent", "onboard", "RAILSPRESS.md")
-    expect(bootstrap_guide).to include("railspress-agent", "onboard", "exchange_outcome_unknown")
-    expect(authentication_guide).to include("railspress-agent", "prime", "atomically claimed")
+    expect(readme).to include("curl -fsSL https://agent.railspress.org/install.sh | sh", "Agent Setup Key", "Developer API Key")
+    expect(api_readme).to include("railspress-agent", "connect", "onboard", "RAILSPRESS.md")
+    expect(bootstrap_guide).to include("Agent Setup Key", "connect", "onboard", "exchange_outcome_unknown")
+    expect(authentication_guide).to include("Agent Setup Key", "connect", "prime", "atomically claimed")
     expect([ bootstrap_guide, authentication_guide ].join).not_to include('> "$RAILSPRESS_TOKEN_FILE"')
   end
 

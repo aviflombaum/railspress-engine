@@ -179,22 +179,22 @@ end
 RailsPress then exposes bearer-authenticated endpoints under the engine mount, such as `/railspress/api/v1/prime`, and key management under `/railspress/admin/api_keys`.
 
 For AI agents and first-time API setup, RailsPress Agent is the recommended
-client. The **Agents & API** page includes an always-visible installer card, a
-token-free `RAILSPRESS.md` generated for the host's real public URL and engine
-mount, and CLI-first key instructions. The CLI validates explicit project
-trust, exchanges one-time bootstrap keys from stdin, stores the resulting API
-key outside the repository, and verifies `/prime`:
+client. It installs both the secure local CLI and RailsPress skills for
+detected Codex and Claude runtimes. The CLI owns setup and credentials; the
+skill teaches the coding agent how to publish through the API.
+
+The installer checks requirements automatically:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fsS -o railspress-install.sh \
-  https://agent.railspress.org/install.sh
-less railspress-install.sh
-sh railspress-install.sh --all
-"$HOME/.railspress/bin/railspress-agent" version
+curl -fsSL https://agent.railspress.org/install.sh | sh
 ```
 
-Open `/railspress/admin/api_keys` to copy the exact manifest and onboarding
-commands. Raw bearer-token requests remain supported for manual API clients.
+Open `/railspress/admin/api_keys` to copy the token-free project connection
+file and create a one-time **Agent Setup Key**. The generated `connect` command
+reviews local trust, exchanges that key for a securely stored API key, and
+verifies `/prime`. Create a reusable **Developer API Key** only for custom
+scripts, CI, or direct HTTP clients. Manual/no-CLI instructions remain
+available as an advanced fallback.
 
 Mount the engine normally, without a host authentication route constraint. RailsPress browser controllers inherit the host application's `ApplicationController`, so they can call host authentication methods and run inherited callbacks. RailsPress API controllers use a separate `ActionController::API` stack and authenticate bearer tokens themselves.
 

@@ -72,32 +72,29 @@ module Railspress
 
       def set_bootstrap_instructions
         base_url = instruction_base_url
+        @railspress_manifest = instruction_manifest(base_url)
 
         @bootstrap_quick_start = <<~TEXT
           export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
+          printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} connect --start /path/to/publishing-project --json
         TEXT
 
         @bootstrap_instructions = <<~TEXT
-          I use Railspress for blog publishing. Here's the secure agent setup:
+          Connect this publishing project to RailsPress:
 
           Host: #{base_url}
-          Bootstrap Token (one-time): #{@plain_bootstrap_token}
+          Agent Setup Key (one-time): #{@plain_bootstrap_token}
           API Base: #{instruction_api_base(base_url)}
           Token Path: #{instruction_token_file(base_url)}
 
-          1) Save the token-free RAILSPRESS.md from Agents & API at the publishing project root.
+          1) Save the RAILSPRESS.md shown here at the publishing project root. It contains connection settings, never credentials.
 
-          2) Review and explicitly trust its normalized values:
-            #{railspress_agent_command} config check --start /path/to/publishing-project
-            #{railspress_agent_command} config trust --start /path/to/publishing-project
-
-          3) Exchange once, store the API key safely, and verify /prime:
+          2) From that project, run the connection command. RailsPress Agent will show the normalized connection for approval, exchange this setup key once, store only the API key, and verify /prime:
             export RAILSPRESS_BOOTSTRAP_TOKEN="#{@plain_bootstrap_token}"
-            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} onboard --start /path/to/publishing-project --json
+            printf '%s\\n' "$RAILSPRESS_BOOTSTRAP_TOKEN" | #{railspress_agent_command} connect --start /path/to/publishing-project --json
 
           Never automatically retry an unknown exchange outcome. Inspect or revoke the
-          server-side API key, then create a new bootstrap key.
+          server-side API key, then create a new Agent Setup Key.
         TEXT
       end
     end

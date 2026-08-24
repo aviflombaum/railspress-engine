@@ -20,7 +20,9 @@ RSpec.describe "Railspress::Admin::AgentBootstrapKeys", type: :request do
       get railspress.new_admin_agent_bootstrap_key_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("New Agent Key")
+      expect(response.body).to include("New Agent Setup Key")
+      expect(response.body).to include("cannot publish content")
+      expect(response.body).to include("Create Agent Setup Key")
     end
   end
 
@@ -32,11 +34,13 @@ RSpec.describe "Railspress::Admin::AgentBootstrapKeys", type: :request do
       }.to change(Railspress::AgentBootstrapKey, :count).by(1)
 
       expect(response).to have_http_status(:created)
-      expect(response.body).to include("Bootstrap Token")
-      expect(response.body).to include("Bootstrap Quick Start")
-      expect(response.body).to include(railspress.exchange_api_v1_agent_keys_path)
-      expect(response.body).to include("onboard --start /path/to/publishing-project --json")
-      expect(response.body).to include("config trust --start /path/to/publishing-project")
+      expect(response.body).to include("Agent Setup Key")
+      expect(response.body).to include("Connect Project")
+      expect(response.body).to include("Project Connection File (Token-Free)")
+      expect(response.body).to include("connect --start /path/to/publishing-project --json")
+      expect(response.body).to include("show the normalized connection for approval")
+      expect(response.body).not_to include("onboard --start /path/to/publishing-project --json")
+      expect(response.body).not_to include("config trust --start /path/to/publishing-project")
       expect(response.body).not_to include("install -d -m 700")
       expect(response.body).not_to include("--replace")
       expect(response.body).to match(/rpb_#{Rails.env}_[a-f0-9]{12}_[a-f0-9]{64}/)

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Streamlined agent connection**: Agents & API now presents a one-line installer, a clearly explained token-free project connection file, one-time Agent Setup Keys, reusable Developer API Keys, and a collapsed manual/no-CLI fallback. Generated first-time instructions use `railspress-agent connect` to compose trust approval, bootstrap exchange, secure storage, and `/prime` verification.
 - **Shareable post previews**: Hosts can opt into expiring, purpose-scoped preview links for draft and scheduled posts with `config.enable_post_previews`. RailsPress generates links under the configured `blog_path`, while the host blog controller explicitly resolves signed tokens and keeps ordinary requests published-only.
 - **Initializer validation**: Doctor now checks for a missing initializer and invalid Ruby syntax before application boot, reports settings that raise while the initializer is evaluated, and continues to surface RailsPress validation errors and deprecated settings after boot.
 - **Installation diagnostics**: Added `bin/rails railspress:doctor`, a read-only report for resolved authentication, mounts, API encryption, deprecated initializer settings, and RailsPress migration state. Definite failures return a nonzero status while unverifiable host auth and route constraints remain warnings.

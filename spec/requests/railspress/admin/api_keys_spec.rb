@@ -20,16 +20,21 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
     it "returns success for authenticated actors" do
       get railspress.admin_api_keys_path
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Bootstrap Quick Start")
-      expect(response.body).to include("Agent Instructions")
+      expect(response.body).to include("Manual Agent Instructions")
+      expect(response.body).to include("Manual agent setup without the RailsPress CLI")
       expect(response.body).to include("YOUR_BOOTSTRAP_TOKEN")
-      expect(response.body).to include("Agent Bootstrap Keys")
-      expect(response.body).to include("API Keys")
-      expect(response.body).to include("New Agent Key")
-      expect(response.body).to include("Recommended: Install RailsPress Agent")
-      expect(response.body).to include("https://agent.railspress.org/install.sh")
-      expect(response.body).to include("Project Manifest (Token-Free)")
-      expect(response.body).to include("onboard --start /path/to/publishing-project --json")
+      expect(response.body).to include("Agent Setup Keys")
+      expect(response.body).to include("Developer API Keys")
+      expect(response.body).to include("New Agent Setup Key")
+      expect(response.body).to include("1. Install RailsPress Agent")
+      expect(response.body).to include("curl -fsSL https://agent.railspress.org/install.sh | sh")
+      expect(response.body).to include("Project Connection File (Token-Free)")
+      expect(response.body).to include("CLI manages setup")
+      expect(response.body).to include("installed skill teaches your coding agent")
+      expect(response.body).not_to include("ruby --version")
+      expect(response.body).not_to include("curl --version")
+      expect(response.body).not_to include("config trust --start")
+      expect(response.body).not_to include("onboard --start")
     end
 
     it "never redisplays an active bootstrap token on the generic index" do
@@ -165,6 +170,17 @@ RSpec.describe "Railspress::Admin::ApiKeys", type: :request do
 
       created_key = Railspress::ApiKey.order(:id).last
       expect(created_key.expires_at).to be_nil
+    end
+  end
+
+  describe "GET /admin/api_keys/new" do
+    it "explains when to create a reusable developer key" do
+      get railspress.new_admin_api_key_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Developer API Key Name")
+      expect(response.body).to include("custom scripts, CI, and direct HTTP clients")
+      expect(response.body).to include("use an Agent Setup Key instead")
     end
   end
 

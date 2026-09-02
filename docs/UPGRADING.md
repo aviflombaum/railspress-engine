@@ -2,13 +2,13 @@
 
 This guide covers upgrading the RailsPress engine between versions.
 
-## Current Upgrade Workflow (Unreleased)
+## Current Upgrade Workflow (1.5.0 from 1.4.4)
 
-The current Unreleased changes add doctor/upgrade tasks and additive API content/media capabilities. API clients can now write HTML, Markdown, plain text, or auto-detected post content; upload inline Action Text assets; manage gallery images; and read expanded Post and Prime serialization. Plain-text imports remain literal rather than being interpreted as Markdown.
+RailsPress 1.5.0 adds doctor/upgrade tasks and additive API content/media capabilities. API clients can now write HTML, Markdown, plain text, or auto-detected post content; upload inline Action Text assets; manage gallery images; and read expanded Post and Prime serialization. Plain-text imports remain literal rather than being interpreted as Markdown.
 
-These additions require no new migrations or initializer changes beyond the requirements of the installed 1.4.5 release. API consumers should accept additive response keys, read the Prime capability flags, and remember that content reads return canonical HTML. Gallery/header media remains gated by `config.enable_post_images`, while inline post assets only require Agents & API. Post import retries can create duplicates; inspect partial results before retrying.
+This release includes a compatibility migration that makes the legacy token ciphertext columns nullable. Copy and apply that migration before deploying 1.5.0 code. Existing API keys and Agent Setup Keys remain valid because authentication continues to use their unchanged keyed digests; no rotation is required. RailsPress no longer reads or requires host Active Record Encryption configuration, and the upgrade does not change configuration used by the host's own encrypted models.
 
-The following 1.4.5 authentication, encryption, and local-asset requirements still apply when upgrading from an older release.
+API consumers should accept additive response keys, read the Prime capability flags, and remember that content reads return canonical HTML. Gallery/header media remains gated by `config.enable_post_images`, while inline post assets only require Agents & API. Post import retries can create duplicates; inspect partial results before retrying.
 
 RailsPress admin controllers now inherit the host application's `ApplicationController`. Mount the engine normally and configure the host methods RailsPress should use:
 
@@ -24,16 +24,6 @@ end
 API controllers remain on a separate `ActionController::API` stack and use bearer authentication, so remove session-only constraints wrapped around the entire engine mount. A rejected constraint can return `404` before API authentication runs. If a later catch-all route handles the miss, an API client can instead receive `200 text/html` with a login page. After remediation, an unauthenticated API request should reach RailsPress and return `401`, not `404` or successful HTML.
 
 Rename `current_api_actor_method` to `current_admin_method`, `current_api_actor_proc` to `current_admin_proc`, and any controller-helper use of `current_api_actor` to `current_railspress_admin`. The old names continue to work with deprecation warnings in RailsPress 1.x and will be removed in RailsPress 2.0.
-
-RailsPress now validates the Active Record Encryption prerequisite when Agents & API is enabled. Existing API-enabled hosts must provide `primary_key`, `deterministic_key`, and `key_derivation_salt` through Rails credentials or `config.active_record.encryption` in every deployed environment.
-
-If credentials are missing, generate the standard Rails snippet and store its values in the host's credentials or deployment secret manager:
-
-```bash
-bin/rails db:encryption:init
-```
-
-RailsPress does not generate, persist, or overwrite these secrets. A missing value normally stops boot with `Railspress::ConfigurationError`. `bin/rails railspress:doctor` uses a narrow report-only boot mode so it can name RailsPress configuration failures without weakening normal application boot validation. Hosts that do not call `config.enable_api` are unaffected.
 
 RailsPress now depends on `stimulus-rails >= 1.2.2` and serves its default Stimulus import locally instead of loading Stimulus from JSPM. Bundler will reuse a compatible host installation; applications pinned below 1.2.2 must upgrade that pin. Existing host importmap pins remain authoritative because the host map loads after the engine map. The Google Fonts import was also removed, so RailsPress admin display text now uses the local Georgia/system-serif stack.
 
@@ -80,8 +70,6 @@ bin/rails railspress:install:migrations
 bin/rails db:migrate
 bin/rails railspress:doctor
 ```
-
-If Agents & API is enabled, confirm that the host already supplies all three Active Record Encryption settings before restarting. Run `bin/rails db:encryption:init` only when a value is missing, and store the generated values in the host's secret-management system. Never replace working production encryption credentials during a routine upgrade.
 
 Also verify that `/railspress/admin/*` is protected through `config.admin_authentication_method` or an inherited host callback, while the engine itself is mounted without an outer session constraint.
 
@@ -316,13 +304,13 @@ If two host files have the same RailsPress migration name with different timesta
 
 ## Version-Specific Notes
 
-### Upgrading to 1.4.5 (from 1.4.4)
+### Upgrading to 1.5.0 (from 1.4.4)
 
 RailsPress browser admin controllers now inherit the host `ApplicationController`; mount the engine normally, protect the admin with `config.admin_authentication_method` or an inherited callback, and configure `config.current_admin_method` for lifecycle auditing. Rename the deprecated `current_api_actor_*` settings before RailsPress 2.0.
 
-Agents & API now validates all three host-owned Active Record Encryption settings at boot. Generate missing values with `bin/rails db:encryption:init`, store them in credentials or the deployment secret manager, and never replace working production keys during a routine upgrade.
+Copy and apply `allow_null_railspress_token_ciphertext` before deploying the new code. It keeps the legacy columns for rolling compatibility while allowing 1.5.0 to persist digest-only keys. Existing tokens need no rotation, and RailsPress does not read or modify encryption configuration used elsewhere in the host.
 
-The release also requires `stimulus-rails >= 1.2.2`, serves the default Stimulus import locally, and removes the Google Fonts request. No migration is required. Remove an obsolete RailsPress-specific external Stimulus pin unless the host intentionally owns that pin.
+The release also requires `stimulus-rails >= 1.2.2`, serves the default Stimulus import locally, and removes the Google Fonts request. Remove an obsolete RailsPress-specific external Stimulus pin unless the host intentionally owns that pin.
 
 ### Upgrading to 1.4.4 (from 1.4.3)
 
@@ -478,9 +466,8 @@ bin/rails railspress:install:migrations
 bin/rails db:migrate
 ```
 
-2. Configure Active Record Encryption keys in your host app. Run `bin/rails db:encryption:init` to generate the standard credentials snippet; RailsPress never writes it for you.
-3. Enable API in your RailsPress initializer (`config.enable_api`).
-4. Open `/railspress/admin/api_keys` (Agents & API) and create:
+2. Enable API in your RailsPress initializer (`config.enable_api`).
+3. Open `/railspress/admin/api_keys` (Agents & API) and create:
    - an **Agent Key** (bootstrap, one-time exchange), or
    - an **API Key** (direct bearer token).
 

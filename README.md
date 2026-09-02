@@ -84,13 +84,7 @@ Most content doesn't fit neatly into "blog posts." A portfolio piece isn't a pos
 - ActionText
 - Active Storage
 
-The optional Agents & API feature also requires all three Active Record Encryption credentials. RailsPress checks for them when `config.enable_api` is enabled, but never generates or writes them. Generate the standard Rails credentials snippet with:
-
-```bash
-bin/rails db:encryption:init
-```
-
-Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` values in the host application's Rails credentials or deployment secret-management system.
+Agents & API uses one-time-revealed bearer tokens. RailsPress stores only a keyed digest for verification, so token values cannot be recovered from the database and no additional encryption configuration is required.
 
 RailsPress also depends on `stimulus-rails >= 1.2.2` and supplies a local `@hotwired/stimulus` importmap pin. Hosts do not need a CDN pin. A host importmap pin with the same package name loads after the engine map and therefore remains authoritative when an application intentionally manages its own Stimulus asset.
 
@@ -140,9 +134,7 @@ bin/rails generate railspress:install
 bin/rails db:migrate
 ```
 
-The generator copies the complete RailsPress migration history, plus Action Text and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. The generated initializer enables post images, post focal points, and CMS blocks for new installations while leaving authors, inline editing, entities, and Agents & API opt-in. RailsPress migrations are installed even when the feature that uses their tables is disabled. The generator does not run migrations or write encryption credentials. Existing files and registrations are skipped where possible.
-
-The installer reports whether Active Record Encryption is already configured. It only prints the setup command when the credentials are missing; API-disabled applications can otherwise continue normally. Existing installations should follow the [upgrade guide](docs/UPGRADING.md) rather than treating a generator rerun as a complete upgrade.
+The generator copies the complete RailsPress migration history, plus Action Text and Active Storage migrations when they are missing; mounts the engine; adds the Active Storage importmap pin when the host uses importmap; and creates the initializer when absent. The generated initializer enables post images, post focal points, and CMS blocks for new installations while leaving authors, inline editing, entities, and Agents & API opt-in. RailsPress migrations are installed even when the feature that uses their tables is disabled. The generator does not run migrations. Existing files and registrations are skipped where possible. Existing installations should follow the [upgrade guide](docs/UPGRADING.md) rather than treating a generator rerun as a complete upgrade.
 
 Check the resolved installation at any time with the read-only doctor command:
 
@@ -165,7 +157,7 @@ end
 
 ### Enabling Agents & API
 
-After Active Record Encryption is configured, enable the API in the host initializer:
+Enable the API in the host initializer:
 
 ```ruby
 # config/initializers/railspress.rb

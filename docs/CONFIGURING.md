@@ -57,7 +57,7 @@ bin/rails generate railspress:install
 | `config/importmap.rb` | Adds the Active Storage ESM pin when importmap is installed and the pin is absent |
 | RailsPress initializer | Creates the documented template, with post images, post focal points, and CMS enabled, only when the file is absent |
 
-The generator copies every missing RailsPress migration but does not run `db:migrate`. Its initializer enables the recommended post-image, focal-point, and CMS features for new installations; host-dependent features remain opt-in. It does not generate or write Active Record Encryption credentials. It reports whether encryption is already available so you can decide whether to enable Agents & API.
+The generator copies every missing RailsPress migration but does not run `db:migrate`. Its initializer enables the recommended post-image, focal-point, and CMS features for new installations; host-dependent features remain opt-in.
 
 The generator detects an existing RailsPress route, initializer, or copied migration and changes its final message to the upgrade workflow. Rerunning it can fill in missing setup, but it is not a replacement for reviewing [Upgrading](UPGRADING.md) and the installed version's release notes.
 
@@ -76,13 +76,13 @@ The prerequisites column describes what an enabled feature uses at runtime. It i
 | `enable_focal_points` | Off | Standard complete migration install; Post focal UI/API also requires post images | Post header focal point and context API/UI | Post focal/context API returns `404` |
 | `enable_cms` | Off | Standard complete migration install | Content groups/elements, CMS transfer routes, and host CMS helpers | CMS routes are not drawn; disabled helper stubs raise `ConfigurationError` |
 | `inline_editing_check` | `nil` | CMS, `import "railspress"`, `yield :head`, and a proc returning true | Right-click inline editing for text blocks | No inline wrapper/menu is rendered |
-| `enable_api` | Off | Standard complete migration install and all three Active Record Encryption values | Bearer API and admin key-management navigation | API and key-management requests answer `404`, navigation is hidden, and encryption validation is skipped |
+| `enable_api` | Off | Standard complete migration install and configured current-admin identity | Bearer API and admin key-management navigation | API and key-management requests answer `404` and navigation is hidden |
 
 The focal-point model concern is reusable outside Post feature gating. Entities declared with `focal_point_image` and CMS image elements use the shared focal-point table and editor directly. `enable_focal_points` specifically gates the optional Post header-image focal-point UI and API serialization/endpoints.
 
 Routes behave differently by subsystem: CMS routes are conditionally drawn when the engine route set loads, while versioned API routes remain recognizable and the API base controller returns `404` when Agents & API is disabled.
 
-Configuration validation runs after the host initializer block. An inline-editing proc without CMS raises `Railspress::ConfigurationError`; enabling Agents & API without complete encryption configuration raises during normal application boot.
+Configuration validation runs after the host initializer block. An inline-editing proc without CMS raises `Railspress::ConfigurationError`.
 
 The defaults in the matrix above are library defaults. The install generator explicitly enables post images, post focal points, and CMS in a newly generated initializer. It never overwrites an existing initializer.
 
@@ -240,32 +240,7 @@ When enabled:
 - API endpoints are available under `/blog/api/v1/*` (assuming engine mounted at `/blog`)
 - API key management is available at `/blog/admin/api_keys`
 
-**Requirement:** all three Active Record Encryption credentials must be configured by the host application. When `config.enable_api` is enabled, RailsPress checks the effective Rails credentials/configuration during boot and raises `Railspress::ConfigurationError` if any value is missing. RailsPress never generates or writes these secrets.
-
-Generate the standard Rails credentials snippet:
-
-```bash
-bin/rails db:encryption:init
-```
-
-Store the generated `primary_key`, `deterministic_key`, and `key_derivation_salt` in the host application's Rails credentials or secret-management/deployment system. Rails automatically reads this credentials shape:
-
-```yaml
-active_record_encryption:
-  primary_key: ...
-  deterministic_key: ...
-  key_derivation_salt: ...
-```
-
-Explicit environment-backed Rails configuration is also supported when the deployment platform owns the values:
-
-```ruby
-Rails.application.config.active_record.encryption.primary_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY")
-Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY")
-Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT")
-```
-
-The install generator detects both forms. It confirms when configuration is present and prints `bin/rails db:encryption:init` only when values are missing.
+API keys and Agent Setup Keys are revealed once when issued. RailsPress stores their prefix and keyed digest for verification; it cannot recover the original token from the database. The host application's own encrypted models and encryption configuration are independent of RailsPress.
 
 ### Author Configuration
 

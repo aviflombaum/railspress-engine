@@ -1,5 +1,5 @@
 namespace :railspress do
-  desc "Inspect RailsPress configuration, mount, encryption, and migrations"
+  desc "Inspect RailsPress configuration, authentication, mount, and migrations"
   task :doctor do
     boot = lambda do
       Railspress.with_validation_reporting do

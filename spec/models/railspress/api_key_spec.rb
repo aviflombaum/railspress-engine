@@ -16,12 +16,13 @@ RSpec.describe Railspress::ApiKey, type: :model do
       expect(token).to match(/\Arp_#{Rails.env}_[a-f0-9]{12}_[a-f0-9]{64}\z/)
     end
 
-    it "stores encrypted secret material" do
-      api_key, token = described_class.issue!(name: "Encrypted Key", actor: actor)
-      secret = token.split("_").last
+    it "stores only the token verifier" do
+      api_key, token = described_class.issue!(name: "Digest Key", actor: actor)
+      parsed_token = described_class.parse_token(token)
 
-      expect(api_key.ciphertext_for(:secret_ciphertext)).to be_present
-      expect(api_key.ciphertext_for(:secret_ciphertext)).not_to include(secret)
+      expect(api_key.token_prefix).to eq(parsed_token.fetch(:prefix))
+      expect(api_key.token_digest).to eq(described_class.digest(parsed_token.fetch(:secret)))
+      expect(api_key.secret_ciphertext).to be_nil
     end
   end
 
@@ -31,6 +32,13 @@ RSpec.describe Railspress::ApiKey, type: :model do
 
       result = described_class.authenticate(token)
       expect(result).to eq(api_key)
+    end
+
+    it "authenticates a legacy row without reading its ciphertext" do
+      api_key, token = described_class.issue!(name: "Legacy Key", actor: actor)
+      api_key.update_column(:secret_ciphertext, "legacy-encrypted-value")
+
+      expect(described_class.authenticate(token)).to eq(api_key)
     end
 
     it "returns nil for revoked keys" do

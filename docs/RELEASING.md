@@ -71,7 +71,7 @@ git push origin v<version>
 ## 7. Post-Release
 
 - Create GitHub release notes from `CHANGELOG.md`.
-- Verify installation in a fresh Rails app using the built gem, including a boot, the complete RailsPress migration history, signed-out admin-auth check, and any enabled API encryption setup. Keep Agents & API disabled for one verification run and confirm its migrations are still copied, applied, and accepted by doctor:
+- Verify installation in a fresh Rails app using the built gem, including a boot, the complete RailsPress migration history, and a signed-out admin-auth check. Keep Agents & API disabled for one verification run and confirm its migrations are still copied, applied, and accepted by doctor:
 
 ```bash
 bundle add railspress-engine --version <version>
@@ -79,6 +79,8 @@ bin/rails generate railspress:install
 bin/rails db:migrate
 bin/rails railspress:doctor
 ```
+
+- Enable Agents & API without a master key, run `RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bin/rails assets:precompile`, then issue and exchange an Agent Setup Key and verify `/api/v1/prime` with the resulting API key.
 
 - Verify an upgrade from the previous released gem in a separate disposable host: update the gem, run `DRY_RUN=1 bin/rails railspress:upgrade`, copy/review migrations, run the normal upgrade, and exercise affected admin/API behavior.
 - Verify documentation links render correctly in the repository and installed gem.

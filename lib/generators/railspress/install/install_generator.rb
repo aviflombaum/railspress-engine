@@ -2,7 +2,6 @@
 
 require "rails/generators"
 require "rails/generators/base"
-require "railspress/active_record_encryption_configuration"
 
 module Railspress
   module Generators
@@ -78,18 +77,6 @@ module Railspress
         end
       end
 
-      def check_active_record_encryption
-        encryption = Railspress::ActiveRecordEncryptionConfiguration.new(Rails.application)
-
-        if encryption.configured?
-          say_status :ok, "Active Record Encryption credentials detected (Agents & API ready)", :green
-        else
-          say_status :required, "Active Record Encryption credentials for Agents & API", :yellow
-          say "     $ #{Railspress::ActiveRecordEncryptionConfiguration::SETUP_COMMAND}", :cyan
-          say "     Store the generated values in your host credentials or secret-management system."
-        end
-      end
-
       def show_post_install_message
         upgrading = !!@upgrading_existing_install
 
@@ -134,7 +121,7 @@ module Railspress
         say "  Edit config/initializers/railspress.rb to enable:"
         say "    - CMS content elements (config.enable_cms)"
         say "    - Inline CMS editing (config.inline_editing_check)"
-        say "    - Agents & API (config.enable_api; requires Active Record Encryption)"
+        say "    - Agents & API (config.enable_api; uses bearer tokens)"
         say "  Mount RailsPress normally; its API bypasses host controller auth and uses bearer tokens."
         say "  See the packaged docs/CONFIGURING.md and docs/INLINE_EDITING.md for details."
         say ""

@@ -17,12 +17,13 @@ RSpec.describe Railspress::AgentBootstrapKey, type: :model do
       expect(bootstrap_key.expires_at).to be_between(59.minutes.from_now, 61.minutes.from_now)
     end
 
-    it "stores encrypted secret material" do
-      bootstrap_key, token = described_class.issue!(name: "Encrypted Bootstrap", actor: actor)
-      secret = token.split("_").last
+    it "stores only the token verifier" do
+      bootstrap_key, token = described_class.issue!(name: "Digest Bootstrap", actor: actor)
+      parsed_token = described_class.parse_token(token)
 
-      expect(bootstrap_key.ciphertext_for(:secret_ciphertext)).to be_present
-      expect(bootstrap_key.ciphertext_for(:secret_ciphertext)).not_to include(secret)
+      expect(bootstrap_key.token_prefix).to eq(parsed_token.fetch(:prefix))
+      expect(bootstrap_key.token_digest).to eq(described_class.digest(parsed_token.fetch(:secret)))
+      expect(bootstrap_key.secret_ciphertext).to be_nil
     end
   end
 

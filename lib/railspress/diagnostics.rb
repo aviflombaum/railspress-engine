@@ -194,7 +194,6 @@ module Railspress
       findings.concat(configuration_findings)
       findings.concat(admin_authentication_findings)
       findings.concat(current_admin_findings)
-      findings.concat(encryption_findings)
       findings.concat(mount_findings)
       findings.concat(lexxy_wiring_findings)
       findings.concat(deprecation_findings)
@@ -337,25 +336,6 @@ module Railspress
 
       controller_class = Railspress::Admin::BaseController
       controller_class.method_defined?(method_name) || controller_class.private_method_defined?(method_name)
-    end
-
-    def encryption_findings
-      return [ finding(:api_encryption, :pass, "API encryption", "not required because Agents & API is disabled") ] unless Railspress.api_enabled?
-
-      encryption = Railspress::ActiveRecordEncryptionConfiguration.new(application)
-      if encryption.configured?
-        [ finding(:api_encryption, :pass, "API encryption", "all required values are present") ]
-      else
-        [
-          finding(
-            :api_encryption_missing,
-            :failure,
-            "API encryption",
-            "missing #{encryption.missing_keys.join(", ")}",
-            "Run `#{Railspress::ActiveRecordEncryptionConfiguration::SETUP_COMMAND}` and store the values in host credentials."
-          )
-        ]
-      end
     end
 
     def mount_findings

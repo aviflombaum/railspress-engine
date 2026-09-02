@@ -45,7 +45,6 @@ Current checks cover:
 - enabled features and configuration validation;
 - configured admin authentication method and optional authentication concern;
 - current-admin method/proc when an enabled feature needs an administrator identity;
-- all three Active Record Encryption values when Agents & API is enabled;
 - engine mount count, path, and outer route wrappers/constraints;
 - redundant host-owned Lexxy pins/imports when the host uses importmap;
 - deprecated initializer settings used during boot;

@@ -127,6 +127,19 @@ RSpec.describe "Packaged documentation contracts" do
     expect([ bootstrap_guide, authentication_guide ].join).not_to include('> "$RAILSPRESS_TOKEN_FILE"')
   end
 
+  it "does not present Active Record Encryption as a RailsPress requirement" do
+    active_guides = %w[
+      README.md
+      docs/CONFIGURING.md
+      docs/MAINTENANCE.md
+      docs/TROUBLESHOOTING.md
+      docs/UPGRADING.md
+      docs/api/authentication.md
+    ].map { |path| engine_root.join(path).read }.join("\n")
+
+    expect(active_guides).not_to include("db:encryption:init", "requires Active Record Encryption")
+  end
+
   it "keeps Post and header-media examples aligned with their public shapes" do
     posts_guide = engine_root.join("docs/api/posts.md").read
     post_json = posts_guide.match(/Single resource:.*?```json\n(.*?)```/m)[1]

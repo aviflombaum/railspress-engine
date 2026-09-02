@@ -89,32 +89,20 @@ RSpec.describe Railspress::Engine do
       expect(initializer.after).to eq(:load_config_initializers)
     end
 
-    it "raises the RailsPress encryption setup error during boot when the API is enabled" do
-      encryption_options = ActiveSupport::OrderedOptions.new
-      active_record_options = ActiveSupport::OrderedOptions.new
-      application_config = ActiveSupport::OrderedOptions.new
-      active_record_options.encryption = encryption_options
-      application_config.active_record = active_record_options
-      application = instance_double(Rails::Application, config: application_config, credentials: {})
+    it "boots with the API enabled without reading host encryption credentials" do
       Railspress.configuration.enable_api
 
       expect {
-        initializer.bind(described_class.instance).run(application)
-      }.to raise_error(Railspress::ConfigurationError, /bin\/rails db:encryption:init/)
+        initializer.bind(described_class.instance).run(Object.new)
+      }.not_to raise_error
     end
 
     it "defers RailsPress boot errors while a diagnostic task loads the environment" do
-      encryption_options = ActiveSupport::OrderedOptions.new
-      active_record_options = ActiveSupport::OrderedOptions.new
-      application_config = ActiveSupport::OrderedOptions.new
-      active_record_options.encryption = encryption_options
-      application_config.active_record = active_record_options
-      application = instance_double(Rails::Application, config: application_config, credentials: {})
-      Railspress.configuration.enable_api
+      Railspress.configuration.inline_editing_check = ->(_) { true }
 
       expect {
         Railspress.with_validation_reporting do
-          initializer.bind(described_class.instance).run(application)
+          initializer.bind(described_class.instance).run(Object.new)
         end
       }.not_to raise_error
     end

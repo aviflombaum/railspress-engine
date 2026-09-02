@@ -103,27 +103,16 @@ RSpec.describe Railspress::Diagnostics do
     )
   end
 
-  it "reports missing API encryption and current-admin configuration" do
-    encryption_options = ActiveSupport::OrderedOptions.new
-    active_record_options = ActiveSupport::OrderedOptions.new
-    application_config = ActiveSupport::OrderedOptions.new
-    active_record_options.encryption = encryption_options
-    application_config.active_record = active_record_options
-    application = instance_double(
-      Rails::Application,
-      config: application_config,
-      credentials: {},
-      routes: Rails.application.routes
-    )
+  it "reports missing current-admin configuration without encryption findings" do
     Railspress.configuration.enable_api
     Railspress.configuration.current_admin_method = :missing_current_admin
 
-    report = described_class.new(application:, migration_context:).call(include_migrations: false)
+    report = described_class.new(migration_context:).call(include_migrations: false)
 
     expect(report.findings).to include(
-      have_attributes(code: :current_admin_method_missing, severity: :failure),
-      have_attributes(code: :api_encryption_missing, severity: :failure)
+      have_attributes(code: :current_admin_method_missing, severity: :failure)
     )
+    expect(report.findings.map(&:code)).not_to include(:api_encryption, :api_encryption_missing)
   end
 
   it "distinguishes uncopied from copied but pending RailsPress migrations" do

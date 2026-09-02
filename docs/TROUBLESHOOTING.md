@@ -29,13 +29,13 @@ See [Maintenance Commands](MAINTENANCE.md) for the complete task contract.
 3. Inspect `config/routes.rb`, `config/importmap.rb`, and `config/initializers/railspress.rb` rather than deleting working files.
 4. For an existing installation, use `DRY_RUN=1 bin/rails railspress:upgrade` and follow [Upgrading](UPGRADING.md).
 
-The generator never runs `db:migrate` and never writes Active Record Encryption credentials.
+The generator never runs `db:migrate`.
 
 ### Doctor Reports API Migrations While Agents & API Is Disabled
 
 **Symptom**: Doctor reports `create_railspress_api_keys` or `create_railspress_agent_bootstrap_keys` as not copied even though `config.enable_api` is absent.
 
-**Cause**: This is an installation failure, not a false positive. RailsPress requires the complete migration history in every host application. Feature flags control runtime behavior and prerequisites such as encryption; they do not make migration files optional.
+**Cause**: This is an installation failure, not a false positive. RailsPress requires the complete migration history in every host application. Feature flags control runtime behavior; they do not make migration files optional.
 
 **Solution**:
 
@@ -46,22 +46,6 @@ bin/rails railspress:doctor
 ```
 
 Review and commit the copied `.railspress.rb` files before deployment. In production, deploy those files and use the host application's normal migration release step rather than running the mutating `railspress:upgrade` task.
-
-### "RailsPress Agents & API requires Active Record Encryption credentials"
-
-**Symptom**: The host application stops during boot with `Railspress::ConfigurationError` after `config.enable_api` is enabled. The error lists one or more of `primary_key`, `deterministic_key`, and `key_derivation_salt` as missing.
-
-**Cause**: RailsPress encrypts API-key and agent-bootstrap secret material with Active Record Encryption. The host application must own all three credentials; RailsPress intentionally does not generate or write deployment secrets.
-
-**Solution**: Generate the standard Rails credentials snippet:
-
-```bash
-bin/rails db:encryption:init
-```
-
-Store the generated values under `active_record_encryption` in the appropriate environment credentials, or map deployment secrets into `Rails.application.config.active_record.encryption`. Do not replace existing production values: changing keys can make previously encrypted API-key material unreadable.
-
-Restart the application after the values are available in that environment. If Agents & API is not needed, remove `config.enable_api`; the encryption check does not run while the feature is disabled.
 
 ### "ActionText not installed" Error
 
@@ -588,7 +572,7 @@ RailsPress provides `stimulus.min.js` locally through `stimulus-rails >= 1.2.2`.
 
 ### Browser Tests Wait for Google Fonts
 
-RailsPress 1.4.5 no longer imports Google Fonts. If a browser test still waits on `fonts.googleapis.com` or `fonts.gstatic.com`, the request comes from a host stylesheet or cached asset rather than the RailsPress admin stylesheet. Clear compiled assets and inspect the host CSS imports.
+RailsPress 1.5.0 no longer imports Google Fonts. If a browser test still waits on `fonts.googleapis.com` or `fonts.gstatic.com`, the request comes from a host stylesheet or cached asset rather than the RailsPress admin stylesheet. Clear compiled assets and inspect the host CSS imports.
 
 ### Crosshair Position Wrong
 

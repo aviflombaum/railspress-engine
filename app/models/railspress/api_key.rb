@@ -12,15 +12,12 @@ module Railspress
     belongs_to :revoked_by, polymorphic: true, optional: true
     belongs_to :rotated_from, class_name: "Railspress::ApiKey", optional: true
 
-    encrypts :secret_ciphertext
-
     normalizes :name, with: ->(value) { value.to_s.strip }
     normalizes :token_prefix, with: ->(value) { value.to_s.downcase }
 
     validates :name, presence: true, length: { maximum: 120 }
     validates :token_prefix, presence: true, length: { is: 12 }
     validates :token_digest, presence: true, uniqueness: true, length: { is: 64 }
-    validates :secret_ciphertext, presence: true
     validates :global_uuid, presence: true, uniqueness: true
 
     scope :recent, -> { order(created_at: :desc) }
@@ -43,7 +40,6 @@ module Railspress
           name: name,
           token_prefix: prefix,
           token_digest: digest(raw_secret),
-          secret_ciphertext: raw_secret,
           owner: owner,
           created_by: actor,
           expires_at: expires_at,

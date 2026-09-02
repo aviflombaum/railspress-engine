@@ -38,11 +38,8 @@ module Railspress
     end
 
     # Validate configuration after host initializers have loaded their settings.
-    initializer "railspress.validate_config", after: :load_config_initializers do |app|
-      unless Railspress.validation_reporting?
-        Railspress.configuration.validate!
-        Railspress::ActiveRecordEncryptionConfiguration.new(app).validate!
-      end
+    initializer "railspress.validate_config", after: :load_config_initializers do
+      Railspress.configuration.validate! unless Railspress.validation_reporting?
     end
 
     # Allow host apps to inject their auth concern into the admin base controller.

@@ -45,27 +45,9 @@ RailsPress deliberately has two controller stacks:
 
 An outer route constraint executes before either controller stack and commonly rejects token-only API requests with `404`. Remove that constraint and use `config.admin_authentication_method` for the browser side instead.
 
-## Active Record Encryption Requirement
+## Token Storage
 
-`Railspress::ApiKey` and `Railspress::AgentBootstrapKey` store key secret material with Active Record Encryption.
-
-RailsPress validates this requirement during boot whenever `config.enable_api` is enabled. It raises `Railspress::ConfigurationError` with the missing setting names and setup command, but never generates or writes credentials itself.
-
-Generate the standard Rails credentials snippet:
-
-```bash
-bin/rails db:encryption:init
-```
-
-Store the generated values in the host application's environment credentials or deployment secret manager. Do not rotate existing encryption credentials merely to enable RailsPress; changing them can make existing encrypted data unreadable.
-
-Configure encryption keys in your application:
-
-```ruby
-Rails.application.config.active_record.encryption.primary_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY")
-Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY")
-Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch("ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT")
-```
+RailsPress reveals an API key or Agent Setup Key only when it is issued. The database stores a lookup prefix and a keyed HMAC-SHA256 digest, not the token secret. Authentication recomputes that digest and compares it in constant time, so a stored token cannot be recovered or displayed again. Losing a token requires issuing a replacement; it does not require changing host credentials.
 
 ## Two Token Types
 

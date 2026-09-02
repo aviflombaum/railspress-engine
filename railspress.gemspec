@@ -52,11 +52,8 @@ Gem::Specification.new do |spec|
       runs all pending host migrations. Commit copied migrations and use the
       host application's normal db:migrate release step in production.
 
-      Enabling Agents & API requires host-managed Active Record Encryption
-      credentials. If they are missing, generate the credentials snippet with:
-        $ bin/rails db:encryption:init
-
-      RailsPress never generates or writes these credentials.
+      Agents & API is opt-in and uses bearer tokens whose plaintext value is
+      shown once. RailsPress persists only a keyed digest for verification.
 
       Guides:
         - Install/setup: packaged README.md + docs/CONFIGURING.md

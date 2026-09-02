@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_000001) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -74,7 +74,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_000002) do
     t.datetime "revoked_at"
     t.bigint "revoked_by_id"
     t.string "revoked_by_type"
-    t.text "secret_ciphertext", null: false
+    t.text "secret_ciphertext"
     t.string "token_digest", null: false
     t.string "token_prefix", null: false
     t.datetime "updated_at", null: false
@@ -107,7 +107,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_000002) do
     t.bigint "rotated_by_id"
     t.string "rotated_by_type"
     t.integer "rotated_from_id"
-    t.text "secret_ciphertext", null: false
+    t.text "secret_ciphertext"
     t.string "token_digest", null: false
     t.string "token_prefix", null: false
     t.datetime "updated_at", null: false

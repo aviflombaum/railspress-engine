@@ -117,10 +117,8 @@ Railspress.configure do |config|
 
   # === Agents & API (opt-in) ===
 
-  # Bearer-authenticated API endpoints and admin API-key management. Requires
-  # all three Active Record Encryption credentials. Generate a snippet with:
-  #   bin/rails db:encryption:init
-  # RailsPress never writes these secrets.
+  # Bearer-authenticated API endpoints and admin API-key management. Tokens are
+  # shown once when issued; RailsPress persists only a keyed digest.
   # config.enable_api
   # API controllers do not inherit ApplicationController and always enforce
   # their own bearer-token authentication.

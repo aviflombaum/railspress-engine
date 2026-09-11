@@ -18,8 +18,8 @@ bin/rails db:migrate
 Generated output:
 
 - `app/models/project.rb`, including `Railspress::Entity`, field declarations, and `has_rich_text` declarations for `rich_text` arguments;
-- `db/migrate/TIMESTAMP_create_projects.rb`, containing regular database attributes and timestamps (rich-text content lives in Action Text and is not added as a table column); and
-- `config/initializers/railspress.rb` registration, creating the initializer first when needed.
+- `db/migrate/TIMESTAMP_create_projects.rb` (or Rails' configured migration directory), containing regular database attributes and timestamps (rich-text content lives in Action Text and is not added as a table column); and
+- `config/initializers/railspress.rb` registration using `config.register_entity "Project"`, creating the initializer first when needed. The class name string defers model loading until RailsPress accesses the entity.
 
 The generator uses Rails attribute types for migration-backed fields. It is best for scalar columns such as `string`, `text`, `boolean`, `integer`, `decimal`, `date`, and `datetime`, plus its special `rich_text` handling. Add Active Storage attachments, `:list`/`:lines` JSON fields, focal-point images, labels, validations, and custom index columns manually with the DSL described below.
 

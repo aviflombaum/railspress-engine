@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Entity generator**: Fixed the migration helper name collision that raised an argument error during generation. The generator now respects Rails' configured migration directory, checks for existing initializers in the destination application, and registers class name strings to defer model loading.
 - **Secret-free build boot**: API-enabled applications can boot and precompile assets without RailsPress loading credential-backed encryption configuration.
 - **Admin/API authentication boundary**: RailsPress browser controllers now inherit the host `ApplicationController` and optionally invoke `config.admin_authentication_method`, while API controllers remain isolated on `ActionController::API` with bearer-token authentication. This allows a normal unconstrained engine mount without exposing the admin UI.
 - **Current administrator integration**: Added `config.current_admin_method` and `config.current_admin_proc` to resolve the host administrator recorded on API key lifecycle actions.

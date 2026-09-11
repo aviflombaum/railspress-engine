@@ -18,27 +18,27 @@ module Railspress
         template "model.rb.tt", File.join("app/models", "#{file_name}.rb")
       end
 
-      def create_migration
+      def create_migration_file
         migration_template "migration.rb.tt", File.join(db_migrate_path, "create_#{table_name}.rb")
       end
 
       def add_registration
         initializer_file = "config/initializers/railspress.rb"
 
-        unless File.exist?(initializer_file)
+        unless File.exist?(File.join(destination_root, initializer_file))
           create_file initializer_file, <<~RUBY
             # frozen_string_literal: true
 
             Railspress.configure do |config|
               # Register your CMS-managed entities here
-              # config.register_entity Project
+              # config.register_entity "Project"
             end
           RUBY
           say_status :created, "RailsPress initializer", :green
         end
 
         inject_into_file initializer_file, after: "Railspress.configure do |config|\n" do
-          "  config.register_entity #{class_name}\n"
+          "  config.register_entity #{class_name.dump}\n"
         end
 
         say_status :registered, "#{class_name} entity", :green
@@ -64,10 +64,6 @@ module Railspress
       end
 
       private
-
-      def db_migrate_path
-        "db/migrate"
-      end
 
       def rich_text_fields
         attributes.select { |a| a.type == :rich_text }

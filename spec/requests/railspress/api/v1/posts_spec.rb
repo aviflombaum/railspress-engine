@@ -257,6 +257,51 @@ RSpec.describe "Railspress::Api::V1::Posts", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "round-trips content with an attachment through GET and PATCH without growing it" do
+      post_record = railspress_posts(:hello_world)
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new(File.binread(test_image_path)), filename: "test_image.png", content_type: "image/png"
+      )
+      post_record.update!(content: <<~HTML)
+        <p>Intro.</p>
+        <p><action-text-attachment sgid="#{blob.attachable_sgid}" content-type="image/png" filename="test_image.png" caption="A caption"></action-text-attachment></p>
+        <p>Outro.</p>
+      HTML
+      canonical = post_record.reload.content.body.to_html
+
+      3.times do
+        get railspress.api_v1_post_path(post_record), headers: headers
+        served = response.parsed_body.dig("data", "content")
+
+        patch railspress.api_v1_post_path(post_record),
+              headers: headers,
+              params: { post: { content: served, content_format: "html" } }
+        expect(response).to have_http_status(:ok)
+      end
+
+      stored = post_record.reload.content.body.to_html
+      expect(stored).to eq(canonical)
+      expect(stored.scan("<action-text-attachment").size).to eq(1)
+      expect(stored).not_to include("trix-content")
+      expect(stored).not_to include("<figure")
+    end
+
+    it "does not strip a rendered layout wrapper if a client PATCHes rendered HTML back" do
+      # Documents the hazard: ActionText keeps whatever HTML it is given. A client that
+      # sends post.content.to_s (rendered with layout) instead of the API's canonical
+      # content re-wraps the body on every save. The API itself never serves that form.
+      post_record = railspress_posts(:hello_world)
+      post_record.update!(content: "<p>Plain body.</p>")
+      rendered = post_record.reload.content.to_s
+
+      patch railspress.api_v1_post_path(post_record),
+            headers: headers,
+            params: { post: { content: rendered, content_format: "html" } }
+
+      expect(response).to have_http_status(:ok)
+      expect(post_record.reload.content.body.to_html).to include("trix-content")
+    end
+
     it "removes the header image when remove_header_image is set" do
       Railspress.configure(&:enable_post_images)
       post_record = railspress_posts(:hello_world)

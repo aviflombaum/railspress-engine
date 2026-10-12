@@ -6,6 +6,7 @@ require "railspress/active_record_encryption_configuration"
 require "railspress/engine"
 require "railspress/entity"
 require "lexxy"
+require "stimulus-rails"
 
 module Railspress
   class ConfigurationError < StandardError; end

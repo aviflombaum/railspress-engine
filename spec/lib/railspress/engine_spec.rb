@@ -66,6 +66,12 @@ RSpec.describe Railspress::Engine do
       expect(importmap).to include('pin "@hotwired/stimulus", to: "stimulus.min.js"')
       expect(importmap).not_to include("ga.jspm.io")
     end
+
+    it "resolves the Stimulus pin to the asset stimulus-rails packages" do
+      imports = JSON.parse(Rails.application.importmap.to_json(resolver: ActionController::Base.helpers))["imports"]
+
+      expect(imports["@hotwired/stimulus"]).to match(%r{\A/assets/stimulus\.min-\h+\.js\z})
+    end
   end
 
   describe "admin assets" do
